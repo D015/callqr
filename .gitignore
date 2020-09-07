@@ -1,0 +1,8 @@
+.idea/
+__pycache__/
+*/__pycache__/
+venv/
+test/
+static/
+settings.py
+

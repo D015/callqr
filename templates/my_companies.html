@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <table>
+        <tr valign="top">
+            <td><img src="{{ url_for('static', filename='qr_codes/2256408b3cdb4785969686382336344e.png') }}" /></td>
+            <td>
+                <h1>My companies</h1>
+            </td>
+        </tr>
+    </table>
+    <hr>
+    {% include '_companies.html' %}
+    <hr>
+    <h3>Create a new company</h3>
+    {% include '_create_company.html' %}
+
+{% endblock %}

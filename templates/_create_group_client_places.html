@@ -1,0 +1,13 @@
+{% if form_group_client_places %}
+    <form action="" method="post" novalidate>
+        {{ form_group_client_places.hidden_tag() }}
+        <p>
+            {{ form_group_client_places.name_group_client_places.label }}<br>
+            {{ form_group_client_places.name_group_client_places(size=32) }}<br>
+            {% for error in form_group_client_places.name_group_client_places.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>{{ form_group_client_places.submit_group_client_places() }}</p>
+    </form>
+{% endif %}

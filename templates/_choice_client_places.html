@@ -1,0 +1,18 @@
+{% if form_choice_client_places %}
+
+    <form action="" method="POST" novalidate>
+        {{ form_choice_client_places.hidden_tag() }}
+        {% for choice_client_places in form_choice_client_places.choices %}
+            <p>
+                {{ choice_client_places(checked=False) }}
+                {{ choice_client_places.label }}
+                {% for error in form_choice_client_places.choices.errors %}
+                    <span style="color: red;">[{{ error }}]</span>
+                {% endfor %}
+            </p>
+        {% endfor %}
+        {{ form_choice_client_places.submit_choice_client_places }}
+    </form>
+
+{% endif %}
+

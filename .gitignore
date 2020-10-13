@@ -1,4 +1,5 @@
 .idea/
+_documentation_/
 __pycache__/
 */__pycache__/
 venv/

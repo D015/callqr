@@ -23,6 +23,8 @@ from forms import ClientPlaceForm, \
     GroupClientPlacesForm, \
     ChoiceClientPlaceForm
 
+from sqlalchemy import or_
+
 from app import app, db
 from models import ClientPlace, User, Company, GroupClientPlaces
 from email_my import send_call_qr_email
@@ -278,9 +280,10 @@ def group_client_places(slug):
 
     def client_places_not_in_group_client_places():
         client_places_not_in_group_client_places = ClientPlace.query. \
-            filter(ClientPlace.group_client_places_id != group_client_places.id,
-                   ClientPlace.company_id == group_client_places.company_id). \
-            order_by(ClientPlace.name.asc())
+            filter(ClientPlace.company_id == group_client_places.company_id). \
+            filter(or_(ClientPlace.group_client_places_id != group_client_places.id,
+                       ClientPlace.group_client_places_id == None)). \
+        order_by(ClientPlace.name.asc())
         return client_places_not_in_group_client_places
 
     form_choice_client_places = ChoiceClientPlaceForm()

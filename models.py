@@ -178,9 +178,6 @@ class Person(db.Model):
     client_id = db.relationship("Client", uselist=False,
                                 backref='person_client')
 
-
-
-
     def __init__(self, *args, **kwargs):
         super(Person, self).__init__(*args, **kwargs)
         self.slug = generate_token_slug()
@@ -214,4 +211,3 @@ class Client(db.Model):
     def __init__(self, *args, **kwargs):
         super(Client, self).__init__(*args, **kwargs)
         self.slug = generate_token_slug()
-

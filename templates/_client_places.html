@@ -3,7 +3,7 @@
             <p>
             {{ client_place.group_client_places_client_place.name }} : <b>{{ client_place.name }}</b>
 {#            <b><a href="{{ url_for('group_client_places', slug=group_client_places.slug) }}">{{ group_client_places.name }}</a></b>#}
-{#            <a href="{{ url_for('edit_group_client_places', slug=group_client_places.slug) }}">Edit</a>#}
+            <a href="{{ url_for('edit_client_place', slug=client_place.slug) }}">Edit</a>
             </p>
         {% endfor %}
     {% else %}

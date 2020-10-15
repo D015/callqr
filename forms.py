@@ -149,12 +149,15 @@ class ClientPlaceForm(FlaskForm):
 class EditClientPlaceForm(FlaskForm):
     name = StringField('Enter name client place',
                        validators=[DataRequired()])
+    group_client_places = SelectField('Group', validate_choice=False)
     submit = SubmitField('Submit')
 
-    def __init__(self, company_id, original_name_place, *args, **kwargs):
+    def __init__(self, company_id, original_name_place,
+                 choices_group_client_places, *args, **kwargs):
         super(EditClientPlaceForm, self).__init__(*args, **kwargs)
         self.company_id = company_id
         self.original_name_place = original_name_place
+        self.group_client_places.choices = choices_group_client_places
 
     def validate_name(self, name):
         if name.data != self.original_name_place:

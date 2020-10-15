@@ -209,11 +209,23 @@ def edit_company(slug):
 @app.route('/edit_client_place/<slug>', methods=['GET', 'POST'])
 @login_required
 def edit_client_place(slug):
-    client_place = ClientPlace.query.filter(ClientPlace.slug == slug). \
+    client_place = ClientPlace.query.filter_by(slug=slug). \
         first_or_404()
-    form = EditClientPlaceForm(client_place.company_id, client_place.name)
+
+    groups_client_places = GroupClientPlaces.query. \
+        filter(GroupClientPlaces.company_id == client_place.company_id). \
+        order_by(GroupClientPlaces.name.asc())
+
+    choices_group_client_places = [(i.id, i.name) for i in groups_client_places]
+    choices_group_client_places.insert(0, ('', 'group not selected'))
+
+    form = EditClientPlaceForm(client_place.company_id,
+                               client_place.name,
+                               choices_group_client_places,
+                               group_client_places=client_place.group_client_places_id)
     if form.validate_on_submit():
         client_place.name = form.name.data.strip()
+        client_place.group_client_places_id = form.group_client_places.data.strip()
         db.session.commit()
         flash('Your changes have been saved.')
         return redirect(url_for('edit_client_place', slug=client_place.slug))

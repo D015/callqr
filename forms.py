@@ -122,6 +122,33 @@ class GroupClientPlacesForm(FlaskForm):
         if group_client_places is not None:
             raise ValidationError('Please use a different group name.')
 
+# Form Group editor
+class EditGroupClientPlacesForm(FlaskForm):
+    name_group_client_places = StringField('Enter name new group',
+                                           validators=[DataRequired()])
+    about = TextAreaField('About group',
+                          validators=[Length(min=0, max=140)])
+    submit_group_client_places = SubmitField('Submit')
+    cancel = SubmitField('Cancel')
+
+    def __init__(self, company_id, original_name_group_client_places,
+                 original_about, *args, **kwargs):
+        super(EditGroupClientPlacesForm, self).__init__(*args, **kwargs)
+        self.company_id = company_id
+        self.original_name_group_client_places = \
+            original_name_group_client_places
+        self.original_about = original_about
+
+    def validate_name_group_client_places(self,
+                                          name_group_client_places):
+        if name_group_client_places.data != \
+                self.original_name_group_client_places:
+            group_client_places = GroupClientPlaces.query. \
+                filter_by(company_id=self.company_id,
+                          name=name_group_client_places.data.strip()).first()
+            if group_client_places is not None:
+                raise ValidationError('Please use a different group name.')
+
 
 # Form creator Client Place
 class ClientPlaceForm(FlaskForm):

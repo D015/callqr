@@ -124,7 +124,7 @@ class GroupClientPlacesForm(FlaskForm):
 
 # Form Group editor
 class EditGroupClientPlacesForm(FlaskForm):
-    name_group_client_places = StringField('Enter name new group',
+    name = StringField('Enter name new group',
                                            validators=[DataRequired()])
     about = TextAreaField('About group',
                           validators=[Length(min=0, max=140)])
@@ -139,13 +139,11 @@ class EditGroupClientPlacesForm(FlaskForm):
             original_name_group_client_places
         self.original_about = original_about
 
-    def validate_name_group_client_places(self,
-                                          name_group_client_places):
-        if name_group_client_places.data != \
-                self.original_name_group_client_places:
+    def validate_name(self, name):
+        if name.data != self.original_name_group_client_places:
             group_client_places = GroupClientPlaces.query. \
                 filter_by(company_id=self.company_id,
-                          name=name_group_client_places.data.strip()).first()
+                name=name.data.strip()).first()
             if group_client_places is not None:
                 raise ValidationError('Please use a different group name.')
 
@@ -190,7 +188,7 @@ class EditClientPlaceForm(FlaskForm):
         if name.data != self.original_name_place:
             client_place = ClientPlace.query. \
                 filter_by(company_id=self.company_id,
-                          name=name.data.strip()).first()
+                name=name.data.strip()).first()
             if client_place is not None:
                 raise ValidationError('Please use a different place name.')
 

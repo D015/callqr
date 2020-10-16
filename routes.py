@@ -21,7 +21,8 @@ from forms import ClientPlaceForm, \
     EditCompanyForm, \
     EditClientPlaceForm, \
     GroupClientPlacesForm, \
-    ChoiceClientPlaceForm
+    ChoiceClientPlaceForm, \
+    EditGroupClientPlacesForm
 
 from sqlalchemy import or_
 
@@ -323,3 +324,27 @@ def group_client_places(slug):
                            group_client_places=group_client_places,
                            client_places=client_places_in_group_client_places,
                            form_choice_client_places=form_choice_client_places)
+
+# Group Client places editor view
+@app.route('/edit_group_client_places/<slug>', methods=['GET', 'POST'])
+@login_required
+def edit_group_client_places(slug):
+    group_client_places = GroupClientPlaces.query.filter_by(slug=slug). \
+        first_or_404()
+
+    form = EditGroupClientPlacesForm(group_client_places.company_id,
+                                     group_client_places.name,
+                                     group_client_places.about)
+    if form.validate_on_submit():
+        group_client_places.name = form.name.data.strip()
+        group_client_places.about = form.about.data.strip()
+        db.session.commit()
+        flash('Your changes have been saved.')
+        return redirect(url_for('edit_client_place',
+                                slug=group_client_places.slug))
+    elif request.method == 'GET':
+        form.name.data = group_client_places.name
+    return render_template('edit_group_client_places.html',
+                           title='Edit group client places {}'.format(
+                               group_client_places.name),
+                           form=form)

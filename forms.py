@@ -128,7 +128,7 @@ class EditGroupClientPlacesForm(FlaskForm):
                                            validators=[DataRequired()])
     about = TextAreaField('About group',
                           validators=[Length(min=0, max=140)])
-    submit_group_client_places = SubmitField('Submit')
+    submit = SubmitField('Submit')
     cancel = SubmitField('Cancel')
 
     def __init__(self, company_id, original_name_group_client_places,

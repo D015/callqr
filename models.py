@@ -84,6 +84,7 @@ class Company(db.Model):
 class GroupClientPlaces(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), index=True)
+    about = db.Column(db.String(140))
     slug = db.Column(db.String(128), index=True, unique=True)
     slug_link = db.Column(db.String(128), index=True, unique=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)

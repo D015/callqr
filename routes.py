@@ -340,10 +340,11 @@ def edit_group_client_places(slug):
         group_client_places.about = form.about.data.strip()
         db.session.commit()
         flash('Your changes have been saved.')
-        return redirect(url_for('edit_client_place',
+        return redirect(url_for('edit_group_client_places',
                                 slug=group_client_places.slug))
     elif request.method == 'GET':
         form.name.data = group_client_places.name
+        form.about.data = group_client_places.about
     return render_template('edit_group_client_places.html',
                            title='Edit group client places {}'.format(
                                group_client_places.name),

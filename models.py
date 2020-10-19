@@ -190,6 +190,8 @@ class Person(db.Model):
 class Employee(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     about = db.Column(db.String(140))
+    email = db.Column(db.String(120), index=True, unique=True)
+    phone_number_telegram = db.Column(db.Integer, unique=True)
     slug = db.Column(db.String(128), index=True, unique=True)
     person_id = db.Column(db.Integer, db.ForeignKey('person.id'))
 

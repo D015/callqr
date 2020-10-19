@@ -67,6 +67,13 @@ class EditProfileForm(FlaskForm):
                 raise ValidationError('Please use a different username.')
 
 
+# Form creator Person
+class PersonForm(FlaskForm):
+    first_name = StringField('First Name', validators=[DataRequired()])
+    last_name = StringField('Last Name', validators=[DataRequired()])
+    submit = SubmitField('Register')
+
+
 # Form creator Company
 class CompanyForm(FlaskForm):
     name = StringField('Enter name new company',

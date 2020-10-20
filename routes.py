@@ -27,7 +27,14 @@ from forms import ClientPlaceForm, \
 from sqlalchemy import or_
 
 from app import app, db
-from models import ClientPlace, User, Company, GroupClientPlaces
+
+from models import ClientPlace, \
+    User, \
+    Company, \
+    GroupClientPlaces, \
+    Person, \
+    Employee
+
 from email_my import send_call_qr_email
 
 
@@ -349,3 +356,18 @@ def edit_group_client_places(slug):
                            title='Edit group client places {}'.format(
                                group_client_places.name),
                            form=form)
+
+
+# Profile view
+@app.route('/profile/<username>', methods=['GET', 'POST'])
+@login_required
+def profile(username):
+    user = User.query.filter_by(username=username).first_or_404()
+
+    person = Person.query.filter_by(user_id=user.id).first_or_404()
+    if person:
+        first_name = person.first_name
+    else:
+        first_name = 'No first name'
+
+    return render_template('profile.html', first_name=first_name)

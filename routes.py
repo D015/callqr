@@ -363,8 +363,9 @@ def edit_group_client_places(slug):
 @login_required
 def profile(username):
     user = User.query.filter_by(username=username).first_or_404()
-    print(user)
+
     person = Person.query.filter_by(id=user.person_id).first()
+
     if person:
         first_name = person.first_name
         last_name = person.last_name

@@ -176,20 +176,20 @@ def company(slug):
 
 
 # Profile editor view
-@app.route('/edit_profile', methods=['GET', 'POST'])
+@app.route('/edit_user', methods=['GET', 'POST'])
 @login_required
-def edit_profile():
+def edit_user():
     form = EditProfileForm(current_user.username)
     if form.validate_on_submit():
         current_user.username = form.username.data.strip()
         current_user.about = form.about.data.strip()
         db.session.commit()
         flash('Your changes have been saved.')
-        return redirect(url_for('edit_profile'))
+        return redirect(url_for('edit_user'))
     elif request.method == 'GET':
         form.username.data = current_user.username
         form.about.data = current_user.about
-    return render_template('edit_profile.html', title='Edit Profile',
+    return render_template('edit_user.html', title='Edit User',
                            form=form)
 
 
@@ -363,11 +363,16 @@ def edit_group_client_places(slug):
 @login_required
 def profile(username):
     user = User.query.filter_by(username=username).first_or_404()
-
-    person = Person.query.filter_by(user_id=user.id).first_or_404()
+    print(user)
+    person = Person.query.filter_by(id=user.person_id).first()
     if person:
         first_name = person.first_name
+        last_name = person.last_name
+        abaut = person.abaut
     else:
         first_name = 'No first name'
+        last_name = 'No last name'
+        about = 'No about'
 
-    return render_template('profile.html', first_name=first_name)
+    return render_template('profile.html', user=user, first_name=first_name,
+                           last_name=last_name, about=about)

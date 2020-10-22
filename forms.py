@@ -67,11 +67,20 @@ class EditProfileForm(FlaskForm):
                 raise ValidationError('Please use a different username.')
 
 
-# Form creator Person
+# This form for creating and editing Person
 class PersonForm(FlaskForm):
     first_name = StringField('First Name', validators=[DataRequired()])
     last_name = StringField('Last Name', validators=[DataRequired()])
-    submit = SubmitField('Register')
+    about = TextAreaField('About user', validators=[Length(min=0, max=140)])
+    submit = SubmitField('Submit')
+    cancel = SubmitField('Cancel')
+
+    def __init__(self, original_first_name, original_last_name, original_about,
+                 *args, **kwargs):
+        super(PersonForm, self).__init__(*args, **kwargs)
+        self.original_first_name = original_first_name
+        self.original_last_name = original_last_name
+        self.original_about = original_about
 
 
 # Form creator Company
@@ -95,7 +104,7 @@ class EditCompanyForm(FlaskForm):
     name = StringField('Name company', validators=[DataRequired()])
     about = TextAreaField('About company', validators=[Length(min=0, max=140)])
     submit = SubmitField('Submit')
-    cancel = SubmitField('cancel')
+    cancel = SubmitField('Cancel')
 
     def __init__(self, original_name_company, *args, **kwargs):
         super(EditCompanyForm, self).__init__(*args, **kwargs)
@@ -161,7 +170,7 @@ class ClientPlaceForm(FlaskForm):
                                     validators=[DataRequired()])
     group_client_places = SelectField('Group', validate_choice=False)
     submit_client_place = SubmitField('Submit')
-    cancel = SubmitField('cancel')
+    cancel = SubmitField('Cancel')
 
     def __init__(self, company_id,
                  choices_group_client_places, *args, **kwargs):

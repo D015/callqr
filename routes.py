@@ -22,7 +22,8 @@ from forms import ClientPlaceForm, \
     EditClientPlaceForm, \
     GroupClientPlacesForm, \
     ChoiceClientPlaceForm, \
-    EditGroupClientPlacesForm
+    EditGroupClientPlacesForm, \
+    PersonForm
 
 from sqlalchemy import or_
 
@@ -359,7 +360,7 @@ def edit_group_client_places(slug):
 
 
 # Profile view
-@app.route('/profile/<username>', methods=['GET', 'POST'])
+@app.route('/profile/<username>')
 @login_required
 def profile(username):
     user = User.query.filter_by(username=username).first_or_404()
@@ -369,7 +370,7 @@ def profile(username):
     if person:
         first_name = person.first_name
         last_name = person.last_name
-        abaut = person.abaut
+        about = person.abaut
     else:
         first_name = 'No first name'
         last_name = 'No last name'
@@ -377,3 +378,25 @@ def profile(username):
 
     return render_template('profile.html', user=user, first_name=first_name,
                            last_name=last_name, about=about)
+
+
+# Profile editor view
+@app.route('/edit_person/<username>', methods=['GET', 'POST'])
+@login_required
+def person(username):
+    user = User.query.filter_by(username=username).first_or_404()
+
+    person = Person.query.filter_by(id=user.person_id).first()
+
+    if person:
+        first_name = person.first_name
+        last_name = person.last_name
+        about = person.abaut
+    else:
+        first_name = ''
+        last_name = ''
+        about = ''
+
+    form = PersonForm(first_name, last_name, about)
+    return render_template('edit_person.html', user=user, first_name=first_name,
+                           last_name=last_name, about=about, form=form)

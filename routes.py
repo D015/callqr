@@ -360,17 +360,17 @@ def edit_group_client_places(slug):
 
 
 # Profile view
-@app.route('/profile/<username>')
+@app.route('/profile')
 @login_required
-def profile(username):
-    user = User.query.filter_by(username=username).first_or_404()
+def profile():
+    user = current_user
 
-    person = Person.query.filter_by(id=user.person_id).first()
+    person = Person.query.filter_by(user_id=current_user.id).first()
 
     if person:
         first_name = person.first_name
         last_name = person.last_name
-        about = person.abaut
+        about = person.about
     else:
         first_name = 'No first name'
         last_name = 'No last name'
@@ -381,22 +381,42 @@ def profile(username):
 
 
 # Profile editor view
-@app.route('/edit_person/<username>', methods=['GET', 'POST'])
+@app.route('/edit_person', methods=['GET', 'POST'])
 @login_required
-def person(username):
-    user = User.query.filter_by(username=username).first_or_404()
+def edit_person():
+    user = current_user
 
-    person = Person.query.filter_by(id=user.person_id).first()
+    person = Person.query.filter_by(user_id=user.id).first()
 
     if person:
         first_name = person.first_name
         last_name = person.last_name
-        about = person.abaut
+        about = person.about
     else:
-        first_name = ''
-        last_name = ''
-        about = ''
+        first_name = '1'
+        last_name = '1'
+        about = '1'
 
     form = PersonForm(first_name, last_name, about)
+    if form.validate_on_submit() and person:
+        person.first_name = form.first_name.data.strip()
+        person.last_name = form.last_name.data.strip()
+        person.about = form.about.data.strip()
+        db.session.commit()
+        flash('Your changes have been saved.')
+        return redirect(url_for('edit_person'))
+    elif form.validate_on_submit() and person is None:
+        person = Person(first_name=form.first_name.data.strip(),
+                        last_name=form.last_name.data.strip(),
+                        about=form.about.data.strip(),
+                        user_id=user.id)
+        db.session.add(person)
+        db.session.commit()
+        flash('Your changes have been saved.')
+        return redirect(url_for('edit_person'))
+    elif request.method == 'GET':
+        form.first_name.data = first_name
+        form.last_name.data = last_name
+        form.about.data = about
     return render_template('edit_person.html', user=user, first_name=first_name,
                            last_name=last_name, about=about, form=form)

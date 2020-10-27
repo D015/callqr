@@ -75,8 +75,7 @@ class PersonForm(FlaskForm):
     submit = SubmitField('Submit')
     cancel = SubmitField('Cancel')
 
-    def __init__(self, original_first_name, original_last_name, original_about,
-                 *args, **kwargs):
+    def __init__(self, original_first_name, original_last_name, original_about, *args, **kwargs):
         super(PersonForm, self).__init__(*args, **kwargs)
         self.original_first_name = original_first_name
         self.original_last_name = original_last_name

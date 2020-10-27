@@ -35,7 +35,8 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
     slug = db.Column(db.String(128), index=True, unique=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-    person_id = db.Column(db.Integer, db.ForeignKey('person.id'))
+
+    person_id = db.relationship("Person", uselist=False, backref='person_user')
 
     companys = db.relationship('Company', backref='creator', lazy='dynamic')
 
@@ -169,8 +170,7 @@ class Person(db.Model):
     about = db.Column(db.String(140))
     slug = db.Column(db.String(128), index=True, unique=True)
 
-    user_id = db.relationship("User", uselist=False,
-                              backref='person_user')
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     employee_id = db.relationship("Employee", uselist=False,
                                   backref='person_employee')

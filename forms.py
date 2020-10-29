@@ -82,6 +82,24 @@ class PersonForm(FlaskForm):
         self.original_about = original_about
 
 
+# This form for creating and editing Employee
+class EmployeeForm(FlaskForm):
+    about = TextAreaField('About user', validators=[Length(min=0, max=140)])
+    email = StringField('Email', validators=[DataRequired()])
+    phone_number_telegram = StringField('Phone number telegram',
+                                        validators=[DataRequired()])
+    submit = SubmitField('Submit')
+    cancel = SubmitField('Cancel')
+
+    def __init__(self,original_about, original_email,
+                 original_phone_number_telegram, *args, **kwargs):
+        super(EmployeeForm, self).__init__(*args, **kwargs)
+        self.original_about = original_about
+        self.original_email = original_email
+        self.original_phone_number_telegram = original_phone_number_telegram
+
+
+
 # Form creator Company
 class CompanyForm(FlaskForm):
     name = StringField('Enter name new company',

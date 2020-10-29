@@ -36,7 +36,7 @@ class User(UserMixin, db.Model):
     slug = db.Column(db.String(128), index=True, unique=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
-    person_id = db.relationship("Person", uselist=False, backref='person_user')
+    person = db.relationship("Person", uselist=False, backref='person_user')
 
     companys = db.relationship('Company', backref='creator', lazy='dynamic')
 
@@ -171,12 +171,8 @@ class Person(db.Model):
     slug = db.Column(db.String(128), index=True, unique=True)
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-
-    employee_id = db.relationship("Employee", uselist=False,
-                                  backref='person_employee')
-
-    client_id = db.relationship("Client", uselist=False,
-                                backref='person_client')
+    employee_id = db.Column(db.Integer, db.ForeignKey('employee.id'))
+    client_id = db.Column(db.Integer, db.ForeignKey('client.id'))
 
     def __init__(self, *args, **kwargs):
         super(Person, self).__init__(*args, **kwargs)
@@ -192,8 +188,8 @@ class Employee(db.Model):
     email = db.Column(db.String(120), index=True, unique=True)
     phone_number_telegram = db.Column(db.Integer, unique=True)
     slug = db.Column(db.String(128), index=True, unique=True)
-    person_id = db.Column(db.Integer, db.ForeignKey('person.id'))
-
+    person = db.relationship("Person", uselist=False,
+                                backref='person_employee')
 
     def __init__(self, *args, **kwargs):
         super(Employee, self).__init__(*args, **kwargs)
@@ -207,7 +203,8 @@ class Client(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     about = db.Column(db.String(140))
     slug = db.Column(db.String(128), index=True, unique=True)
-    person_id = db.Column(db.Integer, db.ForeignKey('person.id'))
+    person = db.relationship("Person", uselist=False,
+                             backref='person_client')
 
 
     def __init__(self, *args, **kwargs):

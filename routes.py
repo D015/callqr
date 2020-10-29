@@ -23,7 +23,8 @@ from forms import ClientPlaceForm, \
     GroupClientPlacesForm, \
     ChoiceClientPlaceForm, \
     EditGroupClientPlacesForm, \
-    PersonForm
+    PersonForm, \
+    EmployeeForm
 
 from sqlalchemy import or_
 
@@ -34,7 +35,8 @@ from models import ClientPlace, \
     Company, \
     GroupClientPlaces, \
     Person, \
-    Employee
+    Employee, \
+    Client
 
 from email_my import send_call_qr_email
 
@@ -302,9 +304,10 @@ def group_client_places(slug):
     def client_places_not_in_group_client_places():
         client_places_not_in_group_client_places = ClientPlace.query. \
             filter(ClientPlace.company_id == group_client_places.company_id). \
-            filter(or_(ClientPlace.group_client_places_id != group_client_places.id,
-                       ClientPlace.group_client_places_id == None)). \
-        order_by(ClientPlace.name.asc())
+            filter(
+            or_(ClientPlace.group_client_places_id != group_client_places.id,
+                ClientPlace.group_client_places_id == None)). \
+            order_by(ClientPlace.name.asc())
         return client_places_not_in_group_client_places
 
     form_choice_client_places = ChoiceClientPlaceForm()
@@ -319,7 +322,6 @@ def group_client_places(slug):
 
             if client_place.id in \
                     form_choice_client_places.choices.data:
-
                 client_place.group_client_places_id = group_client_places.id
 
                 db.session.add(client_place)
@@ -332,6 +334,7 @@ def group_client_places(slug):
                            group_client_places=group_client_places,
                            client_places=client_places_in_group_client_places,
                            form_choice_client_places=form_choice_client_places)
+
 
 # Group Client places editor view
 @app.route('/edit_group_client_places/<slug>', methods=['GET', 'POST'])
@@ -376,11 +379,35 @@ def profile():
         last_name = 'No last name'
         about = 'No about'
 
+    employee = Employee.query.filter_by(person=user.person).first()
+
+    if employee:
+        about_employee = employee.about
+        email_employee = employee.email
+        phone_number_telegram_employee = employee.phone_number_telegram
+    else:
+        about_employee = 'No about'
+        email_employee = 'No email'
+        phone_number_telegram_employee = 'No phone number telegram'
+
+    client = Client.query.filter_by(person=user.person).first()
+
+    if client:
+        about_client = client.about
+
+    else:
+        about_client = 'No about'
+
     return render_template('profile.html', user=user, first_name=first_name,
-                           last_name=last_name, about=about)
+                           last_name=last_name, about=about,
+                           about_employee=about_employee,
+                           email_employee=email_employee,
+                           phone_number_telegram_employee= \
+                               phone_number_telegram_employee,
+                           about_client=about_client)
 
 
-# Profile editor view
+# Person editor view
 @app.route('/edit_person', methods=['GET', 'POST'])
 @login_required
 def edit_person():
@@ -420,3 +447,47 @@ def edit_person():
         form.about.data = about
     return render_template('edit_person.html', user=user, first_name=first_name,
                            last_name=last_name, about=about, form=form)
+
+# Employee editor view
+@app.route('/edit_employee', methods=['GET', 'POST'])
+@login_required
+def edit_employee():
+    user = current_user
+
+    employee = Employee.query.filter_by(person=user.person).first()
+
+    if employee:
+        about = employee.about
+        email = employee.email
+        phone_number_telegram = employee.phone_number_telegram
+    else:
+        about = '1'
+        email = '1'
+        phone_number_telegram = '1'
+
+    form = EmployeeForm(about, email, phone_number_telegram)
+    if form.validate_on_submit() and employee:
+        employee.about = form.about.data.strip()
+        employee.email = form.email.data.strip()
+        employee.phone_number_telegram = form.phone_number_telegram.data.strip()
+        db.session.commit()
+        flash('Your changes have been saved.')
+        return redirect(url_for('edit_employee'))
+    elif form.validate_on_submit() and employee is None:
+        employee = Employee(about=form.about.data.strip(),
+                            email=form.email.data.strip(),
+                            phone_number_telegram= \
+                            form.phone_number_telegram.data.strip(),
+                            person=user.person)
+        db.session.add(employee)
+        db.session.commit()
+        flash('Your changes have been saved.')
+        return redirect(url_for('edit_employee'))
+    elif request.method == 'GET':
+        form.about.data = about
+        form.email.data = email
+        form.phone_number_telegram.data = phone_number_telegram
+    return render_template('edit_employee.html', user=user, about=about,
+                           email=email,
+                           phone_number_telegram=phone_number_telegram,
+                           form=form)

@@ -452,9 +452,7 @@ def edit_person():
 @app.route('/edit_employee', methods=['GET', 'POST'])
 @login_required
 def edit_employee():
-    user = current_user
-
-    employee = Employee.query.filter_by(person=user.person).first()
+    employee = Employee.query.filter_by(person=current_user.person).first()
 
     if employee:
         about = employee.about
@@ -478,7 +476,7 @@ def edit_employee():
                             email=form.email.data.strip(),
                             phone_number_telegram= \
                             form.phone_number_telegram.data.strip(),
-                            person=user.person)
+                            person=current_user.person)
         db.session.add(employee)
         db.session.commit()
         flash('Your changes have been saved.')
@@ -487,7 +485,7 @@ def edit_employee():
         form.about.data = about
         form.email.data = email
         form.phone_number_telegram.data = phone_number_telegram
-    return render_template('edit_employee.html', user=user, about=about,
+    return render_template('edit_employee.html', user=current_user, about=about,
                            email=email,
                            phone_number_telegram=phone_number_telegram,
                            form=form)

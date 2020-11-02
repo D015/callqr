@@ -15,7 +15,15 @@ from wtforms.validators import DataRequired, \
     Length, InputRequired
 from flask_login import current_user
 
-from models import User, Company, ClientPlace, GroupClientPlaces
+from models import User, \
+    Company, \
+    ClientPlace, \
+    GroupClientPlaces, \
+    Person, \
+    Employee, \
+    Client
+
+from datetime import datetime
 
 
 class LoginForm(FlaskForm):
@@ -48,10 +56,6 @@ class RegistrationForm(FlaskForm):
 class EditProfileForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     about = TextAreaField('About user', validators=[Length(min=0, max=140)])
-    # first_name = StringField('first_name', validators=[DataRequired()])
-    # last_name = StringField('last_name', validators=[DataRequired()])
-    # about_person = TextAreaField('about_person',
-    #                              validators=[Length(min=0, max=140)])
     submit = SubmitField('Submit')
     cancel = SubmitField('cancel')
 
@@ -75,7 +79,8 @@ class PersonForm(FlaskForm):
     submit = SubmitField('Submit')
     cancel = SubmitField('Cancel')
 
-    def __init__(self, original_first_name, original_last_name, original_about, *args, **kwargs):
+    def __init__(self, original_first_name, original_last_name, original_about,
+                 *args, **kwargs):
         super(PersonForm, self).__init__(*args, **kwargs)
         self.original_first_name = original_first_name
         self.original_last_name = original_last_name
@@ -91,13 +96,28 @@ class EmployeeForm(FlaskForm):
     submit = SubmitField('Submit')
     cancel = SubmitField('Cancel')
 
-    def __init__(self,original_about, original_email,
+    def __init__(self, original_about, original_email,
                  original_phone_number_telegram, *args, **kwargs):
         super(EmployeeForm, self).__init__(*args, **kwargs)
         self.original_about = original_about
         self.original_email = original_email
         self.original_phone_number_telegram = original_phone_number_telegram
 
+    def validate_email(self, email):
+        if email.data != self.original_email:
+            employee = Employee.query.filter \
+                (Employee.email == email.data.strip()).first()
+
+            user = User.query.filter\
+                (User.email == email.data.strip(),
+                 User.person != current_user.person).first()
+
+            client = Client.query.filter\
+                (User.email == email.data.strip(),
+                 User.person != current_user.person).first()
+
+            if user is not None or employee is not None or client is not None:
+                raise ValidationError('Please use a different email address.')
 
 
 # Form creator Company
@@ -155,10 +175,11 @@ class GroupClientPlacesForm(FlaskForm):
         if group_client_places is not None:
             raise ValidationError('Please use a different group name.')
 
+
 # Form Group editor
 class EditGroupClientPlacesForm(FlaskForm):
     name = StringField('Enter name new group',
-                                           validators=[DataRequired()])
+                       validators=[DataRequired()])
     about = TextAreaField('About group',
                           validators=[Length(min=0, max=140)])
     submit = SubmitField('Submit')
@@ -176,7 +197,7 @@ class EditGroupClientPlacesForm(FlaskForm):
         if name.data != self.original_name_group_client_places:
             group_client_places = GroupClientPlaces.query. \
                 filter_by(company_id=self.company_id,
-                name=name.data.strip()).first()
+                          name=name.data.strip()).first()
             if group_client_places is not None:
                 raise ValidationError('Please use a different group name.')
 
@@ -221,7 +242,7 @@ class EditClientPlaceForm(FlaskForm):
         if name.data != self.original_name_place:
             client_place = ClientPlace.query. \
                 filter_by(company_id=self.company_id,
-                name=name.data.strip()).first()
+                          name=name.data.strip()).first()
             if client_place is not None:
                 raise ValidationError('Please use a different place name.')
 

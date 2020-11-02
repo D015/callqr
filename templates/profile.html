@@ -10,11 +10,9 @@
             </td>
         </tr>
     </table>
-    {% if user.about %}
-        <hr>
-        <h3> Person </h3>
-        {% include '_person.html' %}
-    {% endif %}
+    <hr>
+    <h3> Person </h3>
+    {% include '_person.html' %}
     <p><a href="{{ url_for('edit_person') }}">Edit</a></p>
     <hr>
     <h3> Employee </h3>

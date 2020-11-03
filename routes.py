@@ -63,12 +63,21 @@ def register():
         return redirect(url_for('index'))
     form = RegistrationForm()
     if form.validate_on_submit():
-        user = User(username=form.username.data.strip(), email=form.email.data)
-        user.set_password(form.password.data)
-        db.session.add(user)
-        db.session.commit()
-        flash('Congratulations, you are now a registered user!')
-        return redirect(url_for('login'))
+        person = Person()
+        try:
+            db.session.add(person)
+            db.session.flush()
+            user = User(username=form.username.data.strip(),
+                        email=form.email.data,
+                        person=person)
+            user.set_password(form.password.data)
+            db.session.add(user)
+            db.session.commit()
+            flash('Congratulations, you are now a registered user!')
+            return redirect(url_for('login'))
+        except:
+            db.session.rollback()
+            flash('Something went wrong!')
     return render_template('register.html', title='Register', form=form)
 
 
@@ -448,6 +457,7 @@ def edit_person():
     return render_template('edit_person.html', user=user, first_name=first_name,
                            last_name=last_name, about=about, form=form)
 
+
 # Employee editor view
 @app.route('/edit_employee', methods=['GET', 'POST'])
 @login_required
@@ -475,7 +485,7 @@ def edit_employee():
         employee = Employee(about=form.about.data.strip(),
                             email=form.email.data.strip(),
                             phone_number_telegram= \
-                            form.phone_number_telegram.data.strip(),
+                                form.phone_number_telegram.data.strip(),
                             person=current_user.person)
         db.session.add(employee)
         db.session.commit()

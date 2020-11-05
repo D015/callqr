@@ -42,9 +42,10 @@ class User(UserMixin, db.Model):
     slug = db.Column(db.String(128), index=True, unique=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
-    person = db.relationship("Person", uselist=False, backref='person_user')
-
-    companys = db.relationship('Company', backref='creator', lazy='dynamic')
+    admins = db.relationship('Admin', backref='user_admins', lazy='dynamic')
+    employees = db.relationship('Employee', backref='user_employees',
+                               lazy='dynamic')
+    clients = db.relationship('Client', backref='user_clients', lazy='dynamic')
 
 
     def __init__(self, *args, **kwargs):
@@ -61,6 +62,76 @@ class User(UserMixin, db.Model):
         return check_password_hash(self.password_hash, password)
 
 
+class Admin(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    role = db.Column(db.String(140))
+    about = db.Column(db.String(140))
+    email = db.Column(db.String(120), index=True, unique=True)
+    phone_number_telegram = db.Column(db.Integer, unique=True)
+    slug = db.Column(db.String(128), index=True, unique=True)
+
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    corporation = db.Column(db.Integer, db.ForeignKey('corporation.id'))
+
+    def __init__(self, *args, **kwargs):
+        super(Admin, self).__init__(*args, **kwargs)
+        self.slug = generate_token_slug()
+
+    def __repr__(self):
+        return '<Administrator {} {}>'.format(self.email,
+                                              self.phone_number_telegram)
+
+
+class Employee(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    first_name = db.Column(db.String(64), index=True)
+    last_name = db.Column(db.String(64), index=True)
+    role = db.Column(db.String(140))
+    about = db.Column(db.String(140))
+    email = db.Column(db.String(120), index=True, unique=True)
+    phone_number_telegram = db.Column(db.Integer, unique=True)
+    slug = db.Column(db.String(128), index=True, unique=True)
+
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    corporation = db.Column(db.Integer, db.ForeignKey('corporation.id'))
+
+    company = db.Column(db.Integer, db.ForeignKey('company.id'))
+
+    employees_client_places = db.relationship('employees_client_places',
+                                              backref='employees_client_places',
+                                              lazy='dynamic')
+    employees_groups_client_places = db.relationship(
+        'employees_groups_client_places',
+        backref='employees_groups_client_places',
+        lazy='dynamic')
+
+    def __init__(self, *args, **kwargs):
+        super(Employee, self).__init__(*args, **kwargs)
+        self.slug = generate_token_slug()
+
+    def __repr__(self):
+        return '<Employee {} {}>'.format(self.email, self.phone_number_telegram)
+
+
+class Client(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    about = db.Column(db.String(140))
+    slug = db.Column(db.String(128), index=True, unique=True)
+
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    corporation = db.Column(db.Integer, db.ForeignKey('corporation.id'))
+
+    def __init__(self, *args, **kwargs):
+        super(Client, self).__init__(*args, **kwargs)
+        self.slug = generate_token_slug()
+
+    def __repr__(self):
+        return '<Employee {} {}>'.format(self.id, self.corporation)
+
+
 class Corporation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), index=True)
@@ -68,21 +139,27 @@ class Corporation(db.Model):
     slug = db.Column(db.String(128), index=True, unique=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
-    creator_user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    creator_admin_id = db.Column(db.Integer, db.ForeignKey('admin.id'))
 
-    companies = db.relationship('Company', backref='corporation_company',
+    admins = db.relationship('Admin', backref='corporation_admins',
                                 lazy='dynamic')
 
-    groups_client_places = db.relationship('GroupClientPlaces',
-                                    backref='company_group_client_places',
-                                    lazy='dynamic')
+    employees = db.relationship('Employee', backref='corporation_employees',
+                             lazy='dynamic')
+
+    clients = db.relationship('Client', backref='corporation_clients',
+                                lazy='dynamic')
+
+    companies = db.relationship('Company', backref='corporation_companies',
+                                lazy='dynamic')
+
 
     def __init__(self, *args, **kwargs):
-        super(Company, self).__init__(*args, **kwargs)
+        super(Corporation, self).__init__(*args, **kwargs)
         self.slug = generate_token_slug()
 
     def __repr__(self):
-        return '<Company {}>'.format(self.name)
+        return '<Corporation {}>'.format(self.name)
 
 
 class Company(db.Model):
@@ -92,9 +169,11 @@ class Company(db.Model):
     slug = db.Column(db.String(128), index=True, unique=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
-    creator_user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-
     corporation_id = db.Column(db.Integer, db.ForeignKey('Corporation.id'))
+
+    employees = db.relationship('Employee',
+                                    backref='company_employees',
+                                    lazy='dynamic')
 
     client_places = db.relationship('ClientPlace',
                                     backref='company_client_place',
@@ -198,82 +277,3 @@ class ClientPlace(db.Model):
 
     def __repr__(self):
         return '<client place {}>'.format(self.id)
-
-
-class Person(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    first_name = db.Column(db.String(64), index=True)
-    last_name = db.Column(db.String(64), index=True)
-    about = db.Column(db.String(140))
-    slug = db.Column(db.String(128), index=True, unique=True)
-
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    employee_id = db.Column(db.Integer, db.ForeignKey('employee.id'))
-    client_id = db.Column(db.Integer, db.ForeignKey('client.id'))
-
-    def __init__(self, *args, **kwargs):
-        super(Person, self).__init__(*args, **kwargs)
-        self.slug = generate_token_slug()
-
-    def __repr__(self):
-        return '<Person {} {}>'.format(self.first_name, self.last_name)
-
-
-class Administrator(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    about = db.Column(db.String(140))
-    email = db.Column(db.String(120), index=True, unique=True)
-    phone_number_telegram = db.Column(db.Integer, unique=True)
-    slug = db.Column(db.String(128), index=True, unique=True)
-    person = db.relationship("Person", uselist=False,
-                             backref='person_administrator')
-
-
-    def __init__(self, *args, **kwargs):
-        super(Administrator, self).__init__(*args, **kwargs)
-        self.slug = generate_token_slug()
-
-    def __repr__(self):
-        return '<Administrator {} {}>'.format(self.email,
-                                              self.phone_number_telegram)
-
-
-class RoleAdministrator(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-
-
-class Employee(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    about = db.Column(db.String(140))
-    email = db.Column(db.String(120), index=True, unique=True)
-    phone_number_telegram = db.Column(db.Integer, unique=True)
-    slug = db.Column(db.String(128), index=True, unique=True)
-    person = db.relationship("Person", uselist=False,
-                             backref='person_employee')
-    employees_client_places = db.relationship('employees_client_places',
-                                              backref='employees_client_places',
-                                              lazy='dynamic')
-    employees_groups_client_places = db.relationship(
-        'employees_groups_client_places',
-        backref='employees_groups_client_places',
-        lazy='dynamic')
-
-    def __init__(self, *args, **kwargs):
-        super(Employee, self).__init__(*args, **kwargs)
-        self.slug = generate_token_slug()
-
-    def __repr__(self):
-        return '<Employee {} {}>'.format(self.email, self.phone_number_telegram)
-
-
-class Client(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    about = db.Column(db.String(140))
-    slug = db.Column(db.String(128), index=True, unique=True)
-    person = db.relationship("Person", uselist=False,
-                             backref='person_client')
-
-
-    def __init__(self, *args, **kwargs):
-        super(Client, self).__init__(*args, **kwargs)
-        self.slug = generate_token_slug()

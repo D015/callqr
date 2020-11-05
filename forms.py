@@ -19,7 +19,6 @@ from models import User, \
     Company, \
     ClientPlace, \
     GroupClientPlaces, \
-    Person, \
     Employee, \
     Client
 

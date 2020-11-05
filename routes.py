@@ -34,7 +34,6 @@ from models import ClientPlace, \
     User, \
     Company, \
     GroupClientPlaces, \
-    Person, \
     Employee, \
     Client
 

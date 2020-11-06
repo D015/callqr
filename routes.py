@@ -62,22 +62,14 @@ def register():
         return redirect(url_for('index'))
     form = RegistrationForm()
     if form.validate_on_submit():
-        person = Person()
-        try:
-            db.session.add(person)
-            db.session.flush()
-            user = User(username=form.username.data.strip(),
-                        email=form.email.data,
-                        person=person)
-            user.set_password(form.password.data)
-            db.session.add(user)
-            db.session.commit()
-            flash('Congratulations, you are now a registered user!')
-            return redirect(url_for('login'))
-        except Exception as error:
-            print(error)
-            db.session.rollback()
-            flash('Something went wrong!')
+        user = User(username=form.username.data.strip(),
+                    email=form.email.data)
+        user.set_password(form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        flash('Congratulations, you are now a registered user!')
+        return redirect(url_for('login'))
+        flash('Something went wrong!')
     return render_template('register.html', title='Register', form=form)
 
 

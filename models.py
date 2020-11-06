@@ -19,17 +19,17 @@ def load_user(id):
 def generate_token_slug():
     return uuid4().hex
 
-#
-# employees_to_client_places = db.Table(
-#     'employee_to_client_place',
-#     db.Column('employee_id', db.Integer, db.ForeignKey('employee.id')),
-#     db.Column('client_place_id', db.Integer, db.ForeignKey('client_place.id')))
-#
-# employees_to_groups_client_places = db.Table(
-#     'employee_to_group_client_places',
-#     db.Column('employee_id', db.Integer, db.ForeignKey('employee.id')),
-#     db.Column('group_client_places_id', db.Integer, db.ForeignKey(
-#         'group_client_places.id')))
+
+employees_to_groups_client_places = db.Table(
+    'employees_to_groups_client_places',
+    db.Column('employee_id', db.Integer, db.ForeignKey('employee.id')),
+    db.Column('group_client_places_id', db.Integer, db.ForeignKey(
+        'group_client_places.id')))
+
+employees_to_client_places = db.Table(
+    'employees_to_client_places',
+    db.Column('employee_id', db.Integer, db.ForeignKey('employee.id')),
+    db.Column('client_place_id', db.Integer, db.ForeignKey('client_place.id')))
 
 
 class User(UserMixin, db.Model):
@@ -58,33 +58,6 @@ class User(UserMixin, db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
-
-
-class Corporation(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(64), index=True)
-    about = db.Column(db.String(140))
-    slug = db.Column(db.String(128), index=True, unique=True)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-
-    # creator_admin_id = db.Column(db.Integer, db.ForeignKey('admin.id'))
-
-    admins = db.relationship(
-        'Admin', backref='corporation', lazy='dynamic')
-    employees = db.relationship(
-        'Employee', backref='corporation', lazy='dynamic')
-    clients = db.relationship(
-        'Client', backref='corporation', lazy='dynamic')
-    companies = db.relationship(
-        'Company', backref='corporation', lazy='dynamic')
-
-
-    def __init__(self, *args, **kwargs):
-        super(Corporation, self).__init__(*args, **kwargs)
-        self.slug = generate_token_slug()
-
-    def __repr__(self):
-        return '<Corporation {} {}>'.format(self.id, self.name)
 
 
 class Admin(db.Model):
@@ -121,10 +94,13 @@ class Employee(db.Model):
     corporation_id = db.Column(db.Integer, db.ForeignKey('corporation.id'))
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
 
-    # employees_to_client_places = db.relationship(
-    #     'employee_to_client_place', backref='employee', lazy='dynamic')
-    # employees_to_groups_client_places = db.relationship(
-    #     'employee_to_group_client_places', backref='employee', lazy='dynamic')
+    groups_client_places = db.relationship(
+        'GroupClientPlaces', secondary=employees_to_groups_client_places,
+        backref=db.backref('employees', lazy='dynamic'), lazy='dynamic')
+
+    client_places = db.relationship(
+        'ClientPlace', secondary=employees_to_client_places,
+        backref=db.backref('employees', lazy='dynamic'), lazy='dynamic')
 
     def __init__(self, *args, **kwargs):
         super(Employee, self).__init__(*args, **kwargs)
@@ -151,6 +127,33 @@ class Client(db.Model):
         return '<Client {} {}>'.format(self.id, self.corporation_id)
 
 
+class Corporation(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), index=True)
+    about = db.Column(db.String(140))
+    slug = db.Column(db.String(128), index=True, unique=True)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # creator_admin_id = db.Column(db.Integer, db.ForeignKey('admin.id'))
+
+    admins = db.relationship(
+        'Admin', backref='corporation', lazy='dynamic')
+    employees = db.relationship(
+        'Employee', backref='corporation', lazy='dynamic')
+    clients = db.relationship(
+        'Client', backref='corporation', lazy='dynamic')
+    companies = db.relationship(
+        'Company', backref='corporation', lazy='dynamic')
+
+
+    def __init__(self, *args, **kwargs):
+        super(Corporation, self).__init__(*args, **kwargs)
+        self.slug = generate_token_slug()
+
+    def __repr__(self):
+        return '<Corporation {} {}>'.format(self.id, self.name)
+
+
 class Company(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), index=True)
@@ -165,8 +168,7 @@ class Company(db.Model):
     client_places = db.relationship(
         'ClientPlace', backref='company', lazy='dynamic')
     groups_client_places = db.relationship(
-        'GroupClientPlaces', backref='company_group_client_places',
-        lazy='dynamic')
+        'GroupClientPlaces', backref='company', lazy='dynamic')
 
     def __init__(self, *args, **kwargs):
         super(Company, self).__init__(*args, **kwargs)
@@ -188,9 +190,6 @@ class GroupClientPlaces(db.Model):
 
     client_places = db.relationship(
         'ClientPlace', backref='group_client_places', lazy='dynamic')
-    # employees_to_groups_client_places = db.relationship(
-    #     'employee_to_group_client_places', backref='group_client_places',
-    #     lazy='dynamic')
 
     def qr_code(self):
         if self.slug_link:
@@ -230,9 +229,6 @@ class ClientPlace(db.Model):
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
     group_client_places_id = db.Column(
         db.Integer, db.ForeignKey('group_client_places.id'))
-
-    # employees_to_client_places = db.relationship(
-    #     'employee_to_client_place', backref='client_place', lazy='dynamic')
 
     def qr_code(self):
         if self.slug_link:

@@ -34,12 +34,15 @@ employees_to_client_places = db.Table(
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    slug = db.Column(db.String(128), index=True, unique=True)
+    active = db.Column(db.Boolean(), default=True)
+    archived = db.Column(db.Boolean(), default=False)
+
     username = db.Column(db.String(64), index=True, unique=True)
+    password_hash = db.Column(db.String(128))
     email = db.Column(db.String(120), index=True, unique=True)
     about = db.Column(db.String(140))
-    password_hash = db.Column(db.String(128))
-    slug = db.Column(db.String(128), index=True, unique=True)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
     admins = db.relationship('Admin', backref='user', lazy='dynamic')
     employees = db.relationship('Employee', backref='user',
@@ -62,33 +65,42 @@ class User(UserMixin, db.Model):
 
 class Admin(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    role = db.Column(db.String(140))
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    slug = db.Column(db.String(128), index=True, unique=True)
+    active = db.Column(db.Boolean(), default=False)
+    archived = db.Column(db.Boolean(), default=False)
+
+    role = db.Column(db.String(140), nullable=False)
     about = db.Column(db.String(140))
     email = db.Column(db.String(120), index=True, unique=True)
-    phone_number_telegram = db.Column(db.Integer, unique=True)
-    slug = db.Column(db.String(128), index=True, unique=True)
+    phone = db.Column(db.Integer, index=True, unique=True)
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
-    corporation_id = db.Column(db.Integer, db.ForeignKey('corporation.id'))
+    corporation_id = db.Column(db.Integer, db.ForeignKey('corporation.id'),
+                               nullable=False)
 
     def __init__(self, *args, **kwargs):
         super(Admin, self).__init__(*args, **kwargs)
         self.slug = generate_token_slug()
 
     def __repr__(self):
-        return '<Admin {} {}>'.format(self.email, self.phone_number_telegram)
+        return '<Admin {} {}>'.format(self.email, self.phone)
 
 
 class Employee(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    first_name = db.Column(db.String(64), index=True)
-    last_name = db.Column(db.String(64), index=True)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    slug = db.Column(db.String(128), index=True, unique=True)
+    active = db.Column(db.Boolean(), default=True)
+    archived = db.Column(db.Boolean(), default=False)
+
+    first_name = db.Column(db.String(64))
+    last_name = db.Column(db.String(64))
     role = db.Column(db.String(140))
     about = db.Column(db.String(140))
     email = db.Column(db.String(120), index=True, unique=True)
-    phone_number_telegram = db.Column(db.Integer, unique=True)
-    slug = db.Column(db.String(128), index=True, unique=True)
+    phone = db.Column(db.Integer, index=True, unique=True)
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     corporation_id = db.Column(db.Integer, db.ForeignKey('corporation.id'))
@@ -107,16 +119,19 @@ class Employee(db.Model):
         self.slug = generate_token_slug()
 
     def __repr__(self):
-        return '<Employee {} {}>'.format(self.email, self.phone_number_telegram)
+        return '<Employee {} {}>'.format(self.email, self.phone)
 
 
 class Client(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    about = db.Column(db.String(140))
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     slug = db.Column(db.String(128), index=True, unique=True)
+    active = db.Column(db.Boolean(), default=True)
+    archived = db.Column(db.Boolean(), default=False)
+
+    about = db.Column(db.String(140))
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-
     corporation_id = db.Column(db.Integer, db.ForeignKey('corporation.id'))
 
     def __init__(self, *args, **kwargs):
@@ -129,10 +144,13 @@ class Client(db.Model):
 
 class Corporation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(64), index=True)
-    about = db.Column(db.String(140))
-    slug = db.Column(db.String(128), index=True, unique=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    slug = db.Column(db.String(128), index=True, unique=True)
+    active = db.Column(db.Boolean(), default=True)
+    archived = db.Column(db.Boolean(), default=False)
+
+    name = db.Column(db.String(64))
+    about = db.Column(db.String(140))
 
     # creator_admin_id = db.Column(db.Integer, db.ForeignKey('admin.id'))
 
@@ -156,10 +174,13 @@ class Corporation(db.Model):
 
 class Company(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(64), index=True)
-    about = db.Column(db.String(140))
-    slug = db.Column(db.String(128), index=True, unique=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    slug = db.Column(db.String(128), index=True, unique=True)
+    active = db.Column(db.Boolean(), default=True)
+    archived = db.Column(db.Boolean(), default=False)
+
+    name = db.Column(db.String(64))
+    about = db.Column(db.String(140))
 
     corporation_id = db.Column(db.Integer, db.ForeignKey('corporation.id'))
 
@@ -180,11 +201,14 @@ class Company(db.Model):
 
 class GroupClientPlaces(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(64), index=True)
-    about = db.Column(db.String(140))
-    slug = db.Column(db.String(128), index=True, unique=True)
-    slug_link = db.Column(db.String(128), index=True, unique=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    slug = db.Column(db.String(128), index=True, unique=True)
+    active = db.Column(db.Boolean(), default=True)
+    archived = db.Column(db.Boolean(), default=False)
+
+    name = db.Column(db.String(64))
+    about = db.Column(db.String(140))
+    slug_link = db.Column(db.String(128), index=True, unique=True)
 
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
 
@@ -221,10 +245,13 @@ class GroupClientPlaces(db.Model):
 
 class ClientPlace(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(64), index=True)
-    slug = db.Column(db.String(128), index=True, unique=True)
-    slug_link = db.Column(db.String(128), index=True, unique=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    slug = db.Column(db.String(128), index=True, unique=True)
+    active = db.Column(db.Boolean(), default=True)
+    archived = db.Column(db.Boolean(), default=False)
+
+    name = db.Column(db.String(64))
+    slug_link = db.Column(db.String(128), index=True, unique=True)
 
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
     group_client_places_id = db.Column(

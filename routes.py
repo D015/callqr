@@ -37,6 +37,8 @@ from models import ClientPlace, \
     Employee, \
     Client
 
+from functions.create_user import create_user
+
 from email_my import send_call_qr_email
 
 
@@ -60,13 +62,14 @@ def index():
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
+
     form = RegistrationForm()
+
     if form.validate_on_submit():
-        user = User(username=form.username.data.strip(),
-                    email=form.email.data)
-        user.set_password(form.password.data)
-        db.session.add(user)
-        db.session.commit()
+        create_user(username=form.username.data.strip(),
+                    email=form.email.data,
+                    password=form.password.data)
+
         flash('Congratulations, you are now a registered user!')
         return redirect(url_for('login'))
         flash('Something went wrong!')

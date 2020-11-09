@@ -496,3 +496,18 @@ def edit_employee():
                            email=email,
                            phone_number_telegram=phone_number_telegram,
                            form=form)
+
+
+@app.route('/test', methods=['GET', 'POST'])
+# @login_required
+def test():
+    user_id = current_user.id
+    corporation, admin = create_corporation(user_id, 'name_corporation',
+                                            'about_corporation',
+                                            'about_admin', '9@admin.com',
+                                            '9', user_id)
+    print(corporation)
+    print("___")
+    print(admin)
+    print(corporation.admins.all())
+    return render_template('index.html', title='Home')

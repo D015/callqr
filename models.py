@@ -61,6 +61,7 @@ class User(UserMixin, db.Model):
 class Admin(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    creator_user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     slug = db.Column(db.String(128), index=True, unique=True)
     active = db.Column(db.Boolean(), default=False)
     archived = db.Column(db.Boolean(), default=False)
@@ -97,6 +98,7 @@ class RoleAdmin(db.Model):
 class Employee(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    creator_user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     slug = db.Column(db.String(128), index=True, unique=True)
     active = db.Column(db.Boolean(), default=True)
     archived = db.Column(db.Boolean(), default=False)
@@ -143,6 +145,7 @@ class RoleEmployee(db.Model):
 class Client(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    creator_user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     slug = db.Column(db.String(128), index=True, unique=True)
     active = db.Column(db.Boolean(), default=True)
     archived = db.Column(db.Boolean(), default=False)
@@ -163,6 +166,7 @@ class Client(db.Model):
 class Corporation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    creator_user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     slug = db.Column(db.String(128), index=True, unique=True)
     active = db.Column(db.Boolean(), default=True)
     archived = db.Column(db.Boolean(), default=False)
@@ -193,6 +197,7 @@ class Corporation(db.Model):
 class Company(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    creator_user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     slug = db.Column(db.String(128), index=True, unique=True)
     active = db.Column(db.Boolean(), default=True)
     archived = db.Column(db.Boolean(), default=False)
@@ -220,6 +225,7 @@ class Company(db.Model):
 class GroupClientPlaces(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    creator_user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     slug = db.Column(db.String(128), index=True, unique=True)
     active = db.Column(db.Boolean(), default=True)
     archived = db.Column(db.Boolean(), default=False)
@@ -264,6 +270,7 @@ class GroupClientPlaces(db.Model):
 class ClientPlace(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    creator_user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     slug = db.Column(db.String(128), index=True, unique=True)
     active = db.Column(db.Boolean(), default=True)
     archived = db.Column(db.Boolean(), default=False)

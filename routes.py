@@ -37,7 +37,8 @@ from models import ClientPlace, \
     Employee, \
     Client
 
-from functions.create_user import create_user
+from db_access.user_access import create_user
+from db_access.corporation_access import create_corporation
 
 from email_my import send_call_qr_email
 
@@ -54,6 +55,7 @@ def before_request():
 @app.route('/index', methods=['GET', 'POST'])
 # @login_required
 def index():
+    print(current_user.id)
     return render_template('index.html', title='Home')
 
 

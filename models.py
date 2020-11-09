@@ -41,8 +41,7 @@ class User(UserMixin, db.Model):
     about = db.Column(db.String(140))
 
     admins = db.relationship('Admin', backref='user', lazy='dynamic')
-    employees = db.relationship('Employee', backref='user',
-                               lazy='dynamic')
+    employees = db.relationship('Employee', backref='user', lazy='dynamic')
     clients = db.relationship('Client', backref='user', lazy='dynamic')
 
     def __init__(self, *args, **kwargs):
@@ -93,7 +92,6 @@ class RoleAdmin(db.Model):
     about = db.Column(db.String(120), index=True, unique=True)
 
     admins = db.relationship('Admin', backref='role', lazy='dynamic')
-
 
 
 class Employee(db.Model):

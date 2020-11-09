@@ -39,6 +39,8 @@ from models import ClientPlace, \
 
 from db_access.user_access import create_user
 from db_access.corporation_access import create_corporation
+from db_access.admin_access import create_admin
+
 
 from email_my import send_call_qr_email
 
@@ -502,12 +504,14 @@ def edit_employee():
 # @login_required
 def test():
     user_id = current_user.id
-    corporation, admin = create_corporation(user_id, 'name_corporation',
-                                            'about_corporation',
-                                            'about_admin', '9@admin.com',
-                                            '9', user_id)
-    print(corporation)
-    print("___")
+    # corporation, admin = create_corporation(user_id, 'name_corporation',
+    #                                         'about_corporation',
+    #                                         'about_admin', '9@admin.com',
+    #                                         '9', user_id)
+    # print(corporation)
+    # print("___")
+    # print(admin)
+    # print(corporation.admins.all())
+    admin = create_admin(user_id, 'about_admin', '10@admin.com', '10', '4', '33')
     print(admin)
-    print(corporation.admins.all())
     return render_template('index.html', title='Home')

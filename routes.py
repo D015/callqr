@@ -504,23 +504,22 @@ def edit_employee():
 # @login_required
 def test():
     # user_id = current_user.id
-    # corporation, admin = create_corporation(user_id, 'name_corporation',
-    #                                         'about_corporation',
-    #                                         'about_admin', '15@admin.com',
-    #                                         '15', user_id)
+    # ______________________________
+    # corporation, admin = create_corporation('name_corporation', 'about_corporation',
+    #                                         'about_admin', '17@admin.com', '17')
     # print(corporation)
     # print("___")
     # print(admin)
     # print(corporation.admins.all())
     # _________________________________
-    # admin = create_admin(user_id, 'about_admin', '12@admin.com', '12', '4', '33')
+    # admin = create_admin('about_admin', '19@admin.com', '19', '4', '33')
     # print(admin)
     # print(admin.corporation.name)
     # admin = Employee.query.filter_by(
-    #     slug='552ebd2ec8cf4a59aa0c5d7a152c3e97').first_or_404()
+    #     slug='552ebd2ec8cf4a59aa0c5d7a152c3e97').first()
     # print(admin)
     #__________________________________
     # user_admin_corporation = current_user.admins.filter_by(
-    #     corporation_id=37).first()
+    #     corporation_id=33).first()
     # print(user_admin_corporation)
     return render_template('index.html', title='Home')

@@ -1,20 +1,26 @@
-from models import Admin, User
 from app import db
+from flask_login import current_user
+
+from models import Admin
 
 
-def create_creator_admin(creator_user_id, about, email, phone, user_id,
-                         corporation_id):
-    admin = Admin(creator_user_id=creator_user_id, active=True, about=about,
-                  email=email, phone=phone, role_admin_id=1, user_id=user_id,
+def check_role_and_relationship_admin_to_corporation():  # !!!
+    return
+
+
+def create_creator_admin(about, email, phone, corporation_id):
+    user_id = current_user.id
+    admin = Admin(active=True, about=about, email=email, phone=phone,
+                  role_admin_id=1, user_id=user_id,
                   corporation_id=corporation_id)
     db.session.add(admin)
     return admin
 
 
-def create_admin(creator_user_id, about, email, phone, role_admin_id,
+def create_admin(about, email, phone, role_admin_id,
                  corporation_id):
-    admin = Admin(creator_user_id=creator_user_id, about=about, email=email,
-                  phone=phone, role_admin_id=role_admin_id,
+    admin = Admin(about=about, email=email, phone=phone,
+                  role_admin_id=role_admin_id,
                   corporation_id=corporation_id)
     db.session.add(admin)
     db.session.commit()

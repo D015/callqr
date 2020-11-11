@@ -32,16 +32,12 @@ from app import app, db
 
 from models import ClientPlace, \
     User, \
-    Admin, \
     Company, \
     GroupClientPlaces, \
     Employee, \
     Client
 
 from db_access.user_access import create_user
-from db_access.corporation_access import create_corporation
-from db_access.admin_access import create_admin
-
 
 from email_my import send_call_qr_email
 

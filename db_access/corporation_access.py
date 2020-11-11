@@ -2,7 +2,7 @@ from app import db
 
 from models import Corporation
 
-from db_access.admin_access import create_creator_admin
+from access import create_creator_admin
 
 
 def create_corporation(name_corporation, about_corporation,

@@ -5,5 +5,7 @@ __pycache__/
 venv/
 test/
 static/
+db_access/#access.py
 settings.py
+
 

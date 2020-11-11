@@ -1,6 +1,6 @@
 from models import Corporation
-
-from access import create_creator_admin
+from app import db
+from db_access.admin_access import create_creator_admin
 
 
 def create_corporation(creator_user_id, name_corporation, about_corporation,

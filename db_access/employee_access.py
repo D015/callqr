@@ -5,32 +5,36 @@ from models import Employee
 
 from db_access.decorator_access import \
     check_role_and_relationship_to_corporation
+from db_access.company_access import company_by_id
 
 current_user_id = current_user.id
 
 
 @check_role_and_relationship_to_corporation
-def create_admin(company_id, first_name, last_name, about, email, phone,
-                 role_id):
-    admin = Employee(creator_user_id=current_user_id, about=about, email=email,
-                  phone=phone, role_id=role_id,
-                  corporation_id=corporation_id)
-    db.session.add(admin)
+def create_employee(company_id, first_name, last_name, about, email, phone,
+                    role_id):
+    company = company_by_id(company_id=company_id)
+    employee = Employee(creator_user_id=current_user_id, first_name=first_name,
+                        last_name=last_name, about=about, email=email,
+                        phone=phone, role_id=role_id,
+                        corporation_id=company.corporation_id,
+                        company_id=company_id)
+    db.session.add(employee)
     db.session.commit()
-    return admin
+    return employee
 
 
-def create_relationship_admin_to_user(admin_slug, user):
-    admin = Admin.query.filter(
-        Admin.slug == admin_slug, Admin.archived is False).first()
-    user_admin_corporation = user.admins.filter_by(
-        corporation_id=admin.corporation_id).first()
-    if admin.user_id or user_admin_corporation \
+def create_relationship_employee_to_user(employee_slug, user):
+    employee = Employee.query.filter(
+        Employee.slug == employee_slug, Employee.archived is False).first()
+    user_employee_corporation = user.employees.filter_by(
+        corporation_id=employee.corporation_id).first()
+    if employee.user_id or user_employee_corporation \
             or user.archived or user.active is False:
         pass
     else:
-        admin.id = user.id
-        admin.active = True
-        db.session.add(admin)
+        employee.id = user.id
+        employee.active = True
+        db.session.add(employee)
         db.session.commit()
-        return admin
+        return employee

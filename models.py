@@ -8,7 +8,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import pyqrcode
 import os.path
 
-from app import app, db, login
+from app import db, login
 
 
 @login.user_loader
@@ -197,9 +197,10 @@ class Company(BaseModel, db.Model):
 # !!!The order of inheritance from classes is important for the ability to
 # override the method __init__!!! db.Model, BaseModel
 class GroupClientPlaces(db.Model, BaseModel):
+    slug_link = db.Column(db.String(128), index=True, unique=True)
+
     name = db.Column(db.String(64))
     about = db.Column(db.String(140))
-    slug_link = db.Column(db.String(128), index=True, unique=True)
 
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
 
@@ -220,8 +221,9 @@ class GroupClientPlaces(db.Model, BaseModel):
 # !!!The order of inheritance from classes is important for the ability to
 # override the method __init__!!! db.Model, BaseModel
 class ClientPlace(db.Model, BaseModel):
-    name = db.Column(db.String(64))
     slug_link = db.Column(db.String(128), index=True, unique=True)
+
+    name = db.Column(db.String(64))
 
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
     group_client_places_id = db.Column(

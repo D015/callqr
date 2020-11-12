@@ -11,9 +11,9 @@ current_user_id = current_user.id
 
 @check_role_and_relationship_to_corporation
 def create_admin(company_id, first_name, last_name, about, email, phone,
-                 role_admin_id):
+                 role_id):
     admin = Employee(creator_user_id=current_user_id, about=about, email=email,
-                  phone=phone, role_admin_id=role_admin_id,
+                  phone=phone, role_id=role_id,
                   corporation_id=corporation_id)
     db.session.add(admin)
     db.session.commit()

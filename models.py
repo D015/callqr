@@ -93,7 +93,7 @@ class Admin(BaseModel, db.Model):
     email = db.Column(db.String(120), index=True, unique=True)
     phone = db.Column(db.Integer, index=True, unique=True)
 
-    role_admin_id = db.Column(db.Integer, db.ForeignKey('role_admin.id'))
+    role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     corporation_id = db.Column(db.Integer, db.ForeignKey('corporation.id'),
                                nullable=False)
@@ -102,16 +102,17 @@ class Admin(BaseModel, db.Model):
         return '<Admin {} {}>'.format(self.email, self.phone)
 
 
-class RoleAdmin(db.Model):
+class Role(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     active = db.Column(db.Boolean(), default=True)
     archived = db.Column(db.Boolean(), default=False)
 
-    code = db.Column(db.Integer, index=True, nullable=False, unique=True)
+    code = db.Column(db.Integer, index=True, nullable=False)
     name = db.Column(db.String(120), index=True, nullable=False, unique=True)
     about = db.Column(db.String(120), index=True, unique=True)
 
     admins = db.relationship('Admin', backref='role', lazy='dynamic')
+    employees = db.relationship('Employee', backref='role', lazy='dynamic')
 
 
 class Employee(BaseModel, db.Model):
@@ -121,7 +122,7 @@ class Employee(BaseModel, db.Model):
     email = db.Column(db.String(120), index=True, unique=True)
     phone = db.Column(db.Integer, index=True, unique=True)
 
-    role_employee_id = db.Column(db.Integer, db.ForeignKey('role_employee.id'))
+    role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     corporation_id = db.Column(db.Integer, db.ForeignKey('corporation.id'))
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
@@ -136,18 +137,6 @@ class Employee(BaseModel, db.Model):
 
     def __repr__(self):
         return '<Employee {} {}>'.format(self.email, self.phone)
-
-
-class RoleEmployee(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    active = db.Column(db.Boolean(), default=True)
-    archived = db.Column(db.Boolean(), default=False)
-
-    code = db.Column(db.Integer, index=True, nullable=False, unique=True)
-    name = db.Column(db.String(120), index=True, nullable=False, unique=True)
-    about = db.Column(db.String(120), index=True, unique=True)
-
-    employees = db.relationship('Employee', backref='role', lazy='dynamic')
 
 
 class Client(BaseModel, db.Model):

@@ -1,26 +1,22 @@
-from flask_login import current_user
-
 from app import db
 from models import Admin
 
 from db_access.decorator_access import \
     check_role_and_relationship_to_corporation
 
-current_user_id = current_user.id
 
-
-def create_creator_admin(about, email, phone, corporation_id):
-    admin = Admin(creator_user_id=current_user_id, active=True, about=about,
-                  email=email, phone=phone, role_admin_id=999,
-                  user_id=current_user_id, corporation_id=corporation_id)
+def create_creator_admin(creator_user_id, corporation_id, current_user_email):
+    admin = Admin(creator_user_id=creator_user_id, active=True,
+                  email=current_user_email, role_id=100,
+                  user_id=creator_user_id, corporation_id=corporation_id)
     db.session.add(admin)
     return admin
 
 
 @check_role_and_relationship_to_corporation
-def create_admin(corporation_id, about, email, phone, role_admin_id):
+def create_admin(corporation_id, about, email, phone, role_id, current_user_id):
     admin = Admin(creator_user_id=current_user_id, about=about, email=email,
-                  phone=phone, role_admin_id=role_admin_id,
+                  phone=phone, role_id=role_id,
                   corporation_id=corporation_id)
     db.session.add(admin)
     db.session.commit()

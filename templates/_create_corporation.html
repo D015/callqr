@@ -1,0 +1,14 @@
+{% if form %}
+<form action="" method="post" novalidate>
+{{ form.hidden_tag() }}
+<p>
+    {{ form.name_corporation.label }}<br>
+    {{ form.name_corporation(size=50) }}<br>
+    {% for error in form.name_corporation.errors %}
+    <span style="color: red;">[{{ error }}]</span>
+    {% endfor %}
+</p>
+<p>{{ form.submit_corporation() }}</p>
+<p>{{ form.cancel_corporation() }}</p>
+</form>
+{% endif %}

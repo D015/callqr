@@ -24,7 +24,8 @@ from forms import ClientPlaceForm, \
     ChoiceClientPlaceForm, \
     EditGroupClientPlacesForm, \
     PersonForm, \
-    EmployeeForm
+    EmployeeForm, \
+    CorporationForm
 
 from sqlalchemy import or_
 
@@ -37,7 +38,9 @@ from models import ClientPlace, \
     Employee, \
     Client
 
-from db_access.user_access import create_user
+from db_access.user_access import create_user, user_by_id, user_by_slug, \
+    user_by_id_or_404, user_by_slug_or_404
+from db_access.corporation_access import create_corporation
 
 from email_my import send_call_qr_email
 
@@ -100,6 +103,25 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('index'))
+
+
+# User profile view
+@app.route('/_create_corporation', methods=['GET', 'POST'])
+@login_required
+def create_corporation_view():
+    form = CorporationForm()
+    if request.method == 'POST':
+        if form.submit_corporation.data:
+            if form.validate_on_submit():
+                create_corporation(
+                    name_corporation=form.name_corporation.data.strip(),
+                    current_user_id=current_user.id,
+                    current_user_email=current_user.email)
+                flash('Your corporation is now live!')
+
+    form.name_corporation.data = ''
+
+    return render_template('_create_corporation.html', form=form)
 
 
 # User profile view
@@ -264,6 +286,30 @@ def call_qr(slug):
     send_call_qr_email(client_place.name, users_emails)
     flash('Call client_place N {}'.format(client_place.name))
     return redirect(url_for('index', title='Home'))
+
+
+# My corporations view
+# @app.route('/my_corporations/<user_slug>', methods=['GET', 'POST'])
+# @login_required
+# def my_corporations(user_slug):
+#      form = CorporationForm()
+#     if request.method == 'POST':
+#         if form.submit.data:
+#             if form.validate_on_submit():
+#                 company = create_corporation(
+#                     name_corporation=
+#                     about_corporation=
+#                     about_admin=
+#                     email_admin=
+#                     phone_admin=
+#                 )
+# #                 flash('Your company is now live!')
+# #
+# #     form.name.data = ''
+# #     form.about.data = ''
+# #
+# #     return render_template('my_companies.html', user=user, companys=companys,
+# #                            form=form)
 
 
 # My Companies view
@@ -515,8 +561,29 @@ def test():
     # admin = Employee.query.filter_by(
     #     slug='552ebd2ec8cf4a59aa0c5d7a152c3e97').first_or_404()
     # print(admin)
-    #__________________________________
+    # __________________________________
     # user_admin_corporation = current_user.admins.filter_by(
     #     corporation_id=37).first()
     # print(user_admin_corporation)
+    # _________________________________
+    # user_id = user_by_id(1)
+    # not_user_id = user_by_id(2)
+    # user_slag = user_by_slug('3a6b4f3b493b4f12a214709622888268')
+    # not_user_slag = user_by_slug('a6b4f3b493b4f12a214709622888268')
+    #
+    # print(user_id)
+    # print(not_user_id)
+    # print(user_slag)
+    # print(not_user_slag)
+    # ________________________________
+    # user_id = user_by_slug_or_404('a6b4f3b493b4f12a214709622888268')
+    # not_user_id = user_by_id(2)
+    # user_slag = user_by_slug('3a6b4f3b493b4f12a214709622888268')
+    # not_user_slag = user_by_slug('a6b4f3b493b4f12a214709622888268')
+
+    # print(user_id)
+    # print(not_user_id)
+    # print(user_slag)
+    # print(not_user_slag)
+    print(current_user.email)
     return render_template('index.html', title='Home')

@@ -90,8 +90,8 @@ class User(UserMixin, db.Model, BaseModel):
 
 class Admin(BaseModel, db.Model):
     about = db.Column(db.String(140))
-    email = db.Column(db.String(120), index=True, unique=True)
-    phone = db.Column(db.Integer, index=True, unique=True)
+    email = db.Column(db.String(120), index=True)
+    phone = db.Column(db.Integer, index=True)
 
     role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
@@ -119,8 +119,8 @@ class Employee(BaseModel, db.Model):
     first_name = db.Column(db.String(64))
     last_name = db.Column(db.String(64))
     about = db.Column(db.String(140))
-    email = db.Column(db.String(120), index=True, unique=True)
-    phone = db.Column(db.Integer, index=True, unique=True)
+    email = db.Column(db.String(120), index=True)
+    phone = db.Column(db.Integer, index=True)
 
     role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))

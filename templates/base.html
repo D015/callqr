@@ -15,7 +15,8 @@
             {% if current_user.is_anonymous %}
             <a href="{{ url_for('login') }}">Login</a>
             {% else %}
-            <a href="{{ url_for('my_companies', username=current_user.username) }}">My Company</a>
+{#            <a href="{{ url_for('my_corporations', username=current_user.username) }}">My corporations</a>#}
+            <a href="{{ url_for('my_companies', username=current_user.username) }}">My Companies</a>
             <a href="{{ url_for('user', username=current_user.username) }}">{{ current_user.username }}</a>
             <a href="{{ url_for('logout') }}">Logout</a>
             {% endif %}

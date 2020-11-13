@@ -107,11 +107,11 @@ class EmployeeForm(FlaskForm):
             employee = Employee.query.filter \
                 (Employee.email == email.data.strip()).first()
 
-            user = User.query.filter\
+            user = User.query.filter \
                 (User.email == email.data.strip(),
                  User.person != current_user.person).first()
 
-            client = Client.query.filter\
+            client = Client.query.filter \
                 (User.email == email.data.strip(),
                  User.person != current_user.person).first()
 
@@ -133,6 +133,25 @@ class CompanyForm(FlaskForm):
                       name=name.data.strip()).first()
         if company is not None:
             raise ValidationError('Please use a different company name.')
+
+
+# Form creator Company
+class CorporationForm(FlaskForm):
+    name_corporation = StringField('Enter name new corporation',
+                                   validators=[DataRequired()])
+    # about_corporation = TextAreaField('About corporation', validators=[Length(min=0, max=140)])
+    # about_admin =
+    # email_admin =
+    # phone_admin =
+    submit_corporation = SubmitField('Submit')
+    cancel_corporation = SubmitField('Cancel')
+
+    # def validate_name_corporation(self, name_corporation):
+    #     company = Company.query. \
+    #         filter_by(creator_user_id=current_user.id,
+    #                   name=name.data.strip()).first()
+    #     if company is not None:
+    #         raise ValidationError('Please use a different company name.')
 
 
 # Company editor

@@ -586,4 +586,7 @@ def test():
     # print(user_slag)
     # print(not_user_slag)
     print(current_user.email)
-    return render_template('index.html', title='Home')
+    next_page = request.args.get('next')
+    print(request.args)
+    return redirect(next_page)
+    # return render_template('index.html', title='Home')

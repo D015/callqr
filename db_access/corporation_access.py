@@ -19,7 +19,7 @@ def create_corporation(current_user_id, name_corporation, current_user_email):
     #     db.session.rollback()
 
 
-def same_corporation_name_for_creator_user():
-# def corporations_by_user_slug(user_slug):
-#     corporations = Corporation.query.filter_by(id=user_slug). \
-#             order_by(Corporation.name.asc())
+def same_corporation_name_for_creator_user(user_id, name_corporation):
+    corporation = Corporation.query.filter_by(
+        creator_user_id=user_id, name=name_corporation).first()
+    return corporation

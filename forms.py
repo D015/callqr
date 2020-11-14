@@ -22,9 +22,8 @@ from models import User, \
     Employee, \
     Client
 
-from datetime import datetime
-
-
+from db_access.corporation_access import \
+    same_corporation_name_for_creator_user
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
@@ -128,30 +127,25 @@ class CompanyForm(FlaskForm):
     cancel = SubmitField('Cancel')
 
     def validate_name(self, name):
-        company = Company.query. \
-            filter_by(creator_user_id=current_user.id,
-                      name=name.data.strip()).first()
+        company = same_corporation_name_for_creator_user(
+            user_id, name_corporation)
         if company is not None:
             raise ValidationError('Please use a different company name.')
 
 
-# Form creator Company
+# Form creator Corporation
 class CorporationForm(FlaskForm):
     name_corporation = StringField('Enter name new corporation',
                                    validators=[DataRequired()])
-    # about_corporation = TextAreaField('About corporation', validators=[Length(min=0, max=140)])
-    # about_admin =
-    # email_admin =
-    # phone_admin =
     submit_corporation = SubmitField('Submit')
     cancel_corporation = SubmitField('Cancel')
 
-    # def validate_name_corporation(self, name_corporation):
-    #     company = Company.query. \
-    #         filter_by(creator_user_id=current_user.id,
-    #                   name=name.data.strip()).first()
-    #     if company is not None:
-    #         raise ValidationError('Please use a different company name.')
+    def validate_name_corporation(self, name_corporation):
+        corporation = same_corporation_name_for_creator_user(
+            user_id=current_user.id,
+            name_corporation=name_corporation.data.strip())
+        if corporation is not None:
+            raise ValidationError('Please use a different Corporation name.')
 
 
 # Company editor

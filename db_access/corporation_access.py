@@ -23,3 +23,13 @@ def same_corporation_name_for_creator_user(user_id, name_corporation):
     corporation = Corporation.query.filter_by(
         creator_user_id=user_id, name=name_corporation).first()
     return corporation
+
+
+def corporation_by_slug(corporation_slug):
+    corporation = Corporation.query.filter_by(slug=corporation_slug).first()
+    return corporation
+
+
+def company_by_id(corporation_id):
+    corporation = Corporation.query.filter_by(id=corporation_id).first()
+    return corporation

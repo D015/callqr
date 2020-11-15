@@ -50,6 +50,41 @@ class RegistrationForm(FlaskForm):
             raise ValidationError('Please use a different email address.')
 
 
+# Form creator Corporation
+class CorporationForm(FlaskForm):
+    name_corporation = StringField('Enter name new corporation',
+                                   validators=[DataRequired()])
+    submit_corporation = SubmitField('Submit')
+    cancel_corporation = SubmitField('Cancel')
+
+    def validate_name_corporation(self, name_corporation):
+        corporation = same_corporation_name_for_creator_user(
+            user_id=current_user.id,
+            name_corporation=name_corporation.data.strip())
+        if corporation is not None:
+            raise ValidationError('Please use a different Corporation name.')
+
+
+# Form creator Admin
+class AdminForm(FlaskForm):
+    email_admin = StringField('Email', validators=[DataRequired(), Email()])
+    role_admin = SelectField('Role', validate_choice=False)
+
+    submit_admin = SubmitField('Submit')
+    cancel_admin = SubmitField('Cancel')
+
+    def __init__(self, company_slug, *args, **kwargs):
+        super(AdminForm, self).__init__(*args, **kwargs)
+        choice_roles_admin = (1, 2)
+        self.company_slug = company_slug
+        self.role_admin.choices = choice_roles_admin
+
+    def validate_name_corporation(self, name_corporation):
+        corporation = same_corporation_name_for_creator_user(
+            user_id=current_user.id,
+            name_corporation=name_corporation.data.strip())
+        if corporation is not None:
+            raise ValidationError('Please use a different Corporation name.')
 # Profile editor
 class EditProfileForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -69,20 +104,6 @@ class EditProfileForm(FlaskForm):
                 raise ValidationError('Please use a different username.')
 
 
-# This form for creating and editing Person
-class PersonForm(FlaskForm):
-    first_name = StringField('First Name', validators=[DataRequired()])
-    last_name = StringField('Last Name', validators=[DataRequired()])
-    about = TextAreaField('About user', validators=[Length(min=0, max=140)])
-    submit = SubmitField('Submit')
-    cancel = SubmitField('Cancel')
-
-    def __init__(self, original_first_name, original_last_name, original_about,
-                 *args, **kwargs):
-        super(PersonForm, self).__init__(*args, **kwargs)
-        self.original_first_name = original_first_name
-        self.original_last_name = original_last_name
-        self.original_about = original_about
 
 
 # This form for creating and editing Employee
@@ -131,21 +152,6 @@ class CompanyForm(FlaskForm):
             user_id, name_corporation)
         if company is not None:
             raise ValidationError('Please use a different company name.')
-
-
-# Form creator Corporation
-class CorporationForm(FlaskForm):
-    name_corporation = StringField('Enter name new corporation',
-                                   validators=[DataRequired()])
-    submit_corporation = SubmitField('Submit')
-    cancel_corporation = SubmitField('Cancel')
-
-    def validate_name_corporation(self, name_corporation):
-        corporation = same_corporation_name_for_creator_user(
-            user_id=current_user.id,
-            name_corporation=name_corporation.data.strip())
-        if corporation is not None:
-            raise ValidationError('Please use a different Corporation name.')
 
 
 # Company editor
@@ -267,3 +273,19 @@ class MultiCheckboxField(SelectMultipleField):
 class ChoiceClientPlaceForm(FlaskForm):
     choices = MultiCheckboxField(coerce=int)
     submit_choice_client_places = SubmitField("Submit")
+
+
+# This form for creating and editing Person
+class PersonForm(FlaskForm):
+    first_name = StringField('First Name', validators=[DataRequired()])
+    last_name = StringField('Last Name', validators=[DataRequired()])
+    about = TextAreaField('About user', validators=[Length(min=0, max=140)])
+    submit = SubmitField('Submit')
+    cancel = SubmitField('Cancel')
+
+    def __init__(self, original_first_name, original_last_name, original_about,
+                 *args, **kwargs):
+        super(PersonForm, self).__init__(*args, **kwargs)
+        self.original_first_name = original_first_name
+        self.original_last_name = original_last_name
+        self.original_about = original_about

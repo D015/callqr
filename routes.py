@@ -36,11 +36,14 @@ from models import ClientPlace, \
     Company, \
     GroupClientPlaces, \
     Employee, \
-    Client
+    Client, \
+    Role
 
 from db_access.user_access import create_user, user_by_id, user_by_slug, \
     user_by_id_or_404, user_by_slug_or_404
 from db_access.corporation_access import create_corporation
+from db_access.corporation_access import corporation_by_slug
+from db_access.role_access import roles_available_to_create_admin
 
 from email_my import send_call_qr_email
 
@@ -585,8 +588,22 @@ def test():
     # print(not_user_id)
     # print(user_slag)
     # print(not_user_slag)
-    print(current_user.email)
-    next_page = request.args.get('next')
-    print(request.args)
-    return redirect(next_page)
-    # return render_template('index.html', title='Home')
+    # ____________________________________
+    # corporation_id = corporation_by_slug('ef65ef6686d04a25a357dd8065122c8b').id
+    # print(corporation_id)
+    # _________________________________________________
+    role_id_creator_admin = (current_user.admins.filter_by(
+        corporation_id=corporation_by_slug(
+            'ef65ef6686d04a25a357dd8065122c8b').id).first()).role_id
+    print(role_id_creator_admin)
+    # __________________________________________________
+    # roles = Role.query.filter(Role.code == 10).order_by(Role.id.asc()).all()
+    #
+    # print(roles)
+    # _________________________________________
+    # next_page = request.args.get('next')
+    # print(request.args)
+    # # return redirect(next_page)
+    # _____________________________________
+    print(roles_available_to_create_admin(current_user,'ef65ef6686d04a25a357dd8065122c8b'))
+    return render_template('index.html', title='Home')

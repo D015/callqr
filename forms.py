@@ -24,6 +24,8 @@ from models import User, \
 
 from db_access.corporation_access import \
     same_corporation_name_for_creator_user
+
+
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
@@ -105,8 +107,6 @@ class EditProfileForm(FlaskForm):
                 raise ValidationError('Please use a different username.')
 
 
-
-
 # This form for creating and editing Employee
 class EmployeeForm(FlaskForm):
     about = TextAreaField('About user', validators=[Length(min=0, max=140)])
@@ -149,8 +149,8 @@ class CompanyForm(FlaskForm):
     cancel = SubmitField('Cancel')
 
     def validate_name(self, name):
-        company = same_corporation_name_for_creator_user(
-            user_id, name_corporation)
+        company = Company.query.filter_by(creator_user_id=current_user.id,
+                                          name=name.data.strip()).first()
         if company is not None:
             raise ValidationError('Please use a different company name.')
 

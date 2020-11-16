@@ -9,7 +9,7 @@ def check_role_and_relationship_to_corporation(role_id=0):
                 Admin.corporation_id == corporation_id,
                 Admin.role_id < role_id).first()
             if admin:
-                return func(*args, **kwargs)
+                return func(corporation_id, *args, **kwargs)
             else:
                 pass
         return check_func

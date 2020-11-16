@@ -46,6 +46,8 @@ from db_access.corporation_access import create_corporation,\
     corporation_by_slug
 from db_access.role_access import roles_available_to_create_admin
 from db_access.admin_access import create_admin
+from db_access.decorator_access import \
+    check_role_and_relationship_to_corporation
 
 from email_my import send_call_qr_email
 
@@ -622,10 +624,10 @@ def test():
     # corporation_id = corporation_by_slug('ef65ef6686d04a25a357dd8065122c8b').id
     # print(corporation_id)
     # _________________________________________________
-    role_id_creator_admin = (current_user.admins.filter_by(
-        corporation_id=corporation_by_slug(
-            'ef65ef6686d04a25a357dd8065122c8b').id).first()).role_id
-    print(role_id_creator_admin)
+    # role_id_creator_admin = (current_user.admins.filter_by(
+    #     corporation_id=corporation_by_slug(
+    #         'ef65ef6686d04a25a357dd8065122c8b').id).first()).role_id
+    # print(role_id_creator_admin)
     # __________________________________________________
     # roles = Role.query.filter(Role.code == 10).order_by(Role.id.asc()).all()
     #
@@ -635,5 +637,12 @@ def test():
     # print(request.args)
     # # return redirect(next_page)
     # _____________________________________
-    print(roles_available_to_create_admin(current_user,'ef65ef6686d04a25a357dd8065122c8b'))
+    # print(roles_available_to_create_admin(current_user,'ef65ef6686d04a25a357dd8065122c8b'))
+    # ___________________________________________
+    # @check_role_and_relationship_to_corporation()
+    # def func_test(corporation_id, c, b):
+    #     result = corporation_id + c + b
+    #     return result
+    # a = func_test(18, 101, 3)
+    # print(a)
     return render_template('index.html', title='Home')

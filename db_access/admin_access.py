@@ -13,7 +13,7 @@ def create_creator_admin(creator_user_id, corporation_id, current_user_email):
     return admin
 
 
-# @check_role_and_relationship_to_corporation
+@check_role_and_relationship_to_corporation(role_id=399)
 def create_admin(corporation_id, email, role_id, current_user_id,
                  about=None, phone=None):
     admin = Admin(creator_user_id=current_user_id, about=about, email=email,

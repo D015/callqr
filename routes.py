@@ -25,7 +25,8 @@ from forms import ClientPlaceForm, \
     EditGroupClientPlacesForm, \
     PersonForm, \
     EmployeeForm, \
-    CorporationForm
+    CorporationForm, \
+    AdminForm
 
 from sqlalchemy import or_
 
@@ -41,9 +42,10 @@ from models import ClientPlace, \
 
 from db_access.user_access import create_user, user_by_id, user_by_slug, \
     user_by_id_or_404, user_by_slug_or_404
-from db_access.corporation_access import create_corporation
-from db_access.corporation_access import corporation_by_slug
+from db_access.corporation_access import create_corporation,\
+    corporation_by_slug
 from db_access.role_access import roles_available_to_create_admin
+from db_access.admin_access import create_admin
 
 from email_my import send_call_qr_email
 
@@ -108,7 +110,7 @@ def logout():
     return redirect(url_for('index'))
 
 
-# User profile view
+# Create corporation view
 @app.route('/_create_corporation', methods=['GET', 'POST'])
 @login_required
 def create_corporation_view():
@@ -125,6 +127,34 @@ def create_corporation_view():
     form.name_corporation.data = ''
 
     return render_template('_create_corporation.html', form=form)
+
+
+# Create admin view
+@app.route('/_create_admin/<corporation_slug>', methods=['GET', 'POST'])
+@login_required
+def create_admin_view(corporation_slug):
+    roles = roles_available_to_create_admin(
+        creator_user=current_user, corporation_slug=corporation_slug)
+
+    roles_to_choose = [(i.id, i.name) for i in roles]
+
+    form = AdminForm(roles_to_choose)
+
+    if request.method == 'POST':
+        if form.submit_admin.data:
+            if form.validate_on_submit():
+                create_admin(
+                    corporation_id=corporation_by_slug(corporation_slug).id,
+                    email=form.email_admin.data.strip(),
+                    role_id=form.role_admin.data.strip(),
+                    current_user_id=current_user.id)
+                flash('Your admin is now live!')
+
+    form.email_admin.data = ''
+    form.role_admin.data = ''
+
+    return render_template('_create_admin.html', form=form,
+                           corporation_slug=corporation_slug)
 
 
 # User profile view

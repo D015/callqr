@@ -1,0 +1,21 @@
+{% if form %}
+<form action="" method="post" novalidate>
+{{ form.hidden_tag() }}
+<p>
+    {{ form.email_admin.label }}<br>
+    {{ form.email_admin(size=50) }}<br>
+    {% for error in form.email_admin.errors %}
+    <span style="color: red;">[{{ error }}]</span>
+    {% endfor %}
+</p>
+<p>
+    {{ form.role_admin.label }}<br>
+    {{ form.role_admin }}<br>
+    {% for error in form.role_admin.errors %}
+    <span style="color: red;">[{{ error }}]</span>
+    {% endfor %}
+</p>
+<p>{{ form.submit_admin() }}</p>
+<p>{{ form.cancel_admin() }}</p>
+</form>
+{% endif %}

@@ -13,11 +13,12 @@ def create_creator_admin(creator_user_id, corporation_id, current_user_email):
     return admin
 
 
-@check_role_and_relationship_to_corporation
-def create_admin(corporation_id, about, email, phone, role_id, current_user_id):
+# @check_role_and_relationship_to_corporation
+def create_admin(corporation_id, email, role_id, current_user_id,
+                 about=None, phone=None):
     admin = Admin(creator_user_id=current_user_id, about=about, email=email,
                   phone=phone, role_id=role_id,
-                  corporation_id=corporation_id)
+                  corporation_id=corporation_id, active=False)
     db.session.add(admin)
     db.session.commit()
     return admin

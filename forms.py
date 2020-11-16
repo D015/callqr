@@ -73,18 +73,19 @@ class AdminForm(FlaskForm):
     submit_admin = SubmitField('Submit')
     cancel_admin = SubmitField('Cancel')
 
-    def __init__(self, company_slug, *args, **kwargs):
+    def __init__(self, roles_to_choose, *args, **kwargs):
         super(AdminForm, self).__init__(*args, **kwargs)
-        choice_roles_admin = (1, 2)
-        self.company_slug = company_slug
-        self.role_admin.choices = choice_roles_admin
+        self.role_admin.choices = roles_to_choose
+    #     self.company_slug = company_slug
+    #
+    # def validate_name_corporation(self, name_corporation):
+    #     corporation = same_corporation_name_for_creator_user(
+    #         user_id=current_user.id,
+    #         name_corporation=name_corporation.data.strip())
+    #     if corporation is not None:
+    #         raise ValidationError('Please use a different Corporation name.')
 
-    def validate_name_corporation(self, name_corporation):
-        corporation = same_corporation_name_for_creator_user(
-            user_id=current_user.id,
-            name_corporation=name_corporation.data.strip())
-        if corporation is not None:
-            raise ValidationError('Please use a different Corporation name.')
+
 # Profile editor
 class EditProfileForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])

@@ -24,6 +24,8 @@ from models import User, \
 
 from db_access.corporation_access import \
     same_corporation_name_for_creator_user
+from db_access.admin_access import admins_in_corporation_by_email
+from db_access.employee_access import employees_in_corporation_by_email
 
 
 class LoginForm(FlaskForm):
@@ -75,17 +77,20 @@ class AdminForm(FlaskForm):
     submit_admin = SubmitField('Submit')
     cancel_admin = SubmitField('Cancel')
 
-    def __init__(self, roles_to_choose, *args, **kwargs):
+    def __init__(self, roles_to_choose, corporation_id, *args, **kwargs):
         super(AdminForm, self).__init__(*args, **kwargs)
         self.role_admin.choices = roles_to_choose
-    #     self.company_slug = company_slug
-    #
-    # def validate_name_corporation(self, name_corporation):
-    #     corporation = same_corporation_name_for_creator_user(
-    #         user_id=current_user.id,
-    #         name_corporation=name_corporation.data.strip())
-    #     if corporation is not None:
-    #         raise ValidationError('Please use a different Corporation name.')
+        self.corporation_id = corporation_id
+
+    def validate_email_admin(self, email_admin):
+        admins = admins_in_corporation_by_email(
+            self.corporation_id, email_admin.data)
+
+        employees = employees_in_corporation_by_email(
+            self.corporation_id, email_admin.data)
+
+        if admins is not None or employees is not None:
+            raise ValidationError('Please use a different Email.')
 
 
 # Profile editor

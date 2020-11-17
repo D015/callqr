@@ -7,14 +7,12 @@ from db_access.decorator_access import \
     check_role_and_relationship_to_corporation
 from db_access.company_access import company_by_id
 
-current_user_id = current_user.id
-
 
 @check_role_and_relationship_to_corporation
 def create_employee(company_id, first_name, last_name, about, email, phone,
                     role_id):
     company = company_by_id(company_id=company_id)
-    employee = Employee(creator_user_id=current_user_id, first_name=first_name,
+    employee = Employee(creator_user_id=current_user.id, first_name=first_name,
                         last_name=last_name, about=about, email=email,
                         phone=phone, role_id=role_id,
                         corporation_id=company.corporation_id,
@@ -38,3 +36,9 @@ def create_relationship_employee_to_user(employee_slug, user):
         db.session.add(employee)
         db.session.commit()
         return employee
+
+
+def employees_in_corporation_by_email(corporation_id, email):
+    employees = Employee.query.filter_by(corporation_id=corporation_id,
+                                      email=email).first()
+    return employees

@@ -6,12 +6,10 @@ from app import db
 from db_access.decorator_access import \
     check_role_and_relationship_to_corporation
 
-current_user_id = current_user.id
-
 
 @check_role_and_relationship_to_corporation(role_id=999)
 def create_company(corporation_id, name_company, about_company):
-    company = Company(creator_user_id=current_user_id,
+    company = Company(creator_user_id=current_user.id,
                       name=name_company,
                       about=about_company,
                       corporation_id=corporation_id)

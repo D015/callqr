@@ -121,9 +121,7 @@ def create_corporation_view():
         if form.submit_corporation.data:
             if form.validate_on_submit():
                 create_corporation(
-                    name_corporation=form.name_corporation.data.strip(),
-                    current_user_id=current_user.id,
-                    current_user_email=current_user.email)
+                    name_corporation=form.name_corporation.data.strip())
                 flash('Your corporation is now live!')
 
     form.name_corporation.data = ''
@@ -135,12 +133,12 @@ def create_corporation_view():
 @app.route('/_create_admin/<corporation_slug>', methods=['GET', 'POST'])
 @login_required
 def create_admin_view(corporation_slug):
-    roles = roles_available_to_create_admin(
-        creator_user=current_user, corporation_slug=corporation_slug)
+    corporation_id = corporation_by_slug(corporation_slug).id
+    roles = roles_available_to_create_admin(corporation_slug=corporation_slug)
 
     roles_to_choose = [(i.id, i.name) for i in roles]
 
-    form = AdminForm(roles_to_choose)
+    form = AdminForm(roles_to_choose, corporation_id)
 
     if request.method == 'POST':
         if form.submit_admin.data:
@@ -148,8 +146,7 @@ def create_admin_view(corporation_slug):
                 create_admin(
                     corporation_id=corporation_by_slug(corporation_slug).id,
                     email=form.email_admin.data.strip(),
-                    role_id=form.role_admin.data.strip(),
-                    current_user_id=current_user.id)
+                    role_id=form.role_admin.data.strip())
                 flash('Your admin is now live!')
 
     form.email_admin.data = ''

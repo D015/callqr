@@ -47,7 +47,7 @@ from db_access.corporation_access import create_corporation,\
 from db_access.role_access import roles_available_to_create_admin
 from db_access.admin_access import create_admin
 from db_access.decorator_access import \
-    check_role_and_relationship_to_corporation
+    check_role_and_transform_corporation_slug_to_id
 
 from email_my import send_call_qr_email
 
@@ -130,21 +130,22 @@ def create_corporation_view():
 
 
 # Create admin view
-@app.route('/_create_admin/<corporation_slug>', methods=['GET', 'POST'])
+@app.route('/_create_admin/<corporation_slug_or_id>', methods=['GET', 'POST'])
 @login_required
-def create_admin_view(corporation_slug):
-    corporation_id = corporation_by_slug(corporation_slug).id
-    roles = roles_available_to_create_admin(corporation_slug=corporation_slug)
+@check_role_and_transform_corporation_slug_to_id(role_id=401)
+def create_admin_view(corporation_slug_or_id):
+    roles = roles_available_to_create_admin(
+        corporation_id=corporation_slug_or_id)
 
     roles_to_choose = [(i.id, i.name) for i in roles]
 
-    form = AdminForm(roles_to_choose, corporation_id)
+    form = AdminForm(roles_to_choose, corporation_slug_or_id)
 
     if request.method == 'POST':
         if form.submit_admin.data:
             if form.validate_on_submit():
                 create_admin(
-                    corporation_id=corporation_by_slug(corporation_slug).id,
+                    corporation_id=corporation_slug_or_id,
                     email=form.email_admin.data.strip(),
                     role_id=form.role_admin.data.strip())
                 flash('Your admin is now live!')
@@ -153,7 +154,7 @@ def create_admin_view(corporation_slug):
     form.role_admin.data = ''
 
     return render_template('_create_admin.html', form=form,
-                           corporation_slug=corporation_slug)
+                           corporation_slug=corporation_slug_or_id)
 
 
 # User profile view

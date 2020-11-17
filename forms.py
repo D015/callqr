@@ -28,6 +28,7 @@ from db_access.admin_access import admins_in_corporation_by_email
 from db_access.employee_access import employees_in_corporation_by_email
 
 
+
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])

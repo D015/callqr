@@ -40,5 +40,5 @@ def create_relationship_employee_to_user(employee_slug, user):
 
 def employees_in_corporation_by_email(corporation_id, email):
     employees = Employee.query.filter_by(corporation_id=corporation_id,
-                                      email=email).first()
+                                         email=email).first()
     return employees

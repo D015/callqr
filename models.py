@@ -99,7 +99,7 @@ class Admin(BaseModel, db.Model):
                                nullable=False)
 
     def __repr__(self):
-        return '<Admin {} {}>'.format(self.email, self.phone)
+        return '<Admin {} {}>'.format(self.email, self.id)
 
 
 class Role(db.Model):

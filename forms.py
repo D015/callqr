@@ -26,6 +26,7 @@ from db_access.corporation_access import \
     same_corporation_name_for_creator_user
 from db_access.admin_access import admins_in_corporation_by_email
 from db_access.employee_access import employees_in_corporation_by_email
+from db_access.company_access import company_in_corporation_by_name
 
 
 
@@ -85,13 +86,32 @@ class AdminForm(FlaskForm):
 
     def validate_email_admin(self, email_admin):
         admins = admins_in_corporation_by_email(
-            self.corporation_id, email_admin.data)
+            self.corporation_id, email_admin.data.strip())
 
         employees = employees_in_corporation_by_email(
-            self.corporation_id, email_admin.data)
+            self.corporation_id, self.email_admin.data.strip())
 
         if admins is not None or employees is not None:
             raise ValidationError('Please use a different Email.')
+
+
+# Form creator Company
+class CompanyForm(FlaskForm):
+    name_company = StringField('Enter name new company',
+                       validators=[DataRequired()])
+    submit_company = SubmitField('Submit')
+    cancel_company = SubmitField('Cancel')
+
+    def __init__(self, corporation_id, *args, **kwargs):
+        super(CompanyForm, self).__init__(*args, **kwargs)
+        self.corporation_id = corporation_id
+
+    def validate_name_company(self, name_company):
+        company = company_in_corporation_by_name(self.corporation_id,
+                                                 name_company.data.strip())
+
+        if company is not None:
+            raise ValidationError('Please use a different company name.')
 
 
 # Profile editor
@@ -144,21 +164,6 @@ class EmployeeForm(FlaskForm):
 
             if user is not None or employee is not None or client is not None:
                 raise ValidationError('Please use a different email address.')
-
-
-# Form creator Company
-class CompanyForm(FlaskForm):
-    name = StringField('Enter name new company',
-                       validators=[DataRequired()])
-    about = TextAreaField('About company', validators=[Length(min=0, max=140)])
-    submit = SubmitField('Submit')
-    cancel = SubmitField('Cancel')
-
-    def validate_name(self, name):
-        company = Company.query.filter_by(creator_user_id=current_user.id,
-                                          name=name.data.strip()).first()
-        if company is not None:
-            raise ValidationError('Please use a different company name.')
 
 
 # Company editor

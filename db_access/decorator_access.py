@@ -1,8 +1,7 @@
-from flask import render_template, \
+from flask import \
     flash, \
     redirect, \
-    url_for, \
-    request
+    url_for
 
 from flask_login import current_user
 from models import Admin, Employee, Company

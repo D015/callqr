@@ -3,12 +3,9 @@ from flask_login import current_user
 from app import db
 from models import Employee
 
-from db_access.decorator_access import \
-    check_role_and_relationship_to_corporation
 from db_access.company_access import company_by_id
 
 
-@check_role_and_relationship_to_corporation
 def create_employee(company_id, first_name, last_name, about, email, phone,
                     role_id):
     company = company_by_id(company_id=company_id)

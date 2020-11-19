@@ -42,8 +42,7 @@ from sqlalchemy import or_
 from app import app, db
 
 
-# from models import ClientPlace, \
-#     User, \
+from models import User
 #     GroupClientPlaces, \
 #     Client
 

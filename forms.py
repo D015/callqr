@@ -113,6 +113,30 @@ class CompanyForm(FlaskForm):
         if company is not None:
             raise ValidationError('Please use a different company name.')
 
+# Form creator Employee
+class EmployeeForm(FlaskForm):
+    first_name_employee = StringField('First name', validators=[DataRequired()])
+    email_employee = StringField('Email', validators=[DataRequired(), Email()])
+    role_employee = SelectField('Role', validate_choice=False)
+
+    submit_employee = SubmitField('Submit_employee')
+    cancel_employee = SubmitField('Cancel_employee')
+
+    def __init__(self, roles_to_choose, corporation_id, *args, **kwargs):
+        super(EmployeeForm, self).__init__(*args, **kwargs)
+        self.role_admin.choices = roles_to_choose
+        self.corporation_id = corporation_id
+
+    def validate_email_admin(self, email_admin):
+        admins = admins_in_corporation_by_email(
+            self.corporation_id, email_admin.data.strip())
+
+        employees = employees_in_corporation_by_email(
+            self.corporation_id, self.email_admin.data.strip())
+
+        if admins is not None or employees is not None:
+            raise ValidationError('Please use a different Email.')
+
 
 # Profile editor
 class EditProfileForm(FlaskForm):
@@ -131,39 +155,6 @@ class EditProfileForm(FlaskForm):
                 first()
             if user is not None:
                 raise ValidationError('Please use a different username.')
-
-
-# This form for creating and editing Employee
-class EmployeeForm(FlaskForm):
-    about = TextAreaField('About user', validators=[Length(min=0, max=140)])
-    email = StringField('Email', validators=[DataRequired()])
-    phone_number_telegram = StringField('Phone number telegram',
-                                        validators=[DataRequired()])
-    submit = SubmitField('Submit')
-    cancel = SubmitField('Cancel')
-
-    def __init__(self, original_about, original_email,
-                 original_phone_number_telegram, *args, **kwargs):
-        super(EmployeeForm, self).__init__(*args, **kwargs)
-        self.original_about = original_about
-        self.original_email = original_email
-        self.original_phone_number_telegram = original_phone_number_telegram
-
-    def validate_email(self, email):
-        if email.data != self.original_email:
-            employee = Employee.query.filter \
-                (Employee.email == email.data.strip()).first()
-
-            user = User.query.filter \
-                (User.email == email.data.strip(),
-                 User.person != current_user.person).first()
-
-            client = Client.query.filter \
-                (User.email == email.data.strip(),
-                 User.person != current_user.person).first()
-
-            if user is not None or employee is not None or client is not None:
-                raise ValidationError('Please use a different email address.')
 
 
 # Company editor

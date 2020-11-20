@@ -29,7 +29,6 @@ from db_access.employee_access import employees_in_corporation_by_email
 from db_access.company_access import company_in_corporation_by_name
 
 
-
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
@@ -98,7 +97,7 @@ class AdminForm(FlaskForm):
 # Form creator Company
 class CompanyForm(FlaskForm):
     name_company = StringField('Enter name new company',
-                       validators=[DataRequired()])
+                               validators=[DataRequired()])
     submit_company = SubmitField('Submit')
     cancel_company = SubmitField('Cancel')
 
@@ -113,6 +112,7 @@ class CompanyForm(FlaskForm):
         if company is not None:
             raise ValidationError('Please use a different company name.')
 
+
 # Form creator Employee
 class EmployeeForm(FlaskForm):
     first_name_employee = StringField('First name', validators=[DataRequired()])
@@ -124,15 +124,16 @@ class EmployeeForm(FlaskForm):
 
     def __init__(self, roles_to_choose, corporation_id, *args, **kwargs):
         super(EmployeeForm, self).__init__(*args, **kwargs)
-        self.role_admin.choices = roles_to_choose
+        self.email_employee.choices = roles_to_choose
+        self.role_employee.choices = roles_to_choose
         self.corporation_id = corporation_id
 
-    def validate_email_admin(self, email_admin):
+    def validate_email_employee(self, email_employee):
         admins = admins_in_corporation_by_email(
-            self.corporation_id, email_admin.data.strip())
+            self.corporation_id, email_employee.data.strip())
 
         employees = employees_in_corporation_by_email(
-            self.corporation_id, self.email_admin.data.strip())
+            self.corporation_id, self.email_employee.data.strip())
 
         if admins is not None or employees is not None:
             raise ValidationError('Please use a different Email.')

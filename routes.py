@@ -14,13 +14,16 @@ from flask_login import current_user, \
 from werkzeug.urls import url_parse
 
 from db_access.company_access import create_company
+from db_access.employee_access import create_employee
 from db_access.user_access import create_user
 from db_access.corporation_access import create_corporation
-from db_access.role_access import roles_available_to_create_admin
+from db_access.role_access import roles_available_to_create_admin, \
+    roles_available_to_create_employee
 from db_access.admin_access import create_admin, \
     create_relationship_admin_to_user
 from db_access.decorator_access import \
-    check_role_and_transform_corporation_slug_to_id
+    check_role_and_transform_corporation_slug_to_id, \
+    check_role_and_transform_all_slug_to_id
 
 from forms import ClientPlaceForm, \
     RegistrationForm, \
@@ -220,6 +223,40 @@ def create_company_view(corporation_slug_or_id):
     return render_template('_create_company.html', form=form,
                            corporation_slug=corporation_slug_or_id)
 
+
+# Create employee view
+@app.route('/_create_employee/<corporation_slug_or_id>/<company_slug_or_id>',
+           endpoint='create_employee_view',
+           methods=['GET', 'POST'])
+@login_required
+@check_role_and_transform_all_slug_to_id(role_id=999)
+def create_employee_view(corporation_slug_or_id, company_slug_or_id):
+    roles = roles_available_to_create_employee(
+        corporation_id=corporation_slug_or_id, company_id=company_slug_or_id)
+
+    roles_to_choose = [(i.id, i.name) for i in roles]
+    print(roles_to_choose)
+
+    form = EmployeeForm(roles_to_choose, corporation_slug_or_id)
+
+    if request.method == 'POST':
+        if form.submit_employee.data:
+            if form.validate_on_submit():
+                create_employee(
+                    company_id=company_slug_or_id,
+                    first_name=form.first_name_employee.data.strip(),
+                    email=form.email_employee.data.strip(),
+                    role_id=form.role_employee.data.strip(),
+                    corporation_id=corporation_slug_or_id)
+                flash('Your employee is now live!')
+
+    form.first_name_employee.data = ''
+    form.email_employee.data = ''
+    form.role_employee.data = ''
+
+    return render_template('_create_employee.html', form=form,
+                           corporation_slug=corporation_slug_or_id,
+                           company_slug_or_id=company_slug_or_id)
 
 # # Company profile view
 # @app.route('/company/<slug>', methods=['GET', 'POST'])

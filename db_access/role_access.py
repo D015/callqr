@@ -32,4 +32,6 @@ def roles_available_to_create_employee(corporation_id, company_id):
                                   Role.active == True, Role.archived == False). \
             order_by(Role.id.desc()).all()
 
+    print(roles)
+
     return roles

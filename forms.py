@@ -22,6 +22,8 @@ from models import User, \
     Employee, \
     Client
 
+from db_access.group_client_places_access import \
+    group_client_places_in_company_by_name
 from db_access.corporation_access import \
     same_corporation_name_for_creator_user
 from db_access.admin_access import admins_in_corporation_by_email
@@ -139,6 +141,24 @@ class EmployeeForm(FlaskForm):
             raise ValidationError('Please use a different Email.')
 
 
+# Form creator Group
+class GroupClientPlacesForm(FlaskForm):
+    name_group_client_places = StringField('Enter name new group',
+                                           validators=[DataRequired()])
+    submit_group_client_places = SubmitField('Submit')
+    cancel_group_client_places = SubmitField('Cancel')
+
+    def __init__(self, company_id, *args, **kwargs):
+        super(GroupClientPlacesForm, self).__init__(*args, **kwargs)
+        self.company_id = company_id
+
+    def validate_name_group_client_places(self, name_group_client_places):
+        group_client_places = group_client_places_in_company_by_name(
+            self.company_id, name_group_client_places.data.strip())
+        if group_client_places is not None:
+            raise ValidationError('Please use a different group name.')
+
+
 # Profile editor
 class EditProfileForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -176,26 +196,6 @@ class EditCompanyForm(FlaskForm):
                           name=name.data.strip()).first()
             if company is not None:
                 raise ValidationError('Please use a different company name.')
-
-
-# Form creator Group
-class GroupClientPlacesForm(FlaskForm):
-    name_group_client_places = StringField('Enter name new group',
-                                           validators=[DataRequired()])
-    about = TextAreaField('About group', validators=[Length(min=0, max=140)])
-    submit_group_client_places = SubmitField('Submit')
-    cancel = SubmitField('Cancel')
-
-    def __init__(self, company_id, *args, **kwargs):
-        super(GroupClientPlacesForm, self).__init__(*args, **kwargs)
-        self.company_id = company_id
-
-    def validate_name_group_client_places(self, name_group_client_places):
-        group_client_places = GroupClientPlaces.query. \
-            filter_by(company_id=self.company_id,
-                      name=name_group_client_places.data.strip()).first()
-        if group_client_places is not None:
-            raise ValidationError('Please use a different group name.')
 
 
 # Form Group editor

@@ -38,6 +38,7 @@ def check_role_and_transform_all_slug_to_id(role_id=0):
     def decorator_employee(func):
         def check_employee(corporation_slug_or_id, company_slug_or_id,
                            *args, **kwargs):
+
             if type(company_slug_or_id) is not int:
                 company_slug_or_id = company_by_slug(company_slug_or_id).id
 
@@ -54,7 +55,7 @@ def check_role_and_transform_all_slug_to_id(role_id=0):
                             *args, **kwargs)
             else:
                 employee = current_user.employees.filter(
-                    Employee.corporation_id == corporation_slug_or_id,
+                    Employee.company_id == company_slug_or_id,
                     Employee.active == True, Employee.archived == False,
                     Employee.role_id < role_id).first()
 

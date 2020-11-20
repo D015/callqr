@@ -16,6 +16,7 @@ from werkzeug.urls import url_parse
 from db_access.company_access import create_company
 from db_access.employee_access import create_employee, \
     create_relationship_employee_to_user
+from db_access.group_client_places_access import create_group_client_places
 from db_access.user_access import create_user
 from db_access.corporation_access import create_corporation
 from db_access.role_access import roles_available_to_create_admin, \
@@ -45,11 +46,9 @@ from sqlalchemy import or_
 
 from app import app, db
 
-
 from models import User, Employee
 #     GroupClientPlaces, \
 #     Client
-
 
 
 from email_my import send_call_qr_email
@@ -161,6 +160,7 @@ def create_admin_view(corporation_slug_or_id):
     return render_template('_create_admin.html', form=form,
                            corporation_slug=corporation_slug_or_id)
 
+
 # Create relationship admin to user view
 @app.route('/_create_relationship_admin_to_user/<admin_slug>',
            methods=['GET', 'POST'])
@@ -255,7 +255,7 @@ def create_employee_view(corporation_slug_or_id, company_slug_or_id):
     form.role_employee.data = ''
 
     return render_template('_create_employee.html', form=form,
-                           corporation_slug=corporation_slug_or_id,
+                           corporation_slug_or_id=corporation_slug_or_id,
                            company_slug_or_id=company_slug_or_id)
 
 
@@ -272,6 +272,32 @@ def create_relationship_employee_to_user_view(employee_slug):
         flash('Something went wrong!')
 
     return render_template('index.html', title='Home')
+
+
+# Create group client places view
+@app.route(
+    '/_create_group_client_places/<corporation_slug_or_id>/<company_slug_or_id>',
+    endpoint='create_group_client_places_view',
+    methods=['GET', 'POST'])
+@login_required
+@check_role_and_transform_all_slug_to_id(role_id=601)
+def create_group_client_places_view(corporation_slug_or_id, company_slug_or_id):
+    form = GroupClientPlacesForm(company_slug_or_id)
+
+    if request.method == 'POST':
+        if form.submit_group_client_places.data:
+            if form.validate_on_submit():
+                create_group_client_places(
+                    company_slug_or_id,
+                    form.name_group_client_places.data.strip())
+                flash('Your group is now live!')
+
+    form.name_group_client_places.data = ''
+
+    return render_template('_create_group_client_places.html',
+                           form_group_client_places=form,
+                           corporation_slug_or_id=corporation_slug_or_id,
+                           company_slug_or_id=company_slug_or_id)
 
 
 # # Company profile view
@@ -744,4 +770,9 @@ def test():
     # Employee.slug == '37f917f33e9949c299a4071f95ca1f82', Employee.archived == False).first()
     # print(employee.corporation_id)
     # ________________________________
+    # employee = current_user.employees.filter(
+    #     Employee.corporation_id == 18,
+    #     Employee.active == True, Employee.archived == False,
+    #     Employee.role_id < 701).first()
+    # print(employee)
     return render_template('index.html', title='Home')

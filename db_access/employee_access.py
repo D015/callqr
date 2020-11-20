@@ -23,18 +23,19 @@ def create_employee(company_id, first_name, email, role_id, last_name=None,
     return employee
 
 
-def create_relationship_employee_to_user(employee_slug, user):
+def create_relationship_employee_to_user(employee_slug):
 
     employee = Employee.query.filter(
-        Employee.slug == employee_slug, Employee.archived is False).first()
-    user_employee_corporation = user.employees.filter_by(
+        Employee.slug == employee_slug, Employee.archived == False).first()
+
+    user_employee_corporation = current_user.employees.filter_by(
         corporation_id=employee.corporation_id).first()
 
     if employee.user_id or user_employee_corporation \
-            or user.archived or user.active is False:
+            or current_user.archived or current_user.active is False:
         pass
     else:
-        employee.id = user.id
+        employee.user_id = current_user.id
         employee.active = True
         db.session.add(employee)
         db.session.commit()

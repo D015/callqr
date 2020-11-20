@@ -23,9 +23,9 @@ def create_admin(corporation_id, email, role_id, about=None, phone=None):
 
 
 def create_relationship_admin_to_user(admin_slug):
+
     admin = Admin.query.filter(
         Admin.slug == admin_slug, Admin.archived == False).first()
-    print(admin)
 
     user_admin_corporation = current_user.admins.filter_by(
         corporation_id=admin.corporation_id).first()
@@ -38,6 +38,7 @@ def create_relationship_admin_to_user(admin_slug):
         admin.active = True
         db.session.add(admin)
         db.session.commit()
+
         return admin
 
 

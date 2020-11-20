@@ -14,7 +14,8 @@ from flask_login import current_user, \
 from werkzeug.urls import url_parse
 
 from db_access.company_access import create_company
-from db_access.employee_access import create_employee
+from db_access.employee_access import create_employee, \
+    create_relationship_employee_to_user
 from db_access.user_access import create_user
 from db_access.corporation_access import create_corporation
 from db_access.role_access import roles_available_to_create_admin, \
@@ -45,7 +46,7 @@ from sqlalchemy import or_
 from app import app, db
 
 
-from models import User
+from models import User, Employee
 #     GroupClientPlaces, \
 #     Client
 
@@ -160,7 +161,7 @@ def create_admin_view(corporation_slug_or_id):
     return render_template('_create_admin.html', form=form,
                            corporation_slug=corporation_slug_or_id)
 
-
+# Create relationship admin to user view
 @app.route('/_create_relationship_admin_to_user/<admin_slug>',
            methods=['GET', 'POST'])
 @login_required
@@ -235,7 +236,6 @@ def create_employee_view(corporation_slug_or_id, company_slug_or_id):
         corporation_id=corporation_slug_or_id, company_id=company_slug_or_id)
 
     roles_to_choose = [(i.id, i.name) for i in roles]
-    print(roles_to_choose)
 
     form = EmployeeForm(roles_to_choose, corporation_slug_or_id)
 
@@ -257,6 +257,22 @@ def create_employee_view(corporation_slug_or_id, company_slug_or_id):
     return render_template('_create_employee.html', form=form,
                            corporation_slug=corporation_slug_or_id,
                            company_slug_or_id=company_slug_or_id)
+
+
+# Create relationship employee to user view
+@app.route('/_create_relationship_employee_to_user/<employee_slug>',
+           methods=['GET', 'POST'])
+@login_required
+def create_relationship_employee_to_user_view(employee_slug):
+    employee = create_relationship_employee_to_user(employee_slug)
+
+    if employee:
+        flash('The relationship employee to user is created')
+    else:
+        flash('Something went wrong!')
+
+    return render_template('index.html', title='Home')
+
 
 # # Company profile view
 # @app.route('/company/<slug>', methods=['GET', 'POST'])
@@ -724,4 +740,8 @@ def test():
     #     Admin.archived == False).first()
     # print(admin)
     # _____________________________________________
+    # employee = Employee.query.filter(
+    # Employee.slug == '37f917f33e9949c299a4071f95ca1f82', Employee.archived == False).first()
+    # print(employee.corporation_id)
+    # ________________________________
     return render_template('index.html', title='Home')

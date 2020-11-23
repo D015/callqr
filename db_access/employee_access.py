@@ -8,7 +8,6 @@ from db_access.company_access import company_by_id
 
 def create_employee(company_id, first_name, email, role_id, last_name=None,
                     about=None, phone=None, corporation_id=None):
-
     if corporation_id is None:
         corporation_id = company_by_id(company_id=company_id).corporation_id
 
@@ -24,7 +23,6 @@ def create_employee(company_id, first_name, email, role_id, last_name=None,
 
 
 def create_relationship_employee_to_user(employee_slug):
-
     employee = Employee.query.filter(
         Employee.slug == employee_slug, Employee.archived == False).first()
 
@@ -44,8 +42,15 @@ def create_relationship_employee_to_user(employee_slug):
 
 
 def employees_in_corporation_by_email(corporation_id, email):
-
     employees = Employee.query.filter_by(corporation_id=corporation_id,
                                          email=email).first()
 
     return employees
+
+
+# TODO Check for the presence of relationship.
+def create_by_yourself_relationship_to_client_place(client_place):
+    employee = current_user.employees.filter_by(
+        company_id=client_place.company_id).all()
+    employee.client_places.append(client_place)
+    return

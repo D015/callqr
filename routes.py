@@ -48,7 +48,7 @@ from sqlalchemy import or_
 
 from app import app, db
 
-from models import User, Employee
+from models import User, Employee, ClientPlace
 #     GroupClientPlaces, \
 #     Client
 
@@ -818,4 +818,24 @@ def test():
     #     Employee.active == True, Employee.archived == False,
     #     Employee.role_id < 701).first()
     # print(employee)
+    # _________________________________________________
+    # employee3 = Employee.query.filter_by(id=3).first()
+    # print(employee3, employee3.client_places.all())
+    #
+    # employee2 = Employee.query.filter_by(id=2).first()
+    # print(employee2, employee2.client_places.all())
+    #
+    # client_place1 = ClientPlace.query.filter_by(id=1).first()
+    # print(client_place1, client_place1.employees.all())
+    #
+    # client_place2 = ClientPlace.query.filter_by(id=2).first()
+    # print(client_place2, client_place2.employees.all())
+    #
+    # client_place3 = ClientPlace.query.filter_by(id=3).first()
+    # print(client_place3, client_place3.employees.all())
+    #
+    # client_place4 = ClientPlace.query.filter_by(id=4).first()
+    # print(client_place4, client_place4.employees.all())
+    # ___________________________________________________
+
     return render_template('index.html', title='Home')

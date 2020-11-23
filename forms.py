@@ -22,6 +22,7 @@ from models import User, \
     Employee, \
     Client
 
+from db_access.client_place_access import client_place_in_company_by_name
 from db_access.group_client_places_access import \
     group_client_places_in_company_by_name
 from db_access.corporation_access import \
@@ -159,6 +160,29 @@ class GroupClientPlacesForm(FlaskForm):
             raise ValidationError('Please use a different group name.')
 
 
+# Form creator Client Place
+class ClientPlaceForm(FlaskForm):
+    name_client_place = StringField('Enter name client place',
+                                    validators=[DataRequired()])
+    group_client_places = SelectField('Group', validate_choice=False)
+    submit_client_place = SubmitField('Submit')
+    cancel = SubmitField('Cancel')
+
+    def __init__(self, company_id,
+                 choices_group_client_places, *args, **kwargs):
+        super(ClientPlaceForm, self).__init__(*args, **kwargs)
+        self.company_id = company_id
+        self.group_client_places.choices = choices_group_client_places
+
+    def validate_name_client_place(self, name_client_place):
+
+        client_place = client_place_in_company_by_name(
+            self.company_id, name_client_place.data.strip())
+
+        if client_place is not None:
+            raise ValidationError('Please use a different place name.')
+
+
 # Profile editor
 class EditProfileForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -222,28 +246,6 @@ class EditGroupClientPlacesForm(FlaskForm):
                           name=name.data.strip()).first()
             if group_client_places is not None:
                 raise ValidationError('Please use a different group name.')
-
-
-# Form creator Client Place
-class ClientPlaceForm(FlaskForm):
-    name_client_place = StringField('Enter name client place',
-                                    validators=[DataRequired()])
-    group_client_places = SelectField('Group', validate_choice=False)
-    submit_client_place = SubmitField('Submit')
-    cancel = SubmitField('Cancel')
-
-    def __init__(self, company_id,
-                 choices_group_client_places, *args, **kwargs):
-        super(ClientPlaceForm, self).__init__(*args, **kwargs)
-        self.company_id = company_id
-        self.group_client_places.choices = choices_group_client_places
-
-    def validate_name_client_place(self, name_client_place):
-        client_place = ClientPlace.query. \
-            filter_by(company_id=self.company_id,
-                      name=name_client_place.data.strip()).first()
-        if client_place is not None:
-            raise ValidationError('Please use a different place name.')
 
 
 # Client Place editor

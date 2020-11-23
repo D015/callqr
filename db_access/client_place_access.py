@@ -3,11 +3,7 @@ from flask_login import current_user
 from models import ClientPlace
 from app import db
 
-from db_access.decorator_access import \
-    check_role_and_relationship_to_company
 
-
-@check_role_and_relationship_to_company(role_employee_id=999)
 def create_client_place(company_id, name_client_place,
                         group_client_places_id=None):
     client_place = ClientPlace(
@@ -17,3 +13,11 @@ def create_client_place(company_id, name_client_place,
     db.session.add(client_place)
     db.session.commit()
     return client_place
+
+
+def client_place_in_company_by_name(company_id, name):
+    client_place = ClientPlace.query.filter_by(
+        company_id=company_id, name=name).first()
+
+    return client_place
+

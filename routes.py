@@ -13,10 +13,12 @@ from flask_login import current_user, \
 
 from werkzeug.urls import url_parse
 
+from db_access.client_place_access import create_client_place
 from db_access.company_access import create_company
 from db_access.employee_access import create_employee, \
     create_relationship_employee_to_user
-from db_access.group_client_places_access import create_group_client_places
+from db_access.group_client_places_access import create_group_client_places, \
+    groups_client_places_by_company_id
 from db_access.user_access import create_user
 from db_access.corporation_access import create_corporation
 from db_access.role_access import roles_available_to_create_admin, \
@@ -299,59 +301,100 @@ def create_group_client_places_view(corporation_slug_or_id, company_slug_or_id):
                            corporation_slug_or_id=corporation_slug_or_id,
                            company_slug_or_id=company_slug_or_id)
 
+# Create client place view
+@app.route(
+    '/_create_client_place/<corporation_slug_or_id>/<company_slug_or_id>',
+    endpoint='create_client_place_view',
+    methods=['GET', 'POST'])
+@login_required
+@check_role_and_transform_all_slug_to_id(role_id=601)
+def create_client_place_view(corporation_slug_or_id, company_slug_or_id):
 
-# # Company profile view
-# @app.route('/company/<slug>', methods=['GET', 'POST'])
-# @login_required
-# def company(slug):
-#     company = Company.query.filter_by(slug=slug).first_or_404()
-#
-#     client_places = ClientPlace.query. \
-#         filter(ClientPlace.company_id == company.id). \
-#         order_by(ClientPlace.name.asc())
-#
-#     groups_client_places = GroupClientPlaces.query. \
-#         filter(GroupClientPlaces.company_id == company.id). \
-#         order_by(GroupClientPlaces.name.asc())
-#
-#     choices_group_client_places = [(i.id, i.name) for i in groups_client_places]
-#     choices_group_client_places.insert(0, ('', 'group not selected'))
-#
-#     form_group_client_places = GroupClientPlacesForm(company.id)
-#     form_client_place = ClientPlaceForm(company.id, choices_group_client_places)
-#
-#     if form_group_client_places.submit_group_client_places.data \
-#             and form_group_client_places.validate_on_submit():
-#         group_client_places = GroupClientPlaces(
-#             name=form_group_client_places.name_group_client_places.data.strip(),
-#             company_group_client_places=company)
-#         db.session.add(group_client_places)
-#         db.session.commit()
-#         flash('Your group_client_places is now live!')
-#         return redirect(url_for('company', slug=slug))
-#
-#     if form_client_place.submit_client_place.data and \
-#             form_client_place.validate_on_submit():
-#         client_place = ClientPlace(
-#             name=form_client_place.name_client_place.data.strip(),
-#             company_client_place=company,
-#             group_client_places_id=form_client_place.group_client_places.data) \
-#             if form_client_place.group_client_places.data else \
-#             ClientPlace(
-#                 name=form_client_place.name_client_place.data.strip(),
-#                 company_client_place=company)
-#
-#         db.session.add(client_place)
-#         db.session.commit()
-#         flash('Your client_place is now live!')
-#         return redirect(url_for('company', slug=slug))
-#
-#     return render_template('company.html',
-#                            company=company,
-#                            client_places=client_places,
-#                            groups_client_places=groups_client_places,
-#                            form_client_place=form_client_place,
-#                            form_group_client_places=form_group_client_places)
+    groups_client_places = groups_client_places_by_company_id(
+        company_slug_or_id)
+
+    choices_group_client_places = [(i.id, i.name) for i in groups_client_places]
+    choices_group_client_places.insert(0, ('', 'group not selected'))
+
+    form = ClientPlaceForm(company_slug_or_id, choices_group_client_places)
+
+    if request.method == 'POST':
+        if form.submit_client_place.data:
+            if form.validate_on_submit():
+                create_client_place(
+                    company_slug_or_id,
+                    form.name_client_place.data.strip(),
+                    form.group_client_places.data.strip()) \
+                    if form.group_client_places.data else \
+                    create_client_place(
+                        company_slug_or_id,
+                        form.name_client_place.data.strip())
+
+                flash('Your client place is now live!')
+
+    form.name_client_place.data = ''
+    form.group_client_places.data = ''
+
+
+    return render_template('_create_client_place.html',
+                           form_client_place=form,
+                           corporation_slug_or_id=corporation_slug_or_id,
+                           company_slug_or_id=company_slug_or_id)
+
+
+# _Old__routes______________________________________
+# Company profile view
+@app.route('/company/<slug>', methods=['GET', 'POST'])
+@login_required
+def company(slug):
+    company = Company.query.filter_by(slug=slug).first_or_404()
+
+    client_places = ClientPlace.query. \
+        filter(ClientPlace.company_id == company.id). \
+        order_by(ClientPlace.name.asc())
+
+    groups_client_places = GroupClientPlaces.query. \
+        filter(GroupClientPlaces.company_id == company.id). \
+        order_by(GroupClientPlaces.name.asc())
+
+    choices_group_client_places = [(i.id, i.name) for i in groups_client_places]
+    choices_group_client_places.insert(0, ('', 'group not selected'))
+
+    form_group_client_places = GroupClientPlacesForm(company.id)
+    form_client_place = ClientPlaceForm(company.id, choices_group_client_places)
+
+    if form_group_client_places.submit_group_client_places.data \
+            and form_group_client_places.validate_on_submit():
+        group_client_places = GroupClientPlaces(
+            name=form_group_client_places.name_group_client_places.data.strip(),
+            company_group_client_places=company)
+        db.session.add(group_client_places)
+        db.session.commit()
+        flash('Your group_client_places is now live!')
+        return redirect(url_for('company', slug=slug))
+
+    if form_client_place.submit_client_place.data and \
+            form_client_place.validate_on_submit():
+        client_place = ClientPlace(
+            name=form_client_place.name_client_place.data.strip(),
+            company_client_place=company,
+            group_client_places_id=form_client_place.group_client_places.data) \
+            if form_client_place.group_client_places.data else \
+            ClientPlace(
+                name=form_client_place.name_client_place.data.strip(),
+                company_client_place=company)
+
+        db.session.add(client_place)
+        db.session.commit()
+        flash('Your client_place is now live!')
+        return redirect(url_for('company', slug=slug))
+
+    return render_template('company.html',
+                           company=company,
+                           client_places=client_places,
+                           groups_client_places=groups_client_places,
+                           form_client_place=form_client_place,
+                           form_group_client_places=form_group_client_places)
 
 
 # Profile editor view

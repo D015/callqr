@@ -13,12 +13,10 @@ from flask_login import current_user, \
 
 from werkzeug.urls import url_parse
 
-from db_access.client_place_access import create_client_place, \
-    create_relationship_client_place_to_employee
+from db_access.client_place_access import create_client_place
 from db_access.company_access import create_company
 from db_access.employee_access import create_employee, \
     create_relationship_employee_to_user, \
-    is_relationship_employee_to_group_client_places, \
     is_relationship_employee_to_client_place
 from db_access.group_client_places_access import create_group_client_places, \
     groups_client_places_by_company_id
@@ -317,7 +315,7 @@ def create_client_place_view(corporation_slug_or_id, company_slug_or_id):
         company_slug_or_id)
 
     choices_group_client_places = [(i.id, i.name) for i in groups_client_places]
-    choices_group_client_places.insert(0, ('', 'group not selected'))
+    choices_group_client_places.insert(0, (None, 'group not selected'))
 
     form = ClientPlaceForm(company_slug_or_id, choices_group_client_places)
 
@@ -840,7 +838,8 @@ def test():
     # client_place4 = ClientPlace.query.filter_by(id=4).first()
     # print(client_place4, client_place4.employees.all())
     # ___________________________________________________
-    rce = is_relationship_employee_to_client_place(3, 1)
-    print(rce)
+    # rce = is_relationship_employee_to_client_place(3, 1)
+    # print(rce)
+    # ___________________________________________________
 
     return render_template('index.html', title='Home')

@@ -1,6 +1,6 @@
 from flask_login import current_user
 
-from models import ClientPlace, Employee
+from models import ClientPlace
 from app import db
 
 
@@ -22,25 +22,8 @@ def client_place_in_company_by_name(company_id, name):
     return client_place
 
 
-def create_relationship_client_place_to_employee(
-        employee_id, client_place_id):
+def client_place_by_id(client_place_id):
+    client_place = ClientPlace.query.filter_by(
+        id=client_place_id)
 
-    relationship = employees_to_groups_client_places.c.query.filter_by(
-        employee_id=employee_id,
-        client_place_id=client_place_id).firstr()
-
-    if relationship is None:
-        client_place = ClientPlace.query.filter_by(
-            id=client_place_id).first_or_404()
-
-        employee = Employee.query.filter_by(id=employee_id).first_or_404()
-
-        client_place.employees.append(employee)
-
-        return True, 'successfully created'
-
-    elif relationship:
-        return False, 'has already been created'
-
-    else:
-        return None, 'error'
+    return client_place

@@ -1,6 +1,6 @@
 from flask_login import current_user
 
-from models import GroupClientPlaces
+from models import GroupClientPlaces, Employee
 from app import db
 
 
@@ -33,3 +33,27 @@ def groups_client_places_by_company_id(company_id):
             order_by(GroupClientPlaces.name.asc())
 
     return groups_client_places
+
+
+def create_relationship_group_client_places_to_employee(
+        employee_id, group_client_places_id):
+
+    relationship = db.session.employees_to_groups_client_places.query.filter_by(
+        employee_id=employee_id,
+        groups_client_places_id=group_client_places_id).firstr()
+
+    if relationship is None:
+        group_client_places = GroupClientPlaces.query.filter_by(
+            id=group_client_places_id).first_or_404()
+
+        employee = Employee.query.filter_by(id=employee_id).first_or_404()
+
+        group_client_places.employees.append(employee)
+
+        return True, 'successfully created'
+
+    elif relationship:
+        return False, 'has already been created'
+
+    else:
+        return None, 'error'

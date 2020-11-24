@@ -1,7 +1,10 @@
 from flask_login import current_user
 
 from app import db
-from models import Employee
+from models import Employee, \
+    GroupClientPlaces, \
+    ClientPlace, \
+    employees_to_groups_client_places, employees_to_client_places
 
 from db_access.company_access import company_by_id
 
@@ -47,15 +50,42 @@ def employees_in_corporation_by_email(corporation_id, email):
     return employees
 
 
-def create_by_yourself_relationship_to_client_place(client_place):
-    employee = current_user.employees.filter_by(
-        company_id=client_place.company_id).first_or_404()
+def is_relationship_employee_to_group_client_places(
+        employee_id, group_client_places_id):
 
-    relationship = db.session.employees_to_client_places.query.filter(
-        employee_id=employee.id, client_place_id=client_place.id).firstr()
+    employee = Employee.query.filter_by(id=employee_id).first_or_404()
+
+    is_relationship = employee.groups_client_places.filter(
+        employees_to_groups_client_places.c.group_client_places_id == \
+        group_client_places_id).count() > 0
+
+    return is_relationship
+
+
+def is_relationship_employee_to_client_place(
+        employee_id, client_place_id):
+
+    employee = Employee.query.filter_by(id=employee_id).first_or_404()
+
+    is_relationship = employee.client_places.filter(
+        employees_to_client_places.c.client_place_id == \
+        client_place_id).count() > 0
+
+    return is_relationship
+
+
+
+def create_by_yourself_relationship_to_group_client_places(
+        group_client_places):
+    employee = current_user.employees.filter_by(
+        company_id=group_client_places.company_id).first_or_404()
+
+    relationship = db.session.employees_to_groups_client_places.query.filter_by(
+        employee_id=employee.id,
+        group_client_places_id=group_client_places.id).firstr()
 
     if relationship is None:
-        employee.client_places.append(client_place)
+        employee.group_client_places.append(group_client_places)
         return True, 'successfully created'
 
     elif relationship:
@@ -65,18 +95,15 @@ def create_by_yourself_relationship_to_client_place(client_place):
         return None, 'error'
 
 
-def create_by_yourself_relationship_to_groups_client_places(
-        groups_client_places):
-
+def create_by_yourself_relationship_to_client_place(client_place):
     employee = current_user.employees.filter_by(
-        company_id=groups_client_places.company_id).first_or_404()
+        company_id=client_place.company_id).first_or_404()
 
-    relationship = db.session.employees_to_groups_client_places.query.filter(
-        employee_id=employee.id,
-        client_place_id=groups_client_places.id).firstr()
+    relationship = db.session.employees_to_client_places.query.filter_by(
+        employee_id=employee.id, client_place_id=client_place.id).firstr()
 
     if relationship is None:
-        employee.groups_client_places.append(groups_client_places)
+        employee.client_places.append(client_place)
         return True, 'successfully created'
 
     elif relationship:

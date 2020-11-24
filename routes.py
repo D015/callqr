@@ -13,10 +13,13 @@ from flask_login import current_user, \
 
 from werkzeug.urls import url_parse
 
-from db_access.client_place_access import create_client_place
+from db_access.client_place_access import create_client_place, \
+    create_relationship_client_place_to_employee
 from db_access.company_access import create_company
 from db_access.employee_access import create_employee, \
-    create_relationship_employee_to_user
+    create_relationship_employee_to_user, \
+    is_relationship_employee_to_group_client_places, \
+    is_relationship_employee_to_client_place
 from db_access.group_client_places_access import create_group_client_places, \
     groups_client_places_by_company_id
 from db_access.user_access import create_user
@@ -837,5 +840,7 @@ def test():
     # client_place4 = ClientPlace.query.filter_by(id=4).first()
     # print(client_place4, client_place4.employees.all())
     # ___________________________________________________
+    rce = is_relationship_employee_to_client_place(3, 1)
+    print(rce)
 
     return render_template('index.html', title='Home')

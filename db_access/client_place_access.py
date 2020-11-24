@@ -21,3 +21,4 @@ def client_place_in_company_by_name(company_id, name):
 
     return client_place
 
+

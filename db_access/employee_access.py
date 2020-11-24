@@ -44,13 +44,43 @@ def create_relationship_employee_to_user(employee_slug):
 def employees_in_corporation_by_email(corporation_id, email):
     employees = Employee.query.filter_by(corporation_id=corporation_id,
                                          email=email).first()
-
     return employees
 
 
-# TODO Check for the presence of relationship.
 def create_by_yourself_relationship_to_client_place(client_place):
     employee = current_user.employees.filter_by(
-        company_id=client_place.company_id).all()
-    employee.client_places.append(client_place)
-    return
+        company_id=client_place.company_id).first_or_404()
+
+    relationship = db.session.employees_to_client_places.query.filter(
+        employee_id=employee.id, client_place_id=client_place.id).firstr()
+
+    if relationship is None:
+        employee.client_places.append(client_place)
+        return True, 'successfully created'
+
+    elif relationship:
+        return False, 'has already been created'
+
+    else:
+        return None, 'error'
+
+
+def create_by_yourself_relationship_to_groups_client_places(
+        groups_client_places):
+
+    employee = current_user.employees.filter_by(
+        company_id=groups_client_places.company_id).first_or_404()
+
+    relationship = db.session.employees_to_groups_client_places.query.filter(
+        employee_id=employee.id,
+        client_place_id=groups_client_places.id).firstr()
+
+    if relationship is None:
+        employee.groups_client_places.append(groups_client_places)
+        return True, 'successfully created'
+
+    elif relationship:
+        return False, 'has already been created'
+
+    else:
+        return None, 'error'

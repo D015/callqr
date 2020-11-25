@@ -1,0 +1,9 @@
+{% if admins.count() %}
+    {% for admin in admins %}
+        <p>
+        {{ admin.corporation.name }} : {{ admin.role.name }}
+        </p>
+    {% endfor %}
+{% else %}
+    <p> <i>is not admins</i> </p>
+{% endif %}

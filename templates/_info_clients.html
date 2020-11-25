@@ -1,0 +1,9 @@
+{% if clients.count() %}
+    {% for client in clients %}
+        <p>
+        {{ client.corporation.name }}
+        </p>
+    {% endfor %}
+{% else %}
+    <p> <i>is not clients</i> </p>
+{% endif %}

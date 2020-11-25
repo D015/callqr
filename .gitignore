@@ -7,4 +7,3 @@ test/
 static/
 db_access/#access.py
 settings.py
-templates/copy_code.html

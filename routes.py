@@ -22,7 +22,8 @@ from db_access.employee_access import create_employee, \
     create_relationship_group_client_places_to_employee
 from db_access.group_client_places_access import create_group_client_places, \
     groups_client_places_by_company_id
-from db_access.user_access import create_user
+from db_access.user_access import create_user, employees_of_current_user, \
+    admins_of_current_user, clients_of_current_user, the_current_user
 from db_access.corporation_access import create_corporation
 from db_access.role_access import roles_available_to_create_admin, \
     roles_available_to_create_employee
@@ -204,7 +205,7 @@ def user(username):
     form.name.data = ''
     form.about.data = ''
 
-    return render_template('user.html', user=user, companys=companys, form=form)
+    return render_template('test/old/user.html', user=user, companys=companys, form=form)
 
 
 # Create company view
@@ -370,59 +371,89 @@ def create_by_yourself_relationship_to_group_client_places(
     return render_template('index.html', title='Home')
 
 
+# Profile view
+@app.route('/profile')
+@login_required
+def profile():
+
+    the_user = the_current_user()
+
+    admins = admins_of_current_user()
+
+    employees = employees_of_current_user()
+
+    clients = clients_of_current_user()
+
+    return render_template('profile.html', user=the_user, admins=admins,
+                           employees=employees, clients=clients)
+
+
+@app.route('/corporation/<corporation_slug_or_id>', methods=['GET', 'POST'])
+@login_required
+def corporation(corporation_slug_or_id):
+    return
+
+
+@app.route('/company/<corporation_slug_or_id>/<company_slug_or_id>',
+           methods=['GET', 'POST'])
+@login_required
+def company(corporation_slug_or_id, company_slug_or_id):
+    return
+
+
 # _Old__routes______________________________________
 # Company profile view
-@app.route('/company/<slug>', methods=['GET', 'POST'])
-@login_required
-def company(slug):
-    company = Company.query.filter_by(slug=slug).first_or_404()
-
-    client_places = ClientPlace.query. \
-        filter(ClientPlace.company_id == company.id). \
-        order_by(ClientPlace.name.asc())
-
-    groups_client_places = GroupClientPlaces.query. \
-        filter(GroupClientPlaces.company_id == company.id). \
-        order_by(GroupClientPlaces.name.asc())
-
-    choices_group_client_places = [(i.id, i.name) for i in groups_client_places]
-    choices_group_client_places.insert(0, ('', 'group not selected'))
-
-    form_group_client_places = GroupClientPlacesForm(company.id)
-    form_client_place = ClientPlaceForm(company.id, choices_group_client_places)
-
-    if form_group_client_places.submit_group_client_places.data \
-            and form_group_client_places.validate_on_submit():
-        group_client_places = GroupClientPlaces(
-            name=form_group_client_places.name_group_client_places.data.strip(),
-            company_group_client_places=company)
-        db.session.add(group_client_places)
-        db.session.commit()
-        flash('Your group_client_places is now live!')
-        return redirect(url_for('company', slug=slug))
-
-    if form_client_place.submit_client_place.data and \
-            form_client_place.validate_on_submit():
-        client_place = ClientPlace(
-            name=form_client_place.name_client_place.data.strip(),
-            company_client_place=company,
-            group_client_places_id=form_client_place.group_client_places.data) \
-            if form_client_place.group_client_places.data else \
-            ClientPlace(
-                name=form_client_place.name_client_place.data.strip(),
-                company_client_place=company)
-
-        db.session.add(client_place)
-        db.session.commit()
-        flash('Your client_place is now live!')
-        return redirect(url_for('company', slug=slug))
-
-    return render_template('company.html',
-                           company=company,
-                           client_places=client_places,
-                           groups_client_places=groups_client_places,
-                           form_client_place=form_client_place,
-                           form_group_client_places=form_group_client_places)
+# @app.route('/company/<slug>', methods=['GET', 'POST'])
+# @login_required
+# def company(slug):
+#     company = Company.query.filter_by(slug=slug).first_or_404()
+#
+#     client_places = ClientPlace.query. \
+#         filter(ClientPlace.company_id == company.id). \
+#         order_by(ClientPlace.name.asc())
+#
+#     groups_client_places = GroupClientPlaces.query. \
+#         filter(GroupClientPlaces.company_id == company.id). \
+#         order_by(GroupClientPlaces.name.asc())
+#
+#     choices_group_client_places = [(i.id, i.name) for i in groups_client_places]
+#     choices_group_client_places.insert(0, ('', 'group not selected'))
+#
+#     form_group_client_places = GroupClientPlacesForm(company.id)
+#     form_client_place = ClientPlaceForm(company.id, choices_group_client_places)
+#
+#     if form_group_client_places.submit_group_client_places.data \
+#             and form_group_client_places.validate_on_submit():
+#         group_client_places = GroupClientPlaces(
+#             name=form_group_client_places.name_group_client_places.data.strip(),
+#             company_group_client_places=company)
+#         db.session.add(group_client_places)
+#         db.session.commit()
+#         flash('Your group_client_places is now live!')
+#         return redirect(url_for('company', slug=slug))
+#
+#     if form_client_place.submit_client_place.data and \
+#             form_client_place.validate_on_submit():
+#         client_place = ClientPlace(
+#             name=form_client_place.name_client_place.data.strip(),
+#             company_client_place=company,
+#             group_client_places_id=form_client_place.group_client_places.data) \
+#             if form_client_place.group_client_places.data else \
+#             ClientPlace(
+#                 name=form_client_place.name_client_place.data.strip(),
+#                 company_client_place=company)
+#
+#         db.session.add(client_place)
+#         db.session.commit()
+#         flash('Your client_place is now live!')
+#         return redirect(url_for('company', slug=slug))
+#
+#     return render_template('test/old/company.html',
+#                            company=company,
+#                            client_places=client_places,
+#                            groups_client_places=groups_client_places,
+#                            form_client_place=form_client_place,
+#                            form_group_client_places=form_group_client_places)
 
 
 # Profile editor view
@@ -439,7 +470,7 @@ def edit_user():
     elif request.method == 'GET':
         form.username.data = current_user.username
         form.about.data = current_user.about
-    return render_template('edit_user.html', title='Edit User',
+    return render_template('test/old/edit_user.html', title='Edit User',
                            form=form)
 
 
@@ -458,7 +489,7 @@ def edit_company(slug):
     elif request.method == 'GET':
         form.name.data = company.name
         form.about.data = company.about
-    return render_template('edit_company.html',
+    return render_template('test/old/edit_company.html',
                            title='Edit company{}'.format(company.name),
                            form=form)
 
@@ -489,7 +520,7 @@ def edit_client_place(slug):
         return redirect(url_for('edit_client_place', slug=client_place.slug))
     elif request.method == 'GET':
         form.name.data = client_place.name
-    return render_template('edit_client_place.html',
+    return render_template('test/old/edit_client_place.html',
                            title='Edit client place {}'.format(
                                client_place.name),
                            form=form)
@@ -556,7 +587,7 @@ def my_companies(username):
     form.name.data = ''
     form.about.data = ''
 
-    return render_template('my_companies.html', user=user, companys=companys,
+    return render_template('test/old/my_companies.html', user=user, companys=companys,
                            form=form)
 
 
@@ -601,7 +632,7 @@ def group_client_places(slug):
         return redirect(url_for('group_client_places',
                                 slug=group_client_places.slug))
 
-    return render_template('group_client_places.html',
+    return render_template('test/old/group_client_places.html',
                            group_client_places=group_client_places,
                            client_places=client_places_in_group_client_places,
                            form_choice_client_places=form_choice_client_places)
@@ -627,55 +658,55 @@ def edit_group_client_places(slug):
     elif request.method == 'GET':
         form.name.data = group_client_places.name
         form.about.data = group_client_places.about
-    return render_template('edit_group_client_places.html',
+    return render_template('test/old/edit_group_client_places.html',
                            title='Edit group client places {}'.format(
                                group_client_places.name),
                            form=form)
 
 
-# Profile view
-@app.route('/profile')
-@login_required
-def profile():
-    user = current_user
-
-    person = Person.query.filter_by(user_id=current_user.id).first()
-
-    if person:
-        first_name = person.first_name
-        last_name = person.last_name
-        about = person.about
-    else:
-        first_name = 'No first name'
-        last_name = 'No last name'
-        about = 'No about'
-
-    employee = Employee.query.filter_by(person=user.person).first()
-
-    if employee:
-        about_employee = employee.about
-        email_employee = employee.email
-        phone_number_telegram_employee = employee.phone_number_telegram
-    else:
-        about_employee = 'No about'
-        email_employee = 'No email'
-        phone_number_telegram_employee = 'No phone number telegram'
-
-    client = Client.query.filter_by(person=user.person).first()
-
-    if client:
-        about_client = client.about
-
-    else:
-        about_client = 'No about'
-
-    return render_template('profile.html', user=user, first_name=first_name,
-                           last_name=last_name, about=about,
-                           about_employee=about_employee,
-                           email_employee=email_employee,
-                           phone_number_telegram_employee= \
-                               phone_number_telegram_employee,
-                           about_client=about_client)
+# # Profile view
+# @app.route('/profile')
+# @login_required
+# def profile():
+#     user = current_user
+#
+#     person = Person.query.filter_by(user_id=current_user.id).first()
+#
+#     if person:
+#         first_name = person.first_name
+#         last_name = person.last_name
+#         about = person.about
+#     else:
+#         first_name = 'No first name'
+#         last_name = 'No last name'
+#         about = 'No about'
+#
+#     employee = Employee.query.filter_by(person=user.person).first()
+#
+#     if employee:
+#         about_employee = employee.about
+#         email_employee = employee.email
+#         phone_number_telegram_employee = employee.phone_number_telegram
+#     else:
+#         about_employee = 'No about'
+#         email_employee = 'No email'
+#         phone_number_telegram_employee = 'No phone number telegram'
+#
+#     client = Client.query.filter_by(person=user.person).first()
+#
+#     if client:
+#         about_client = client.about
+#
+#     else:
+#         about_client = 'No about'
+#
+#     return render_template('profile.html', user=user, first_name=first_name,
+#                            last_name=last_name, about=about,
+#                            about_employee=about_employee,
+#                            email_employee=email_employee,
+#                            phone_number_telegram_employee= \
+#                                phone_number_telegram_employee,
+#                            about_client=about_client)
 
 
 # Person editor view
@@ -716,7 +747,7 @@ def edit_person():
         form.first_name.data = first_name
         form.last_name.data = last_name
         form.about.data = about
-    return render_template('edit_person.html', user=user, first_name=first_name,
+    return render_template('test/old/edit_person.html', user=user, first_name=first_name,
                            last_name=last_name, about=about, form=form)
 
 
@@ -757,7 +788,7 @@ def edit_employee():
         form.about.data = about
         form.email.data = email
         form.phone_number_telegram.data = phone_number_telegram
-    return render_template('edit_employee.html', user=current_user, about=about,
+    return render_template('test/old/edit_employee.html', user=current_user, about=about,
                            email=email,
                            phone_number_telegram=phone_number_telegram,
                            form=form)
@@ -872,5 +903,9 @@ def test():
     # rce = is_relationship_employee_to_client_place(3, 1)
     # print(rce)
     # ___________________________________________________
-
+    # print(employees_of_current_user())
+    # print(admins_of_current_user())
+    # print(clients_of_current_user())
+    # print(the_current_user())
+    print(current_user.admins.filter_by().first().about)
     return render_template('index.html', title='Home')

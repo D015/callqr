@@ -1,4 +1,6 @@
-from models import User
+from flask_login import current_user
+
+from models import User, Corporation, Admin
 from app import db
 
 
@@ -28,3 +30,20 @@ def user_by_id(user_id):
 def user_by_id_or_404(user_id):
     user = User.query.filter_by(id=user_id).first_or_404()
     return user
+
+
+def the_current_user():
+    return current_user
+
+def admins_of_current_user():
+    return current_user.admins.filter_by(active=True, archived=False).\
+        order_by(Admin.id.asc())
+
+
+def employees_of_current_user():
+    return current_user.employees.filter_by(active=True, archived=False)
+
+
+def clients_of_current_user():
+    return current_user.clients.filter_by(active=True, archived=False)
+

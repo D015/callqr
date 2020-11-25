@@ -17,7 +17,9 @@ from db_access.client_place_access import create_client_place
 from db_access.company_access import create_company
 from db_access.employee_access import create_employee, \
     create_relationship_employee_to_user, \
-    is_relationship_employee_to_client_place
+    is_relationship_employee_to_client_place, \
+    create_relationship_client_place_to_employee, \
+    create_relationship_group_client_places_to_employee
 from db_access.group_client_places_access import create_group_client_places, \
     groups_client_places_by_company_id
 from db_access.user_access import create_user
@@ -302,6 +304,7 @@ def create_group_client_places_view(corporation_slug_or_id, company_slug_or_id):
                            corporation_slug_or_id=corporation_slug_or_id,
                            company_slug_or_id=company_slug_or_id)
 
+
 # Create client place view
 @app.route(
     '/_create_client_place/<corporation_slug_or_id>/<company_slug_or_id>',
@@ -310,7 +313,6 @@ def create_group_client_places_view(corporation_slug_or_id, company_slug_or_id):
 @login_required
 @check_role_and_transform_all_slug_to_id(role_id=601)
 def create_client_place_view(corporation_slug_or_id, company_slug_or_id):
-
     groups_client_places = groups_client_places_by_company_id(
         company_slug_or_id)
 
@@ -336,11 +338,36 @@ def create_client_place_view(corporation_slug_or_id, company_slug_or_id):
     form.name_client_place.data = ''
     form.group_client_places.data = ''
 
-
     return render_template('_create_client_place.html',
                            form_client_place=form,
                            corporation_slug_or_id=corporation_slug_or_id,
                            company_slug_or_id=company_slug_or_id)
+
+
+# Create by yourself relationship to client lace
+@app.route('/_yourself_to_client_place/<client_place_slug>',
+           methods=['GET', 'POST'])
+def create_by_yourself_relationship_to_client_place(client_place_slug):
+
+    result = create_relationship_client_place_to_employee(client_place_slug)
+
+    flash(result[1])
+
+    return render_template('index.html', title='Home')
+
+
+# Create by yourself relationship to group client places
+@app.route('/_yourself_to_group_client_places/<group_client_places_slug>',
+           methods=['GET', 'POST'])
+def create_by_yourself_relationship_to_group_client_places(
+        group_client_places_slug):
+
+    result = create_relationship_group_client_places_to_employee(
+        group_client_places_slug)
+
+    flash(result[1])
+
+    return render_template('index.html', title='Home')
 
 
 # _Old__routes______________________________________
@@ -739,6 +766,10 @@ def edit_employee():
 @app.route('/test', methods=['GET', 'POST'])
 # @login_required
 def test():
+    # __________________________
+    # arg1 = request.args.get('arg1')
+    # arg2 = request.args.get('arg2')
+    # _____________________________
     # user_id = current_user.id
     # corporation, admin = create_corporation(user_id, 'name_corporation',
     #                                         'about_corporation',

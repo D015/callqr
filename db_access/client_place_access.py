@@ -24,6 +24,12 @@ def client_place_in_company_by_name(company_id, name):
 
 def client_place_by_id(client_place_id):
     client_place = ClientPlace.query.filter_by(
-        id=client_place_id)
+        id=client_place_id).first()
+
+    return client_place
+
+def client_place_by_slug(client_place_slug):
+    client_place = ClientPlace.query.filter_by(
+        slug=client_place_slug).first()
 
     return client_place

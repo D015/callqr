@@ -11,15 +11,15 @@
         </tr>
     </table>
     <hr>
-    <h3> Person </h3>
-    {% include '_person.html' %}
+    <h3> Admins </h3>
+    {% include '_admins_to_user.html' %}
     <p><a href="{{ url_for('edit_person') }}">Edit</a></p>
     <hr>
-    <h3> Employee </h3>
-    {% include '_create_employee.html' %}
+    <h3> Employees </h3>
+    {% include '_employees_to_user.html' %}
      <p><a href="{{ url_for('edit_employee') }}">Edit</a></p>
     <hr>
-    <h3> Client </h3>
-    {% include '_client.html' %}
+    <h3> Clients </h3>
+    {% include '_clients_to_user.html' %}
 
 {% endblock %}

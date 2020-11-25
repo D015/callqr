@@ -34,13 +34,13 @@ def groups_client_places_by_company_id(company_id):
 
 def group_client_places_by_id(group_client_places_id):
     group_client_places = GroupClientPlaces.query.filter_by(
-        id=group_client_places_id)
+        id=group_client_places_id).first()
 
     return group_client_places
 
 
 def group_client_places_by_slug(group_client_places_slug):
     group_client_places = GroupClientPlaces.query.filter_by(
-        slug=group_client_places_slug)
+        slug=group_client_places_slug).first()
 
     return group_client_places

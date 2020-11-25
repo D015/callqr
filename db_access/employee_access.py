@@ -1,8 +1,8 @@
 from flask_login import current_user
 
 from app import db
-from db_access.client_place_access import client_place_by_id
-from db_access.group_client_places_access import group_client_places_by_id
+from db_access.client_place_access import client_place_by_slug
+from db_access.group_client_places_access import group_client_places_by_slug
 from models import Employee, \
     employees_to_groups_client_places, \
     employees_to_client_places
@@ -74,8 +74,8 @@ def is_relationship_employee_to_client_place(
 
 
 def create_relationship_group_client_places_to_employee(
-        group_client_places_id, employee_id=0):
-    group_client_places = group_client_places_by_id(group_client_places_id)
+        group_client_places_slug, employee_id=0):
+    group_client_places = group_client_places_by_slug(group_client_places_slug)
 
     if employee_id == 0:
         employee = current_user.employees.filter_by(
@@ -90,22 +90,26 @@ def create_relationship_group_client_places_to_employee(
         return None, 'employee not selected'
 
     is_relationship = is_relationship_employee_to_group_client_places(
-        employee.id, group_client_places_id)
+        employee.id, group_client_places.id)
 
     if is_relationship is False:
         employee.groups_client_places.append(group_client_places)
-        return True, 'successfully created'
+
+        db.session.add(employee)
+        db.session.commit()
+
+        return True, 'The relationship with the group successfully created'
 
     elif is_relationship:
-        return False, 'has already been created'
+        return False, 'The relationship with the group already existed'
 
     else:
         return None, 'error'
 
 
 def create_relationship_client_place_to_employee(
-        client_place_id, employee_id=0):
-    client_place = client_place_by_id(client_place_id)
+        client_place_slug, employee_id=0):
+    client_place = client_place_by_slug(client_place_slug)
 
     if employee_id == 0:
         employee = current_user.employees.filter_by(
@@ -120,14 +124,18 @@ def create_relationship_client_place_to_employee(
         return None, 'employee not selected'
 
     is_relationship = is_relationship_employee_to_client_place(
-        employee.id, client_place_id)
+        employee.id, client_place.id)
 
     if is_relationship is False:
         employee.client_places.append(client_place)
-        return True, 'successfully created'
+
+        db.session.add(employee)
+        db.session.commit()
+
+        return True, 'The relationship with the place successfully created'
 
     elif is_relationship:
-        return False, 'has already been created'
+        return False, 'The relationship with the place already existed'
 
     else:
         return None, 'error'

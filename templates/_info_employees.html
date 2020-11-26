@@ -1,17 +1,25 @@
 {% if employees.count() %}
     {% for employee in employees %}
+
         <p>
         <a href="{{ url_for('corporation',
         corporation_slug_or_id=employee.corporation.slug) }}">
             {{ employee.corporation.name }}</a>
 
-        : {{ employee.role.name }} of
+        :
+
+        <a href="{{ url_for('employee',
+        employee_slug_or_id=employee.slug) }}">
+            {{ employee.role.name }}</a>
+
+        of
 
         <a href="{{ url_for('company',
         corporation_slug_or_id=employee.corporation.slug,
         company_slug_or_id=employee.company.slug) }}">
             {{ employee.company.name }}</a>
         </p>
+
     {% endfor %}
 {% else %}
     <span> <i>is not employees</i> </span>

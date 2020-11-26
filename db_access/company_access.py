@@ -1,6 +1,6 @@
 from flask_login import current_user
 
-from models import Company
+from models import Company, Admin
 from app import db
 
 
@@ -29,3 +29,17 @@ def company_in_corporation_by_name(corporation_id, name_company):
     company = Company.query.filter_by(corporation_id=corporation_id,
                                       name=name_company).first()
     return company
+
+
+def companies_by_corporation_id(corporation_id):
+    companies = Company.query.filter_by(
+        corporation_id=corporation_id, active=True, archived=False).\
+        order_by(Company.name.asc()).all()
+    return companies
+
+
+def companies_of_current_user_by_corporation_id():
+    # companies_of_corporation = companies_by_corporation_id(corporation_id)
+    companies = Company.query.join(Admin, Company.corporation_id == Admin.corporation_id). \
+        filter(Admin.user_id == current_user.id).all()
+    return companies

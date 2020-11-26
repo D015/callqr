@@ -1,8 +1,17 @@
 {% if admins.count() %}
     {% for admin in admins %}
+
         <p>
-        {{ admin.corporation.name }} : {{ admin.role.name }}
+        <a href="{{ url_for('corporation',
+        corporation_slug_or_id=admin.corporation.slug) }}">
+            {{ admin.corporation.name }}</a>
+        :
+
+        <a href="{{ url_for('admin',
+        admin_slug_or_id=admin.slug) }}">
+            {{ admin.role.name }}</a>
         </p>
+
     {% endfor %}
 {% else %}
     <p> <i>is not admins</i> </p>

@@ -14,7 +14,8 @@ from flask_login import current_user, \
 from werkzeug.urls import url_parse
 
 from db_access.client_place_access import create_client_place
-from db_access.company_access import create_company
+from db_access.company_access import create_company, \
+    companies_by_corporation_id, companies_of_current_user_by_corporation_id
 from db_access.employee_access import create_employee, \
     create_relationship_employee_to_user, \
     is_relationship_employee_to_client_place, \
@@ -24,7 +25,7 @@ from db_access.group_client_places_access import create_group_client_places, \
     groups_client_places_by_company_id
 from db_access.user_access import create_user, employees_of_current_user, \
     admins_of_current_user, clients_of_current_user, the_current_user
-from db_access.corporation_access import create_corporation
+from db_access.corporation_access import create_corporation, corporation_by_slug
 from db_access.role_access import roles_available_to_create_admin, \
     roles_available_to_create_employee
 from db_access.admin_access import create_admin, \
@@ -388,16 +389,36 @@ def profile():
                            employees=employees, clients=clients)
 
 
-@app.route('/corporation/<corporation_slug_or_id>', methods=['GET', 'POST'])
+@app.route('/corporation/<corporation_slug_or_id>',
+           endpoint='corporation',
+           methods=['GET', 'POST'])
+@check_role_and_transform_all_slug_to_id(role_id=999)
 @login_required
 def corporation(corporation_slug_or_id):
-    return
+    companies = companies_by_corporation_id(corporation_slug_or_id)
+    return render_template('corporation.html', companies=companies,
+                           corporation_slug_or_id=corporation_slug_or_id)
 
 
 @app.route('/company/<corporation_slug_or_id>/<company_slug_or_id>',
+           endpoint='company',
            methods=['GET', 'POST'])
 @login_required
 def company(corporation_slug_or_id, company_slug_or_id):
+
+    return render_template('company.html', companies=companies,
+                           corporation_slug_or_id=corporation_slug_or_id)
+
+
+@app.route('/admin/<admin_slug_or_id>', methods=['GET', 'POST'])
+@login_required
+def admin(admin_slug_or_id):
+    return
+
+
+@app.route('/employee/<employee_slug_or_id>', methods=['GET', 'POST'])
+@login_required
+def employee(employee_slug_or_id):
     return
 
 
@@ -907,5 +928,5 @@ def test():
     # print(admins_of_current_user())
     # print(clients_of_current_user())
     # print(the_current_user())
-    print(current_user.admins.filter_by().first().about)
+    print(companies_of_current_user_by_corporation_id())
     return render_template('index.html', title='Home')

@@ -5,7 +5,7 @@ from flask import \
 
 from flask_login import current_user
 
-from db_access.company_access import company_by_slug, company_by_id
+from db_access.company_access import company_by_slug
 from db_access.corporation_access import corporation_by_slug
 
 from models import Admin, Employee

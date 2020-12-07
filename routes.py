@@ -23,13 +23,11 @@ from db_access.employee_access import create_employee, \
     create_relationship_group_client_places_to_employee
 from db_access.group_client_places_access import create_group_client_places, \
     groups_client_places_by_company_id
-from db_access.user_access import create_user, employees_of_current_user, \
-    admins_of_current_user, clients_of_current_user, the_current_user
-from db_access.corporation_access import create_corporation, corporation_by_slug
+from db_access.user_access import UserAccess
+from db_access.corporation_access import CorporationAccess
 from db_access.role_access import roles_available_to_create_admin, \
     roles_available_to_create_employee
-from db_access.admin_access import create_admin, \
-    create_relationship_admin_to_user
+from db_access.admin_access import AdminAccess
 from db_access.decorator_access import \
     check_role_and_transform_corporation_slug_to_id, \
     check_role_and_transform_all_slug_to_id
@@ -48,7 +46,6 @@ from forms import ClientPlaceForm, \
     EmployeeForm, \
     CorporationForm, \
     AdminForm
-
 
 from app import app, db
 
@@ -79,9 +76,9 @@ def register():
     form = RegistrationForm()
 
     if form.validate_on_submit():
-        create_user(username=form.username.data.strip(),
-                    email=form.email.data,
-                    password=form.password.data)
+        UserAccess(username=form.username.data.strip(),
+                   email=form.email.data,
+                   password=form.password.data).create_user()
 
         flash('Congratulations, you are now a registered user!')
         return redirect(url_for('login'))
@@ -123,8 +120,8 @@ def create_corporation_view():
     if request.method == 'POST':
         if form.submit_corporation.data:
             if form.validate_on_submit():
-                create_corporation(
-                    name_corporation=form.name_corporation.data.strip())
+                CorporationAccess(name=form.name_corporation.data.strip()).\
+                    create_corporation()
                 flash('Your corporation is now live!')
 
     form.name_corporation.data = ''
@@ -149,10 +146,9 @@ def create_admin_view(corporation_slug_or_id):
     if request.method == 'POST':
         if form.submit_admin.data:
             if form.validate_on_submit():
-                create_admin(
-                    corporation_id=corporation_slug_or_id,
-                    email=form.email_admin.data.strip(),
-                    role_id=form.role_admin.data.strip())
+                AdminAccess(corporation_id=corporation_slug_or_id,
+                            email=form.email_admin.data.strip(),
+                            role_id=form.role_admin.data.strip()).create_admin()
                 flash('Your admin is now live!')
 
     form.email_admin.data = ''
@@ -167,7 +163,8 @@ def create_admin_view(corporation_slug_or_id):
            methods=['GET', 'POST'])
 @login_required
 def create_relationship_admin_to_user_view(admin_slug):
-    admin = create_relationship_admin_to_user(admin_slug)
+    admin = AdminAccess(slug=admin_slug).\
+        create_relationship_admin_to_user()
 
     if admin:
         flash('The relationship admin to user is created')
@@ -177,30 +174,31 @@ def create_relationship_admin_to_user_view(admin_slug):
     return render_template('index.html', title='Home')
 
 
-# User profile view
-@app.route('/user/<username>', methods=['GET', 'POST'])
-@login_required
-def user(username):
-    user = User.query.filter_by(username=username).first_or_404()
-
-    companys = Company.query.filter_by(creator_user_id=user.id).order_by(
-        Company.timestamp.desc())
-
-    form = CompanyForm()
-    if request.method == 'POST':
-        if form.submit.data:
-            if form.validate_on_submit():
-                company = Company(name=form.name.data.strip(),
-                                  creator=current_user,
-                                  about=form.about.data.strip())
-                db.session.add(company)
-                db.session.commit()
-                flash('Your company is now live!')
-
-    form.name.data = ''
-    form.about.data = ''
-
-    return render_template('test/old/user.html', user=user, companys=companys, form=form)
+# # User profile view
+# @app.route('/user/<username>', methods=['GET', 'POST'])
+# @login_required
+# def user(username):
+#     user = User.query.filter_by(username=username).first_or_404()
+#
+#     companys = Company.query.filter_by(creator_user_id=user.id).order_by(
+#         Company.timestamp.desc())
+#
+#     form = CompanyForm()
+#     if request.method == 'POST':
+#         if form.submit.data:
+#             if form.validate_on_submit():
+#                 company = Company(name=form.name.data.strip(),
+#                                   creator=current_user,
+#                                   about=form.about.data.strip())
+#                 db.session.add(company)
+#                 db.session.commit()
+#                 flash('Your company is now live!')
+#
+#     form.name.data = ''
+#     form.about.data = ''
+#
+#     return render_template('test/old/user.html', user=user, companys=companys,
+#                            form=form)
 
 
 # Create company view
@@ -344,7 +342,6 @@ def create_client_place_view(corporation_slug_or_id, company_slug_or_id):
 @app.route('/_yourself_to_client_place/<client_place_slug>',
            methods=['GET', 'POST'])
 def create_by_yourself_relationship_to_client_place(client_place_slug):
-
     result = create_relationship_client_place_to_employee(client_place_slug)
 
     flash(result[1])
@@ -357,7 +354,6 @@ def create_by_yourself_relationship_to_client_place(client_place_slug):
            methods=['GET', 'POST'])
 def create_by_yourself_relationship_to_group_client_places(
         group_client_places_slug):
-
     result = create_relationship_group_client_places_to_employee(
         group_client_places_slug)
 
@@ -370,14 +366,13 @@ def create_by_yourself_relationship_to_group_client_places(
 @app.route('/profile')
 @login_required
 def profile():
+    the_user = UserAccess().the_current_user()
 
-    the_user = the_current_user()
+    admins = UserAccess().admins_of_current_user()
 
-    admins = admins_of_current_user()
+    employees = UserAccess().employees_of_current_user()
 
-    employees = employees_of_current_user()
-
-    clients = clients_of_current_user()
+    clients = UserAccess().clients_of_current_user()
 
     return render_template('profile.html', user=the_user, admins=admins,
                            employees=employees, clients=clients)
@@ -399,7 +394,6 @@ def corporation(corporation_slug_or_id):
            methods=['GET', 'POST'])
 @login_required
 def company(corporation_slug_or_id, company_slug_or_id):
-
     return render_template('company.html', companies=companies,
                            corporation_slug_or_id=corporation_slug_or_id)
 

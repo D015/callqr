@@ -25,9 +25,8 @@ from models import User, \
 from db_access.client_place_access import client_place_in_company_by_name
 from db_access.group_client_places_access import \
     group_client_places_in_company_by_name
-from db_access.corporation_access import \
-    same_corporation_name_for_creator_user
-from db_access.admin_access import admins_in_corporation_by_email
+from db_access.corporation_access import CorporationAccess
+from db_access.admin_access import AdminAccess
 from db_access.employee_access import employees_in_corporation_by_email
 from db_access.company_access import company_in_corporation_by_name
 
@@ -66,9 +65,8 @@ class CorporationForm(FlaskForm):
     cancel_corporation = SubmitField('Cancel')
 
     def validate_name_corporation(self, name_corporation):
-        corporation = same_corporation_name_for_creator_user(
-            user_id=current_user.id,
-            name_corporation=name_corporation.data.strip())
+        corporation = CorporationAccess(name=name_corporation.data.strip()).\
+            same_corporation_name_for_creator_user()
         if corporation is not None:
             raise ValidationError('Please use a different Corporation name.')
 
@@ -87,8 +85,9 @@ class AdminForm(FlaskForm):
         self.corporation_id = corporation_id
 
     def validate_email_admin(self, email_admin):
-        admins = admins_in_corporation_by_email(
-            self.corporation_id, email_admin.data.strip())
+        admins = AdminAccess(corporation_id=self.corporation_id,
+                             email=email_admin.data.strip()).\
+            admins_in_corporation_by_email()
 
         employees = employees_in_corporation_by_email(
             self.corporation_id, self.email_admin.data.strip())
@@ -132,8 +131,9 @@ class EmployeeForm(FlaskForm):
         self.corporation_id = corporation_id
 
     def validate_email_employee(self, email_employee):
-        admins = admins_in_corporation_by_email(
-            self.corporation_id, email_employee.data.strip())
+        admins = AdminAccess(corporation_id=self.corporation_id,
+                             email=email_employee.data.strip()).\
+            admins_in_corporation_by_email()
 
         employees = employees_in_corporation_by_email(
             self.corporation_id, self.email_employee.data.strip())

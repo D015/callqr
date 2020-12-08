@@ -13,17 +13,15 @@ from flask_login import current_user, \
 
 from werkzeug.urls import url_parse
 
-from db_access.client_place_access import create_client_place
-from db_access.company_access import CompanyAccess
-from db_access.employee_access import EmployeeAccess
-from db_access.group_client_places_access import create_group_client_places, \
-    groups_client_places_by_company_id
-from db_access.user_access import UserAccess
-from db_access.corporation_access import CorporationAccess
-from db_access.role_access import roles_available_to_create_admin, \
-    roles_available_to_create_employee
-from db_access.admin_access import AdminAccess
-from db_access.decorator_access import \
+from db_access import\
+    UserAccess,\
+    AdminAccess,\
+    EmployeeAccess,\
+    RoleAccess,\
+    CorporationAccess,\
+    CompanyAccess,\
+    GroupClientPlacesAccess,\
+    ClientPlaceAccess,\
     check_role_and_transform_corporation_slug_to_id, \
     check_role_and_transform_all_slug_to_id
 
@@ -131,8 +129,8 @@ def create_corporation_view():
 @login_required
 @check_role_and_transform_corporation_slug_to_id(role_id=401)
 def create_admin_view(corporation_slug_or_id):
-    roles = roles_available_to_create_admin(
-        corporation_id=corporation_slug_or_id)
+    roles = RoleAccess(
+        corporation_id=corporation_slug_or_id).roles_available_to_create_admin()
 
     roles_to_choose = [(i.id, i.name) for i in roles]
 
@@ -226,8 +224,9 @@ def create_company_view(corporation_slug_or_id):
 @login_required
 @check_role_and_transform_all_slug_to_id(role_id=999)
 def create_employee_view(corporation_slug_or_id, company_slug_or_id):
-    roles = roles_available_to_create_employee(
-        corporation_id=corporation_slug_or_id, company_id=company_slug_or_id)
+    roles = RoleAccess(corporation_id=corporation_slug_or_id,
+                       company_id=company_slug_or_id). \
+        roles_available_to_create_employee()
 
     roles_to_choose = [(i.id, i.name) for i in roles]
 
@@ -240,7 +239,7 @@ def create_employee_view(corporation_slug_or_id, company_slug_or_id):
                                first_name=form.first_name_employee.data.strip(),
                                email=form.email_employee.data.strip(),
                                role_id=form.role_employee.data.strip(),
-                               corporation_id=corporation_slug_or_id).\
+                               corporation_id=corporation_slug_or_id). \
                     create_employee()
                 flash('Your employee is now live!')
 
@@ -282,9 +281,9 @@ def create_group_client_places_view(corporation_slug_or_id, company_slug_or_id):
     if request.method == 'POST':
         if form.submit_group_client_places.data:
             if form.validate_on_submit():
-                create_group_client_places(
-                    company_slug_or_id,
-                    form.name_group_client_places.data.strip())
+                GroupClientPlacesAccess(
+                    name=form.name_group_client_places.data.strip(),
+                    company_id=company_slug_or_id).create_group_client_places()
                 flash('Your group is now live!')
 
     form.name_group_client_places.data = ''
@@ -303,8 +302,8 @@ def create_group_client_places_view(corporation_slug_or_id, company_slug_or_id):
 @login_required
 @check_role_and_transform_all_slug_to_id(role_id=601)
 def create_client_place_view(corporation_slug_or_id, company_slug_or_id):
-    groups_client_places = groups_client_places_by_company_id(
-        company_slug_or_id)
+    groups_client_places = GroupClientPlacesAccess(id=company_slug_or_id).\
+        groups_client_places_by_company_id()
 
     choices_group_client_places = [(i.id, i.name) for i in groups_client_places]
     choices_group_client_places.insert(0, (None, 'group not selected'))
@@ -314,14 +313,16 @@ def create_client_place_view(corporation_slug_or_id, company_slug_or_id):
     if request.method == 'POST':
         if form.submit_client_place.data:
             if form.validate_on_submit():
-                create_client_place(
-                    company_slug_or_id,
-                    form.name_client_place.data.strip(),
-                    form.group_client_places.data.strip()) \
+                ClientPlaceAccess(company_id=company_slug_or_id,
+                                  name=form.name_client_place.data.strip(),
+                                  group_client_places_id=
+                                  form.group_client_places.data.strip()). \
+                    create_client_place() \
                     if form.group_client_places.data else \
-                    create_client_place(
-                        company_slug_or_id,
-                        form.name_client_place.data.strip())
+                    ClientPlaceAccess(
+                        company_id=company_slug_or_id,
+                        name=form.name_client_place.data.strip()).\
+                        create_client_place()
 
                 flash('Your client place is now live!')
 
@@ -338,7 +339,7 @@ def create_client_place_view(corporation_slug_or_id, company_slug_or_id):
 @app.route('/_yourself_to_client_place/<client_place_slug>',
            methods=['GET', 'POST'])
 def create_by_yourself_relationship_to_client_place(client_place_slug):
-    result = EmployeeAccess(client_place_slug=client_place_slug).\
+    result = EmployeeAccess(client_place_slug=client_place_slug). \
         create_relationship_client_place_to_employee()
 
     flash(result[1])
@@ -351,7 +352,7 @@ def create_by_yourself_relationship_to_client_place(client_place_slug):
            methods=['GET', 'POST'])
 def create_by_yourself_relationship_to_group_client_places(
         group_client_places_slug):
-    result = EmployeeAccess(group_client_places_slug=group_client_places_slug).\
+    result = EmployeeAccess(group_client_places_slug=group_client_places_slug). \
         create_relationship_group_client_places_to_employee()
 
     flash(result[1])

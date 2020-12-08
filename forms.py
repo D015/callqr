@@ -22,13 +22,13 @@ from models import User, \
     Employee, \
     Client
 
-from db_access.client_place_access import client_place_in_company_by_name
-from db_access.group_client_places_access import \
-    group_client_places_in_company_by_name
-from db_access.corporation_access import CorporationAccess
-from db_access.admin_access import AdminAccess
-from db_access.employee_access import EmployeeAccess
-from db_access.company_access import CompanyAccess
+from db_access import \
+    AdminAccess,\
+    EmployeeAccess,\
+    CorporationAccess,\
+    CompanyAccess,\
+    GroupClientPlacesAccess,\
+    ClientPlaceAccess
 
 
 class LoginForm(FlaskForm):
@@ -157,8 +157,9 @@ class GroupClientPlacesForm(FlaskForm):
         self.company_id = company_id
 
     def validate_name_group_client_places(self, name_group_client_places):
-        group_client_places = group_client_places_in_company_by_name(
-            self.company_id, name_group_client_places.data.strip())
+        group_client_places = GroupClientPlacesAccess(
+            name=name_group_client_places.data.strip(),
+            company_id=self.company_id).group_client_places_in_company_by_name()
         if group_client_places is not None:
             raise ValidationError('Please use a different group name.')
 
@@ -179,8 +180,9 @@ class ClientPlaceForm(FlaskForm):
 
     def validate_name_client_place(self, name_client_place):
 
-        client_place = client_place_in_company_by_name(
-            self.company_id, name_client_place.data.strip())
+        client_place = ClientPlaceAccess(company_id=self.company_id,
+                                         name=name_client_place.data.strip()).\
+            client_place_in_company_by_name()
 
         if client_place is not None:
             raise ValidationError('Please use a different place name.')

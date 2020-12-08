@@ -6,7 +6,7 @@ from flask import \
 from flask_login import current_user
 
 from db_access.company_access import company_by_slug
-from db_access.corporation_access import corporation_by_slug
+from db_access.corporation_access import CorporationAccess
 
 from models import Admin, Employee
 
@@ -15,8 +15,8 @@ def check_role_and_transform_corporation_slug_to_id(role_id=0):
     def decorator_admin(func):
         def check_admin(corporation_slug_or_id, *args, **kwargs):
             if type(corporation_slug_or_id) is not int:
-                corporation_slug_or_id = \
-                    corporation_by_slug(corporation_slug_or_id).id
+                corporation_slug_or_id = CorporationAccess(
+                    slug=corporation_slug_or_id).corporation_by_slug().id
 
             admin = current_user.admins.filter(
                 Admin.corporation_id == corporation_slug_or_id,
@@ -43,8 +43,8 @@ def check_role_and_transform_all_slug_to_id(role_id=0):
                 company_slug_or_id = company_by_slug(company_slug_or_id).id
 
             if type(corporation_slug_or_id) is not int:
-                corporation_slug_or_id = \
-                    corporation_by_slug(corporation_slug_or_id).id
+                corporation_slug_or_id = CorporationAccess(
+                    slug=corporation_slug_or_id).corporation_by_slug().id
 
             admin = current_user.admins.filter(
                 Admin.corporation_id == corporation_slug_or_id,

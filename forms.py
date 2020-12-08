@@ -27,8 +27,8 @@ from db_access.group_client_places_access import \
     group_client_places_in_company_by_name
 from db_access.corporation_access import CorporationAccess
 from db_access.admin_access import AdminAccess
-from db_access.employee_access import employees_in_corporation_by_email
-from db_access.company_access import company_in_corporation_by_name
+from db_access.employee_access import EmployeeAccess
+from db_access.company_access import CompanyAccess
 
 
 class LoginForm(FlaskForm):
@@ -89,8 +89,9 @@ class AdminForm(FlaskForm):
                              email=email_admin.data.strip()).\
             admins_in_corporation_by_email()
 
-        employees = employees_in_corporation_by_email(
-            self.corporation_id, self.email_admin.data.strip())
+        employees = EmployeeAccess(corporation_id=self.corporation_id,
+                                   email=self.email_admin.data.strip()).\
+            employees_in_corporation_by_email()
 
         if admins is not None or employees is not None:
             raise ValidationError('Please use a different Email.')
@@ -108,8 +109,9 @@ class CompanyForm(FlaskForm):
         self.corporation_id = corporation_id
 
     def validate_name_company(self, name_company):
-        company = company_in_corporation_by_name(self.corporation_id,
-                                                 name_company.data.strip())
+        company = CompanyAccess( corporation_id=self.corporation_id,
+                                 name=name_company.data.strip()).\
+            company_in_corporation_by_name()
 
         if company is not None:
             raise ValidationError('Please use a different company name.')
@@ -135,8 +137,9 @@ class EmployeeForm(FlaskForm):
                              email=email_employee.data.strip()).\
             admins_in_corporation_by_email()
 
-        employees = employees_in_corporation_by_email(
-            self.corporation_id, self.email_employee.data.strip())
+        employees = EmployeeAccess(corporation_id=self.corporation_id,
+                                   email=self.email_employee.data.strip()).\
+            employees_in_corporation_by_email()
 
         if admins is not None or employees is not None:
             raise ValidationError('Please use a different Email.')

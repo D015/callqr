@@ -14,13 +14,8 @@ from flask_login import current_user, \
 from werkzeug.urls import url_parse
 
 from db_access.client_place_access import create_client_place
-from db_access.company_access import create_company, \
-    companies_by_corporation_id, companies_of_current_user_by_corporation_id
-from db_access.employee_access import create_employee, \
-    create_relationship_employee_to_user, \
-    is_relationship_employee_to_client_place, \
-    create_relationship_client_place_to_employee, \
-    create_relationship_group_client_places_to_employee
+from db_access.company_access import CompanyAccess
+from db_access.employee_access import EmployeeAccess
 from db_access.group_client_places_access import create_group_client_places, \
     groups_client_places_by_company_id
 from db_access.user_access import UserAccess
@@ -120,7 +115,7 @@ def create_corporation_view():
     if request.method == 'POST':
         if form.submit_corporation.data:
             if form.validate_on_submit():
-                CorporationAccess(name=form.name_corporation.data.strip()).\
+                CorporationAccess(name=form.name_corporation.data.strip()). \
                     create_corporation()
                 flash('Your corporation is now live!')
 
@@ -163,7 +158,7 @@ def create_admin_view(corporation_slug_or_id):
            methods=['GET', 'POST'])
 @login_required
 def create_relationship_admin_to_user_view(admin_slug):
-    admin = AdminAccess(slug=admin_slug).\
+    admin = AdminAccess(slug=admin_slug). \
         create_relationship_admin_to_user()
 
     if admin:
@@ -213,9 +208,9 @@ def create_company_view(corporation_slug_or_id):
     if request.method == 'POST':
         if form.submit_company.data:
             if form.validate_on_submit():
-                create_company(
-                    corporation_id=corporation_slug_or_id,
-                    name_company=form.name_company.data.strip())
+                CompanyAccess(corporation_id=corporation_slug_or_id,
+                              name=form.name_company.data.strip()). \
+                    create_company()
                 flash('Your company is now live!')
 
     form.name_company.data = ''
@@ -241,12 +236,12 @@ def create_employee_view(corporation_slug_or_id, company_slug_or_id):
     if request.method == 'POST':
         if form.submit_employee.data:
             if form.validate_on_submit():
-                create_employee(
-                    company_id=company_slug_or_id,
-                    first_name=form.first_name_employee.data.strip(),
-                    email=form.email_employee.data.strip(),
-                    role_id=form.role_employee.data.strip(),
-                    corporation_id=corporation_slug_or_id)
+                EmployeeAccess(company_id=company_slug_or_id,
+                               first_name=form.first_name_employee.data.strip(),
+                               email=form.email_employee.data.strip(),
+                               role_id=form.role_employee.data.strip(),
+                               corporation_id=corporation_slug_or_id).\
+                    create_employee()
                 flash('Your employee is now live!')
 
     form.first_name_employee.data = ''
@@ -263,7 +258,8 @@ def create_employee_view(corporation_slug_or_id, company_slug_or_id):
            methods=['GET', 'POST'])
 @login_required
 def create_relationship_employee_to_user_view(employee_slug):
-    employee = create_relationship_employee_to_user(employee_slug)
+    employee = EmployeeAccess(
+        slug=employee_slug).create_relationship_employee_to_user()
 
     if employee:
         flash('The relationship employee to user is created')
@@ -342,7 +338,8 @@ def create_client_place_view(corporation_slug_or_id, company_slug_or_id):
 @app.route('/_yourself_to_client_place/<client_place_slug>',
            methods=['GET', 'POST'])
 def create_by_yourself_relationship_to_client_place(client_place_slug):
-    result = create_relationship_client_place_to_employee(client_place_slug)
+    result = EmployeeAccess(client_place_slug=client_place_slug).\
+        create_relationship_client_place_to_employee()
 
     flash(result[1])
 
@@ -354,8 +351,8 @@ def create_by_yourself_relationship_to_client_place(client_place_slug):
            methods=['GET', 'POST'])
 def create_by_yourself_relationship_to_group_client_places(
         group_client_places_slug):
-    result = create_relationship_group_client_places_to_employee(
-        group_client_places_slug)
+    result = EmployeeAccess(group_client_places_slug=group_client_places_slug).\
+        create_relationship_group_client_places_to_employee()
 
     flash(result[1])
 
@@ -384,7 +381,8 @@ def profile():
 @check_role_and_transform_all_slug_to_id(role_id=999)
 @login_required
 def corporation(corporation_slug_or_id):
-    companies = companies_by_corporation_id(corporation_slug_or_id)
+    companies = CompanyAccess(
+        slug=corporation_slug_or_id).companies_by_corporation_id()
     return render_template('corporation.html', companies=companies,
                            corporation_slug_or_id=corporation_slug_or_id)
 
@@ -525,5 +523,5 @@ def test():
     # print(admins_of_current_user())
     # print(clients_of_current_user())
     # print(the_current_user())
-    print(companies_of_current_user_by_corporation_id())
+    print(CompanyAccess().companies_of_current_user_by_corporation_id())
     return render_template('index.html', title='Home')

@@ -7,135 +7,148 @@ from models import Employee, \
     employees_to_groups_client_places, \
     employees_to_client_places
 
-from db_access.company_access import company_by_id
+from db_access.company_access import CompanyAccess
 
 
-def create_employee(company_id, first_name, email, role_id, last_name=None,
-                    about=None, phone=None, corporation_id=None):
-    if corporation_id is None:
-        corporation_id = company_by_id(company_id=company_id).corporation_id
+class EmployeeAccess:
+    def __init__(self, id=None, slug=None, first_name=None, last_name=None,
+                 role_id=None, email=None, phone=None, about=None,
+                 corporation_id=None, company_id=None,
+                 group_client_places_slug=None, group_client_places_id=None,
+                 client_place_slug=None, client_place_id=None):
+        self.id = id
+        self.slug = slug
+        self.first_name = first_name
+        self.last_name = last_name
+        self.role_id = role_id
+        self.email = email
+        self.phone = phone
+        self.about = about
+        self.corporation_id = corporation_id
+        self.company_id = company_id
+        self.group_client_places_slug = group_client_places_slug
+        self.group_client_places_id = group_client_places_id
+        self.client_place_slug = client_place_slug
+        self.client_place_id = client_place_id
 
-    employee = Employee(creator_user_id=current_user.id, first_name=first_name,
-                        last_name=last_name, about=about, email=email,
-                        phone=phone, role_id=role_id,
-                        corporation_id=corporation_id,
-                        company_id=company_id)
-    db.session.add(employee)
-    db.session.commit()
+    def create_employee(self):
+        corporation_id = self.corporation_id if self.corporation_id is None \
+            else CompanyAccess(id=self.id).company_by_id().corporation_id
 
-    return employee
-
-
-def create_relationship_employee_to_user(employee_slug):
-    employee = Employee.query.filter(
-        Employee.slug == employee_slug, Employee.archived == False).first()
-
-    user_employee_corporation = current_user.employees.filter_by(
-        corporation_id=employee.corporation_id).first()
-
-    if employee.user_id or user_employee_corporation \
-            or current_user.archived or current_user.active is False:
-        pass
-    else:
-        employee.user_id = current_user.id
-        employee.active = True
+        employee = Employee(creator_user_id=current_user.id,
+                            first_name=self.first_name,
+                            last_name=self.last_name,
+                            about=self.about, email=self.email,
+                            phone=self.phone, role_id=self.role_id,
+                            corporation_id=corporation_id,
+                            company_id=self.id)
         db.session.add(employee)
         db.session.commit()
 
         return employee
 
+    def create_relationship_employee_to_user(self):
+        employee = Employee.query.filter(Employee.slug == self.slug,
+                                         Employee.archived == False).first()
 
-def employees_in_corporation_by_email(corporation_id, email):
-    employees = Employee.query.filter_by(corporation_id=corporation_id,
-                                         email=email).first()
-    return employees
+        user_employee_corporation = current_user.employees.filter_by(
+            corporation_id=employee.corporation_id).first()
 
+        if employee.user_id or user_employee_corporation \
+                or current_user.archived or current_user.active is False:
+            pass
+        else:
+            employee.user_id = current_user.id
+            employee.active = True
+            db.session.add(employee)
+            db.session.commit()
 
-def is_relationship_employee_to_group_client_places(
-        employee_id, group_client_places_id):
-    employee = Employee.query.filter_by(id=employee_id).first_or_404()
+            return employee
 
-    is_relationship = employee.groups_client_places.filter(
-        employees_to_groups_client_places.c.group_client_places_id == \
-        group_client_places_id).count() > 0
+    def employees_in_corporation_by_email(self):
+        employees = Employee.query.filter_by(corporation_id=self.corporation_id,
+                                             email=self.email).first()
+        return employees
 
-    return is_relationship
+    def is_relationship_employee_to_group_client_places(self):
+        employee = Employee.query.filter_by(id=self.id).first_or_404()
 
+        is_relationship = employee.groups_client_places.filter(
+            employees_to_groups_client_places.c.group_client_places_id == \
+            self.group_client_places_id).count() > 0
 
-def is_relationship_employee_to_client_place(
-        employee_id, client_place_id):
-    employee = Employee.query.filter_by(id=employee_id).first_or_404()
+        return is_relationship
 
-    is_relationship = employee.client_places.filter(
-        employees_to_client_places.c.client_place_id == \
-        client_place_id).count() > 0
+    def is_relationship_employee_to_client_place(self):
+        employee = Employee.query.filter_by(id=self.id).first_or_404()
 
-    return is_relationship
+        is_relationship = employee.client_places.filter(
+            employees_to_client_places.c.client_place_id == \
+            self.client_place_id).count() > 0
 
+        return is_relationship
 
-def create_relationship_group_client_places_to_employee(
-        group_client_places_slug, employee_id=0):
-    group_client_places = group_client_places_by_slug(group_client_places_slug)
+    def create_relationship_group_client_places_to_employee(self):
+        group_client_places = group_client_places_by_slug(
+            self.group_client_places_slug)
 
-    if employee_id == 0:
-        employee = current_user.employees.filter_by(
-            company_id=group_client_places.company_id).first_or_404()
+        if self.id is None:
+            employee = current_user.employees.filter_by(
+                company_id=group_client_places.company_id).first_or_404()
 
-    elif employee_id:
-        employee = Employee.query.filter_by(
-            id=employee_id, company_1d=group_client_places.company_id). \
-            first_or_404()
+        elif self.id:
+            employee = Employee.query.filter_by(
+                id=self.id, company_1d=group_client_places.company_id). \
+                first_or_404()
 
-    elif employee_id is None:
-        return None, 'employee not selected'
+        if self.id is None:
+            return None, 'employee not selected'
 
-    is_relationship = is_relationship_employee_to_group_client_places(
-        employee.id, group_client_places.id)
+        is_relationship = self.is_relationship_employee_to_group_client_places(
+            employee.id, group_client_places.id)
 
-    if is_relationship is False:
-        employee.groups_client_places.append(group_client_places)
+        if is_relationship is False:
+            employee.groups_client_places.append(group_client_places)
 
-        db.session.add(employee)
-        db.session.commit()
+            db.session.add(employee)
+            db.session.commit()
 
-        return True, 'The relationship with the group successfully created'
+            return True, 'The relationship with the group successfully created'
 
-    elif is_relationship:
-        return False, 'The relationship with the group already existed'
+        elif is_relationship:
+            return False, 'The relationship with the group already existed'
 
-    else:
-        return None, 'error'
+        else:
+            return None, 'error'
 
+    def create_relationship_client_place_to_employee(self):
+        client_place = client_place_by_slug(self.client_place_slug)
 
-def create_relationship_client_place_to_employee(
-        client_place_slug, employee_id=0):
-    client_place = client_place_by_slug(client_place_slug)
+        if self.id is None:
+            employee = current_user.employees.filter_by(
+                company_id=client_place.company_id).first_or_404()
 
-    if employee_id == 0:
-        employee = current_user.employees.filter_by(
-            company_id=client_place.company_id).first_or_404()
+        elif self.id:
+            employee = Employee.query.filter_by(
+                id=self.id, company_1d=client_place.company_id). \
+                first_or_404()
 
-    elif employee_id:
-        employee = Employee.query.filter_by(
-            id=employee_id, company_1d=client_place.company_id). \
-            first_or_404()
+        if self.id is None:
+            return None, 'employee not selected'
 
-    elif employee_id is None:
-        return None, 'employee not selected'
+        is_relationship = self.is_relationship_employee_to_client_place(
+            employee.id, client_place.id)
 
-    is_relationship = is_relationship_employee_to_client_place(
-        employee.id, client_place.id)
+        if is_relationship is False:
+            employee.client_places.append(client_place)
 
-    if is_relationship is False:
-        employee.client_places.append(client_place)
+            db.session.add(employee)
+            db.session.commit()
 
-        db.session.add(employee)
-        db.session.commit()
+            return True, 'The relationship with the place successfully created'
 
-        return True, 'The relationship with the place successfully created'
+        elif is_relationship:
+            return False, 'The relationship with the place already existed'
 
-    elif is_relationship:
-        return False, 'The relationship with the place already existed'
-
-    else:
-        return None, 'error'
+        else:
+            return None, 'error'

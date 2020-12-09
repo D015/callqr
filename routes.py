@@ -24,7 +24,8 @@ from db_access import \
     ClientPlaceAccess, \
     ClientAccess, \
     check_role_and_return_corporation_and_transform_slug_to_id, \
-    check_role_and_transform_all_slug_to_id, check_for_reading_admin_data
+    check_role_and_transform_all_slug_to_id, \
+    check_role_and_return_admin_and_transform_slug_to_id
 
 from forms import ClientPlaceForm, \
     RegistrationForm, \
@@ -402,7 +403,7 @@ def company(corporation_slug_or_id, company_slug_or_id):
 
 @app.route('/admin/<admin_slug>',
            endpoint='admin', methods=['GET', 'POST'])
-@check_for_reading_admin_data()
+@check_role_and_return_admin_and_transform_slug_to_id()
 @login_required
 def admin(admin_slug_or_id):
     return

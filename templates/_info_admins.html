@@ -3,12 +3,12 @@
 
         <p>
         <a href="{{ url_for('corporation',
-        corporation_slug_or_id=admin.corporation.slug) }}">
+        corporation_slug_to_id=admin.corporation.slug) }}">
             {{ admin.corporation.name }}</a>
         :
 
         <a href="{{ url_for('admin',
-        admin_slug_or_id=admin.slug) }}">
+        admin_slug=admin.slug) }}">
             {{ admin.role.name }}</a>
         </p>
 

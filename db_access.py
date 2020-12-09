@@ -11,13 +11,11 @@ from models import User, Admin, Employee, employees_to_groups_client_places, \
 class UserAccess:
     def __init__(self, id=None, slug=None, username=None, email=None,
                  password=None):
-
         self.id = id
         self.slug = slug
         self.username = username
         self.email = email
         self.password = password
-
 
     def create_user(self):
         user = User(username=self.username, email=self.email)
@@ -26,41 +24,24 @@ class UserAccess:
         db.session.commit()
         return user
 
-
     def user_by_slug(self):
         user = User.query.filter_by(slug=self.slug).first()
         return user
-
 
     def user_by_slug_or_404(self):
         user = User.query.filter_by(slug=self.slug).first_or_404()
         return user
 
-
     def user_by_id(self):
         user = User.query.filter_by(id=self.id).first()
         return user
-
 
     def user_by_id_or_404(self):
         user = User.query.filter_by(id=self.id).first_or_404()
         return user
 
-
     def the_current_user(self):
         return current_user
-
-
-    def admins_of_current_user(self):
-        return current_user.admins.filter_by(active=True, archived=False)
-
-
-    def employees_of_current_user(self):
-        return current_user.employees.filter_by(active=True, archived=False)
-
-
-    def clients_of_current_user(self):
-        return current_user.clients.filter_by(active=True, archived=False)
 
 
 class AdminAccess:
@@ -113,6 +94,13 @@ class AdminAccess:
         admins = Admin.query.filter_by(corporation_id=self.corporation_id,
                                        email=self.email).first()
         return admins
+
+    def admins_of_current_user(self):
+        return current_user.admins.filter_by(active=True, archived=False)
+
+    def admin_by_slug(self):
+        admin = Admin.query.filter_by(slug=self.slug).first()
+        return admin
 
 
 class EmployeeAccess:
@@ -227,7 +215,7 @@ class EmployeeAccess:
             return None, 'error'
 
     def create_relationship_client_place_to_employee(self):
-        client_place = ClientPlaceAccess(slug=self.client_place_slug).\
+        client_place = ClientPlaceAccess(slug=self.client_place_slug). \
             client_place_by_slug()
 
         if self.id is None:
@@ -258,6 +246,17 @@ class EmployeeAccess:
 
         else:
             return None, 'error'
+
+    def employees_of_current_user(self):
+        return current_user.employees.filter_by(active=True, archived=False)
+
+
+class ClientAccess:
+    def __init__(self, id=None):
+        self.id = id
+
+    def clients_of_current_user(self):
+        return current_user.clients.filter_by(active=True, archived=False)
 
 
 class RoleAccess:
@@ -350,29 +349,24 @@ class CompanyAccess:
         db.session.commit()
         return company
 
-
     def company_by_slug(self):
         company = Company.query.filter_by(slug=self.slug).first()
         return company
 
-
     def company_by_id(self):
         company = Company.query.filter_by(id=self.id).first()
         return company
-
 
     def company_in_corporation_by_name(self):
         company = Company.query.filter_by(corporation_id=self.corporation_id,
                                           name=self.name).first()
         return company
 
-
     def companies_by_corporation_id(self):
         companies = Company.query.filter_by(
-            corporation_id=self.corporation_id, active=True, archived=False).\
-            order_by(Company.name.asc()).all()
+            corporation_id=self.corporation_id, active=True, archived=False). \
+            order_by(Company.name.asc())
         return companies
-
 
     def companies_of_current_user_by_corporation_id(self):
         # companies_of_corporation = companies_by_corporation_id(corporation_id)
@@ -402,13 +396,11 @@ class GroupClientPlacesAccess:
 
         return group_client_places
 
-
     def group_client_places_in_company_by_name(self):
         group_client_places = GroupClientPlaces.query.filter_by(
             company_id=self.company_id, name=self.name).first()
 
         return group_client_places
-
 
     def groups_client_places_by_company_id(self):
         groups_client_places = GroupClientPlaces.query. \
@@ -417,13 +409,11 @@ class GroupClientPlacesAccess:
 
         return groups_client_places
 
-
     def group_client_places_by_id(self):
-        group_client_places = GroupClientPlaces.query.\
+        group_client_places = GroupClientPlaces.query. \
             filter_by(id=self.id).first()
 
         return group_client_places
-
 
     def group_client_places_by_slug(self):
         group_client_places = GroupClientPlaces.query.filter_by(
@@ -469,20 +459,22 @@ class ClientPlaceAccess:
         return client_place
 
 
-def check_role_and_transform_corporation_slug_to_id(role_id=0):
+def check_role_and_return_corporation_and_transform_slug_to_id(role_id=0):
     def decorator_admin(func):
-        def check_admin(corporation_slug_or_id, *args, **kwargs):
-            if type(corporation_slug_or_id) is not int:
-                corporation_slug_or_id = CorporationAccess(
-                    slug=corporation_slug_or_id).corporation_by_slug().id
+        def check_admin(corporation_slug_to_id, *args, **kwargs):
+            corporation = CorporationAccess(
+               slug=corporation_slug_to_id).corporation_by_slug()
+
+            corporation_slug_to_id = corporation.id
 
             admin = current_user.admins.filter(
-                Admin.corporation_id == corporation_slug_or_id,
+                Admin.corporation_id == corporation_slug_to_id,
                 Admin.active == True, Admin.archived == False,
                 Admin.role_id < role_id).first()
 
             if admin:
-                return func(corporation_slug_or_id, *args, **kwargs)
+                return func(corporation_slug_to_id, corporation,
+                            *args, **kwargs)
             else:
                 flash('Contact your administrator.')
                 return redirect(url_for('index'))
@@ -498,7 +490,7 @@ def check_role_and_transform_all_slug_to_id(role_id=0):
                            *args, **kwargs):
 
             if type(company_slug_or_id) is not int:
-                company_slug_or_id = CompanyAccess(slug=company_slug_or_id).\
+                company_slug_or_id = CompanyAccess(slug=company_slug_or_id). \
                     company_by_slug().id
 
             if type(corporation_slug_or_id) is not int:
@@ -528,3 +520,31 @@ def check_role_and_transform_all_slug_to_id(role_id=0):
         return check_employee
 
     return decorator_employee
+
+
+def check_role_and_return_admin_and_transform_slug_to_id(others=False):
+    def decorator_admin(func):
+        def check_admin(admin_slug, *args, **kwargs):
+
+            current_admin = current_user.admins.filter(
+                Admin.slug == admin_slug).first()
+            if current_admin:
+                return func(admin_slug, *args, **kwargs)
+
+            elif others:
+                the_admin = AdminAccess(
+                    slug=admin_slug).admin_by_slug()
+
+                admin = current_user.admins.filter(
+                    Admin.corporation_id == the_admin.corporation_id,
+                    Admin.active == True, Admin.archived == False).first()
+
+                if admin and admin.role_id < the_admin.rile_id:
+                    return func(admin_slug, *args, **kwargs)
+                else:
+                    flash('Contact your administrator.')
+                    return redirect(url_for('index'))
+
+        return check_admin
+
+    return decorator_admin

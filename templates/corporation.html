@@ -5,8 +5,8 @@
         <tr valign="top">
             <td><img src="{{ url_for('static', filename='qr_codes/0a8edb8db75642f994af67380b0e3d13.png') }}" /></td>
             <td>
-                <h1>User: {{ user.username }}</h1>
-                {% if user.about %}<p>{{ user.about }}</p>{% endif %}
+                <h1>Corporation: {{ corporation.name }}</h1>
+                {% if corporation.about %}<p>{{ corporation.about }}</p>{% endif %}
             </td>
         </tr>
     </table>

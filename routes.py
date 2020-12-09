@@ -13,17 +13,18 @@ from flask_login import current_user, \
 
 from werkzeug.urls import url_parse
 
-from db_access import\
-    UserAccess,\
-    AdminAccess,\
-    EmployeeAccess,\
-    RoleAccess,\
-    CorporationAccess,\
-    CompanyAccess,\
-    GroupClientPlacesAccess,\
-    ClientPlaceAccess,\
-    check_role_and_transform_corporation_slug_to_id, \
-    check_role_and_transform_all_slug_to_id
+from db_access import \
+    UserAccess, \
+    AdminAccess, \
+    EmployeeAccess, \
+    RoleAccess, \
+    CorporationAccess, \
+    CompanyAccess, \
+    GroupClientPlacesAccess, \
+    ClientPlaceAccess, \
+    ClientAccess, \
+    check_role_and_return_corporation_and_transform_slug_to_id, \
+    check_role_and_transform_all_slug_to_id, check_for_reading_admin_data
 
 from forms import ClientPlaceForm, \
     RegistrationForm, \
@@ -127,7 +128,7 @@ def create_corporation_view():
            endpoint='create_admin_view',
            methods=['GET', 'POST'])
 @login_required
-@check_role_and_transform_corporation_slug_to_id(role_id=401)
+@check_role_and_return_corporation_and_transform_slug_to_id(role_id=401)
 def create_admin_view(corporation_slug_or_id):
     roles = RoleAccess(
         corporation_id=corporation_slug_or_id).roles_available_to_create_admin()
@@ -199,7 +200,7 @@ def create_relationship_admin_to_user_view(admin_slug):
            endpoint='create_company_view',
            methods=['GET', 'POST'])
 @login_required
-@check_role_and_transform_corporation_slug_to_id(role_id=401)
+@check_role_and_return_corporation_and_transform_slug_to_id(role_id=401)
 def create_company_view(corporation_slug_or_id):
     form = CompanyForm(corporation_slug_or_id)
 
@@ -366,26 +367,28 @@ def create_by_yourself_relationship_to_group_client_places(
 def profile():
     the_user = UserAccess().the_current_user()
 
-    admins = UserAccess().admins_of_current_user()
+    admins = AdminAccess().admins_of_current_user()
 
-    employees = UserAccess().employees_of_current_user()
+    employees = EmployeeAccess().employees_of_current_user()
 
-    clients = UserAccess().clients_of_current_user()
+    clients = ClientAccess().clients_of_current_user()
 
     return render_template('profile.html', user=the_user, admins=admins,
                            employees=employees, clients=clients)
 
 
-@app.route('/corporation/<corporation_slug_or_id>',
+@app.route('/corporation/<corporation_slug_to_id>',
            endpoint='corporation',
            methods=['GET', 'POST'])
-@check_role_and_transform_all_slug_to_id(role_id=999)
+@check_role_and_return_corporation_and_transform_slug_to_id(role_id=999)
 @login_required
-def corporation(corporation_slug_or_id):
+def corporation(corporation_slug_to_id, corporation):
+
     companies = CompanyAccess(
-        slug=corporation_slug_or_id).companies_by_corporation_id()
+        corporation_id=corporation_slug_to_id).companies_by_corporation_id()
+
     return render_template('corporation.html', companies=companies,
-                           corporation_slug_or_id=corporation_slug_or_id)
+                           corporation=corporation)
 
 
 @app.route('/company/<corporation_slug_or_id>/<company_slug_or_id>',
@@ -397,7 +400,9 @@ def company(corporation_slug_or_id, company_slug_or_id):
                            corporation_slug_or_id=corporation_slug_or_id)
 
 
-@app.route('/admin/<admin_slug_or_id>', methods=['GET', 'POST'])
+@app.route('/admin/<admin_slug>',
+           endpoint='admin', methods=['GET', 'POST'])
+@check_for_reading_admin_data()
 @login_required
 def admin(admin_slug_or_id):
     return

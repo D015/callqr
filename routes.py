@@ -129,7 +129,7 @@ def create_corporation_view():
            endpoint='create_admin_view',
            methods=['GET', 'POST'])
 @login_required
-@check_role_and_return_corporation_and_transform_slug_to_id(role_id=401)
+@check_role_and_return_corporation_and_transform_slug_to_id(first_role_id=401)
 def create_admin_view(corporation_slug_or_id):
     roles = RoleAccess(
         corporation_id=corporation_slug_or_id).roles_available_to_create_admin()
@@ -201,7 +201,7 @@ def create_relationship_admin_to_user_view(admin_slug):
            endpoint='create_company_view',
            methods=['GET', 'POST'])
 @login_required
-@check_role_and_return_corporation_and_transform_slug_to_id(role_id=401)
+@check_role_and_return_corporation_and_transform_slug_to_id(first_role_id=401)
 def create_company_view(corporation_slug_or_id):
     form = CompanyForm(corporation_slug_or_id)
 
@@ -381,15 +381,21 @@ def profile():
 @app.route('/corporation/<corporation_slug_to_id>',
            endpoint='corporation',
            methods=['GET', 'POST'])
-@check_role_and_return_corporation_and_transform_slug_to_id(role_id=999)
+@check_role_and_return_corporation_and_transform_slug_to_id(
+    first_role_id=500, second_role_id=800)
 @login_required
-def corporation(corporation_slug_to_id, corporation):
+def corporation(corporation_slug_to_id, corporation, first_role):
 
-    companies = CompanyAccess(
-        corporation_id=corporation_slug_to_id).companies_by_corporation_id()
+    companies = None
+    if first_role:
+        companies = CompanyAccess(
+            corporation_id=corporation_slug_to_id).companies_by_corporation_id()
+
+    admins = AdminAccess(
+        corporation_id=corporation_slug_to_id).admins_by_corporation_id()
 
     return render_template('corporation.html', companies=companies,
-                           corporation=corporation)
+                           admins=admins, corporation=corporation)
 
 
 @app.route('/company/<corporation_slug_or_id>/<company_slug_or_id>',
@@ -401,12 +407,17 @@ def company(corporation_slug_or_id, company_slug_or_id):
                            corporation_slug_or_id=corporation_slug_or_id)
 
 
-@app.route('/admin/<admin_slug>',
+@app.route('/admin/<admin_slug_to_id>',
            endpoint='admin', methods=['GET', 'POST'])
-@check_role_and_return_admin_and_transform_slug_to_id()
+@check_role_and_return_admin_and_transform_slug_to_id(others=True)
 @login_required
-def admin(admin_slug_or_id):
-    return
+def admin(admin_slug_to_id, admin):
+
+    corporation = CorporationAccess(id=admin.corporation_id).corporation_by_id()
+
+
+    return render_template('admin.html', admin_id = admin_slug_to_id,
+                           admin=admin, corporation=corporation)
 
 
 @app.route('/employee/<employee_slug_or_id>', methods=['GET', 'POST'])
@@ -470,7 +481,7 @@ def test():
     # _________________________________________________
     # role_id_creator_admin = (current_user.admins.filter_by(
     #     corporation_id=corporation_by_slug(
-    #         'ef65ef6686d04a25a357dd8065122c8b').id).first()).role_id
+    #         'ef65ef6686d04a25a357dd8065122c8b').id).first()).first_role_id
     # print(role_id_creator_admin)
     # __________________________________________________
     # roles = Role.query.filter(Role.code == 10).order_by(Role.id.asc()).all()
@@ -502,7 +513,7 @@ def test():
     # employee = current_user.employees.filter(
     #     Employee.corporation_id == 18,
     #     Employee.active == True, Employee.archived == False,
-    #     Employee.role_id < 701).first()
+    #     Employee.first_role_id < 701).first()
     # print(employee)
     # _________________________________________________
     # employee3 = Employee.query.filter_by(id=3).first()

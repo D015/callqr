@@ -2,17 +2,11 @@
     {% for admin in admins %}
 
         <p>
-        <a href="{{ url_for('corporation',
-        corporation_slug_to_id=admin.corporation.slug) }}">
-            {{ admin.corporation.name }}</a>
-        :
-
         <a href="{{ url_for('admin',
-        admin_slug=admin.slug) }}">
-            {{ admin.role.name }}</a>
+        admin_slug_to_id=admin.slug) }}"> {{ admin.id }}</a> {{ admin.role.name }}
         </p>
 
     {% endfor %}
 {% else %}
-    <p> <i>is not admins</i> </p>
+    <span> <i>is not admin</i> </span>
 {% endif %}

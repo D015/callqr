@@ -73,11 +73,11 @@ def upgrade():
     sa.Column('about', sa.String(length=140), nullable=True),
     sa.Column('email', sa.String(length=120), nullable=True),
     sa.Column('phone', sa.Integer(), nullable=True),
-    sa.Column('role_id', sa.Integer(), nullable=True),
+    sa.Column('first_role_id', sa.Integer(), nullable=True),
     sa.Column('user_id', sa.Integer(), nullable=True),
     sa.Column('corporation_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['corporation_id'], ['corporation.id'], ),
-    sa.ForeignKeyConstraint(['role_id'], ['role.id'], ),
+    sa.ForeignKeyConstraint(['first_role_id'], ['role.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
@@ -131,13 +131,13 @@ def upgrade():
     sa.Column('about', sa.String(length=140), nullable=True),
     sa.Column('email', sa.String(length=120), nullable=True),
     sa.Column('phone', sa.Integer(), nullable=True),
-    sa.Column('role_id', sa.Integer(), nullable=True),
+    sa.Column('first_role_id', sa.Integer(), nullable=True),
     sa.Column('user_id', sa.Integer(), nullable=True),
     sa.Column('corporation_id', sa.Integer(), nullable=True),
     sa.Column('company_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['company_id'], ['company.id'], ),
     sa.ForeignKeyConstraint(['corporation_id'], ['corporation.id'], ),
-    sa.ForeignKeyConstraint(['role_id'], ['role.id'], ),
+    sa.ForeignKeyConstraint(['first_role_id'], ['role.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
     sa.PrimaryKeyConstraint('id')
     )

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <table>
+        <tr valign="top">
+            <td><img src="{{ url_for('static', filename='qr_codes/0a8edb8db75642f994af67380b0e3d13.png') }}" /></td>
+            <td>
+                <h1>{{ admin.role.name }} of {{ corporation.name }}</h1>
+                {% if admin.about %}<p>{{ admin.about }}</p>{% endif %}
+            </td>
+        </tr>
+    </table>
+
+    <hr>
+
+    <h3> ID </h3>
+    {{ admin_id }}
+    <h3> Email </h3>
+    {% if admin.email %}<p>{{ admin.email }}</p>{% endif %}
+    <h3> Phone </h3>
+    {% if admin.phone %}<p>{{ admin.phone }}</p>{% else %}<p> - </p>{% endif %}
+    <h3> Username </h3>
+    {{ admin.user.username }}
+    <h3> User ID </h3>
+    {{ admin.user_id }}
+
+{% endblock %}

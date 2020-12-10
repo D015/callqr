@@ -50,11 +50,11 @@ class AdminAccess:
         self.corporation_id = corporation_id
         self.email = email
         self.role_id = role_id
-        self.admin_slug = slug
+        self.slug = slug
         self.about = about
         self.phone = phone
 
-    # TODO move 'role_id=!!!100!!!' to constants.py
+    # TODO move 'first_role_id=!!!100!!!' to constants.py
     def create_creator_admin(self):
         admin = Admin(creator_user_id=current_user.id, active=True,
                       email=current_user.email, role_id=100,
@@ -74,7 +74,7 @@ class AdminAccess:
     def create_relationship_admin_to_user(self):
 
         admin = Admin.query.filter(
-            Admin.slug == self.admin_slug, Admin.archived == False).first()
+            Admin.slug == self.slug, Admin.archived == False).first()
 
         user_admin_corporation = current_user.admins.filter_by(
             corporation_id=admin.corporation_id).first()
@@ -101,6 +101,11 @@ class AdminAccess:
     def admin_by_slug(self):
         admin = Admin.query.filter_by(slug=self.slug).first()
         return admin
+
+    def admins_by_corporation_id(self):
+        admins = Admin.query.filter_by(corporation_id=self.corporation_id).\
+            order_by(Admin.role_id.desc(), Admin.id.asc())
+        return admins
 
 
 class EmployeeAccess:
@@ -191,7 +196,7 @@ class EmployeeAccess:
 
         elif self.id:
             employee = Employee.query.filter_by(
-                id=self.id, company_1d=group_client_places.company_id). \
+                id=self.id, company_id=group_client_places.company_id). \
                 first_or_404()
 
         if self.id is None:
@@ -224,7 +229,7 @@ class EmployeeAccess:
 
         elif self.id:
             employee = Employee.query.filter_by(
-                id=self.id, company_1d=client_place.company_id). \
+                id=self.id, company_id=client_place.company_id). \
                 first_or_404()
 
         if self.id is None:
@@ -260,8 +265,9 @@ class ClientAccess:
 
 
 class RoleAccess:
-    def __init__(self, corporation_id=None, company_id=None):
+    def __init__(self, id=None, corporation_id=None, company_id=None):
 
+        self.id = id
         self.corporation_id = corporation_id
         self.company_id = company_id
 
@@ -296,6 +302,10 @@ class RoleAccess:
 
         return roles
 
+    def role_by_id(self):
+        role = Role.query.filter_by(id=self.id).first()
+        return role
+
 
 class CorporationAccess:
     def __init__(self, id=None, slug=None, name=None):
@@ -325,7 +335,7 @@ class CorporationAccess:
         corporation = Corporation.query.filter_by(slug=self.slug).first()
         return corporation
 
-    def company_by_id(self):
+    def corporation_by_id(self):
         corporation = Corporation.query.filter_by(id=self.id).first()
         return corporation
 
@@ -459,7 +469,8 @@ class ClientPlaceAccess:
         return client_place
 
 
-def check_role_and_return_corporation_and_transform_slug_to_id(role_id=0):
+def check_role_and_return_corporation_and_transform_slug_to_id(
+        first_role_id=0, second_role_id=0):
     def decorator_admin(func):
         def check_admin(corporation_slug_to_id, *args, **kwargs):
             corporation = CorporationAccess(
@@ -467,17 +478,32 @@ def check_role_and_return_corporation_and_transform_slug_to_id(role_id=0):
 
             corporation_slug_to_id = corporation.id
 
-            admin = current_user.admins.filter(
+            admin_by_first_role = current_user.admins.filter(
                 Admin.corporation_id == corporation_slug_to_id,
                 Admin.active == True, Admin.archived == False,
-                Admin.role_id < role_id).first()
+                Admin.role_id < first_role_id).first()
 
-            if admin:
-                return func(corporation_slug_to_id, corporation,
+            if admin_by_first_role:
+                first_role = True
+                return func(corporation_slug_to_id, corporation, first_role,
                             *args, **kwargs)
-            else:
-                flash('Contact your administrator.')
-                return redirect(url_for('index'))
+
+            admin = current_user.admins.filter_by(
+                corporation_id=corporation_slug_to_id,
+                active=True, archived=False).first()
+
+            employee = current_user.employees.filter_by(
+                corporation_id=corporation_slug_to_id,
+                active=True, archived=False).first()
+
+            if (admin and admin.role_id < second_role_id) \
+                    or (employee and employee.role_id < second_role_id):
+                first_role = False
+                return func(corporation_slug_to_id, corporation, first_role,
+                            *args, **kwargs)
+
+            flash('Contact your administrator.')
+            return redirect(url_for('index'))
 
         return check_admin
 
@@ -524,26 +550,27 @@ def check_role_and_transform_all_slug_to_id(role_id=0):
 
 def check_role_and_return_admin_and_transform_slug_to_id(others=False):
     def decorator_admin(func):
-        def check_admin(admin_slug, *args, **kwargs):
-
+        def check_admin(admin_slug_to_id, *args, **kwargs):
             current_admin = current_user.admins.filter(
-                Admin.slug == admin_slug).first()
+                Admin.slug == admin_slug_to_id).first()
             if current_admin:
-                return func(admin_slug, *args, **kwargs)
+                return func(admin_slug_to_id=current_admin.id,
+                            admin=current_admin, *args, **kwargs)
 
             elif others:
                 the_admin = AdminAccess(
-                    slug=admin_slug).admin_by_slug()
+                    slug=admin_slug_to_id).admin_by_slug()
 
                 admin = current_user.admins.filter(
                     Admin.corporation_id == the_admin.corporation_id,
                     Admin.active == True, Admin.archived == False).first()
 
-                if admin and admin.role_id < the_admin.rile_id:
-                    return func(admin_slug, *args, **kwargs)
-                else:
-                    flash('Contact your administrator.')
-                    return redirect(url_for('index'))
+                if admin and (admin.role_id < the_admin.role_id):
+                    return func(admin_slug_to_id=the_admin.id,
+                                admin=the_admin, *args, **kwargs)
+
+            flash('Contact your administrator.')
+            return redirect(url_for('index'))
 
         return check_admin
 

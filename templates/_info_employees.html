@@ -1,0 +1,12 @@
+{% if employees.count() %}
+    {% for employee in employees %}
+
+        <p>
+        <a href="{{ url_for('employee',
+        employee_slug_to_id=employee.slug) }}"> {{ employee.id }}</a> {{ employee.role.name }}
+        </p>
+
+    {% endfor %}
+{% else %}
+    <span> <i>is not employee</i> </span>
+{% endif %}

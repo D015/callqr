@@ -25,7 +25,9 @@ from db_access import \
     ClientAccess, \
     check_role_and_return_corporation_and_transform_slug_to_id, \
     check_role_and_transform_all_slug_to_id, \
-    check_role_and_return_admin_and_transform_slug_to_id
+    check_role_and_return_admin_and_transform_slug_to_id, \
+    check_role_and_transform_corporation_slug_to_id, \
+    check_role_and_return_company_transform_slug_to_id
 
 from forms import ClientPlaceForm, \
     RegistrationForm, \
@@ -129,19 +131,19 @@ def create_corporation_view():
            endpoint='create_admin_view',
            methods=['GET', 'POST'])
 @login_required
-@check_role_and_return_corporation_and_transform_slug_to_id(first_role_id=401)
-def create_admin_view(corporation_slug_or_id):
+@check_role_and_transform_corporation_slug_to_id(role_id=401)
+def create_admin_view(corporation_slug_to_id):
     roles = RoleAccess(
-        corporation_id=corporation_slug_or_id).roles_available_to_create_admin()
+        corporation_id=corporation_slug_to_id).roles_available_to_create_admin()
 
     roles_to_choose = [(i.id, i.name) for i in roles]
 
-    form = AdminForm(roles_to_choose, corporation_slug_or_id)
+    form = AdminForm(roles_to_choose, corporation_slug_to_id)
 
     if request.method == 'POST':
         if form.submit_admin.data:
             if form.validate_on_submit():
-                AdminAccess(corporation_id=corporation_slug_or_id,
+                AdminAccess(corporation_id=corporation_slug_to_id,
                             email=form.email_admin.data.strip(),
                             role_id=form.role_admin.data.strip()).create_admin()
                 flash('Your admin is now live!')
@@ -150,7 +152,7 @@ def create_admin_view(corporation_slug_or_id):
     form.role_admin.data = ''
 
     return render_template('_create_admin.html', form=form,
-                           corporation_slug=corporation_slug_or_id)
+                           corporation_slug=corporation_slug_to_id)
 
 
 # Create relationship admin to user view
@@ -197,18 +199,18 @@ def create_relationship_admin_to_user_view(admin_slug):
 
 
 # Create company view
-@app.route('/_create_company/<corporation_slug_or_id>',
+@app.route('/_create_company/<corporation_slug_to_id>',
            endpoint='create_company_view',
            methods=['GET', 'POST'])
 @login_required
-@check_role_and_return_corporation_and_transform_slug_to_id(first_role_id=401)
-def create_company_view(corporation_slug_or_id):
-    form = CompanyForm(corporation_slug_or_id)
+@check_role_and_transform_corporation_slug_to_id(role_id=401)
+def create_company_view(corporation_slug_to_id):
+    form = CompanyForm(corporation_slug_to_id)
 
     if request.method == 'POST':
         if form.submit_company.data:
             if form.validate_on_submit():
-                CompanyAccess(corporation_id=corporation_slug_or_id,
+                CompanyAccess(corporation_id=corporation_slug_to_id,
                               name=form.name_company.data.strip()). \
                     create_company()
                 flash('Your company is now live!')
@@ -216,23 +218,23 @@ def create_company_view(corporation_slug_or_id):
     form.name_company.data = ''
 
     return render_template('_create_company.html', form=form,
-                           corporation_slug=corporation_slug_or_id)
+                           corporation_slug=corporation_slug_to_id)
 
 
 # Create employee view
-@app.route('/_create_employee/<corporation_slug_or_id>/<company_slug_or_id>',
+@app.route('/_create_employee/<corporation_slug_to_id>/<company_slug_or_id>',
            endpoint='create_employee_view',
            methods=['GET', 'POST'])
 @login_required
 @check_role_and_transform_all_slug_to_id(role_id=999)
-def create_employee_view(corporation_slug_or_id, company_slug_or_id):
-    roles = RoleAccess(corporation_id=corporation_slug_or_id,
+def create_employee_view(corporation_slug_to_id, company_slug_or_id):
+    roles = RoleAccess(corporation_id=corporation_slug_to_id,
                        company_id=company_slug_or_id). \
         roles_available_to_create_employee()
 
     roles_to_choose = [(i.id, i.name) for i in roles]
 
-    form = EmployeeForm(roles_to_choose, corporation_slug_or_id)
+    form = EmployeeForm(roles_to_choose, corporation_slug_to_id)
 
     if request.method == 'POST':
         if form.submit_employee.data:
@@ -241,7 +243,7 @@ def create_employee_view(corporation_slug_or_id, company_slug_or_id):
                                first_name=form.first_name_employee.data.strip(),
                                email=form.email_employee.data.strip(),
                                role_id=form.role_employee.data.strip(),
-                               corporation_id=corporation_slug_or_id). \
+                               corporation_id=corporation_slug_to_id). \
                     create_employee()
                 flash('Your employee is now live!')
 
@@ -249,9 +251,7 @@ def create_employee_view(corporation_slug_or_id, company_slug_or_id):
     form.email_employee.data = ''
     form.role_employee.data = ''
 
-    return render_template('_create_employee.html', form=form,
-                           corporation_slug_or_id=corporation_slug_or_id,
-                           company_slug_or_id=company_slug_or_id)
+    return render_template('_create_employee.html', form=form)
 
 
 # Create relationship employee to user view
@@ -390,7 +390,7 @@ def corporation(corporation_slug_to_id, corporation, first_role):
     if first_role:
         companies = CompanyAccess(
             corporation_id=corporation_slug_to_id).companies_by_corporation_id()
-
+        app.logger.info(companies.all())
     admins = AdminAccess(
         corporation_id=corporation_slug_to_id).admins_by_corporation_id()
 
@@ -398,13 +398,25 @@ def corporation(corporation_slug_to_id, corporation, first_role):
                            admins=admins, corporation=corporation)
 
 
-@app.route('/company/<corporation_slug_or_id>/<company_slug_or_id>',
+@app.route('/company/<company_slug_to_id>',
            endpoint='company',
            methods=['GET', 'POST'])
+@check_role_and_return_company_transform_slug_to_id(role_id=0)
 @login_required
-def company(corporation_slug_or_id, company_slug_or_id):
-    return render_template('company.html', companies=companies,
-                           corporation_slug_or_id=corporation_slug_or_id)
+def company(company_slug_to_id, company):
+
+    groups_client_places = GroupClientPlacesAccess(
+        company_id=company_slug_to_id).groups_client_places_by_company_id()
+
+    client_places = ClientPlaceAccess(
+        company_id=company_slug_to_id).client_places_by_company_id()
+
+    employees = EmployeeAccess(
+        company_id=company_slug_to_id).employees_by_company_id()
+
+    return render_template('company.html', company=company,
+                           groups_client_places=groups_client_places,
+                           client_places=client_places, employees=employees )
 
 
 @app.route('/admin/<admin_slug_to_id>',
@@ -420,9 +432,20 @@ def admin(admin_slug_to_id, admin):
                            admin=admin, corporation=corporation)
 
 
-@app.route('/employee/<employee_slug_or_id>', methods=['GET', 'POST'])
+@app.route('/employee/<employee_slug_to_id>', methods=['GET', 'POST'])
 @login_required
-def employee(employee_slug_or_id):
+def employee(employee_slug_to_id):
+    return
+
+@app.route('/group_client_places/<group_client_places_slug_to_id>',
+           methods=['GET', 'POST'])
+@login_required
+def group_client_places(group_client_places_slug_to_id):
+    return
+
+@app.route('/client_place/<client_place_slug_to_id>', methods=['GET', 'POST'])
+@login_required
+def client_place(client_place_slug_to_id):
     return
 
 

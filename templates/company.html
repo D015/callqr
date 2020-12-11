@@ -1,19 +1,25 @@
-{#{% extends "base.html" %}#}
-{##}
-{#{% block content %}#}
-{#    <table>#}
-{#        <tr valign="top">#}
-{#            <td><img src="{{ url_for('static', filename='qr_codes/0a8edb8db75642f994af67380b0e3d13.png') }}" /></td>#}
-{#            <td>#}
-{#                <h1>User: {{ user.username }}</h1>#}
-{#                {% if user.about %}<p>{{ user.about }}</p>{% endif %}#}
-{#            </td>#}
-{#        </tr>#}
-{#    </table>#}
-{##}
-{#    <hr>#}
-{##}
-{#    <h3> Companies </h3>#}
-{#    {% include '_info_companies.html' %}#}
-{##}
-{#{% endblock %}#}
+{% extends "base.html" %}
+
+{% block content %}
+    <table>
+        <tr valign="top">
+            <td><img src="{{ url_for('static', filename='qr_codes/0a8edb8db75642f994af67380b0e3d13.png') }}" /></td>
+            <td>
+                <h1>Company: {{ company.name }}</h1>
+                {% if company.about %}<p>{{ company.about }}</p>{% endif %}
+            </td>
+        </tr>
+    </table>
+
+    <hr>
+
+    <h3> Groups client places </h3>
+    {% include '_info_groups_client_places.html' %}
+
+    <h3> Client places </h3>
+    {% include '_info_client_places.html' %}
+
+    <h3> Employees </h3>
+    {% include '_info_employees.html' %}
+
+{% endblock %}

@@ -1,3 +1,4 @@
+from app import app
 from flask import flash, redirect, url_for
 from flask_login import current_user
 from sqlalchemy import or_
@@ -255,6 +256,10 @@ class EmployeeAccess:
     def employees_of_current_user(self):
         return current_user.employees.filter_by(active=True, archived=False)
 
+    def employees_by_company_id(self):
+        empoyees = Employee.query.filter_by(
+            company_id=self.company_id).order_by(Employee.last_name.asc())
+        return empoyees
 
 class ClientAccess:
     def __init__(self, id=None):
@@ -416,7 +421,6 @@ class GroupClientPlacesAccess:
         groups_client_places = GroupClientPlaces.query. \
             filter(GroupClientPlaces.company_id == self.company_id). \
             order_by(GroupClientPlaces.name.asc())
-
         return groups_client_places
 
     def group_client_places_by_id(self):
@@ -467,6 +471,33 @@ class ClientPlaceAccess:
             slug=self.slug).first()
 
         return client_place
+
+    def client_places_by_company_id(self):
+        client_places = ClientPlace.query.filter_by(
+            company_id=self.company_id).order_by(ClientPlace.name.asc())
+        return client_places
+
+
+def check_role_and_transform_corporation_slug_to_id(role_id=0):
+    def decorator_admin(func):
+        def check_admin(corporation_slug_to_id, *args, **kwargs):
+            corporation_slug_to_id = CorporationAccess(
+                slug=corporation_slug_to_id).corporation_by_slug.id
+
+            admin = current_user.admins.filter(
+                Admin.corporation_id == corporation_slug_to_id,
+                Admin.active == True, Admin.archived == False,
+                Admin.role_id < role_id).first()
+
+            if admin:
+                return func(corporation_slug_to_id, *args, **kwargs)
+
+            flash('Contact your administrator.')
+            return redirect(url_for('index'))
+
+        return check_admin
+
+    return decorator_admin
 
 
 def check_role_and_return_corporation_and_transform_slug_to_id(
@@ -542,6 +573,41 @@ def check_role_and_transform_all_slug_to_id(role_id=0):
                 else:
                     flash('Contact your administrator.')
                     return redirect(url_for('index'))
+
+        return check_employee
+
+    return decorator_employee
+
+
+def check_role_and_return_company_transform_slug_to_id(role_id=0):
+    def decorator_employee(func):
+        def check_employee(company_slug_to_id, *args, **kwargs):
+
+            company = CompanyAccess(slug=company_slug_to_id).\
+                company_by_slug()
+
+            company_slug_to_id = company.id
+
+            corporation = CorporationAccess(id=company.corporation_id).\
+                corporation_by_id()
+
+            admin = current_user.admins.filter(
+                Admin.corporation_id == corporation.id,
+                Admin.active == True, Admin.archived == False).first()
+
+            if admin:
+                return func(company_slug_to_id, company, *args, **kwargs)
+            else:
+                employee = current_user.employees.filter(
+                    Employee.company_id == company_slug_to_id,
+                    Employee.active == True, Employee.archived == False,
+                    Employee.role_id < role_id).first()
+
+                if employee:
+                    return func(company_slug_to_id, company, *args, **kwargs)
+
+            flash('Contact your administrator.')
+            return redirect(url_for('index'))
 
         return check_employee
 

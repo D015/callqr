@@ -1,0 +1,12 @@
+{% if groups_client_places.count() %}
+    {% for group_client_places in groups_client_places %}
+
+        <p>
+        <a href="{{ url_for('group_client_places', group_client_places_slug_to_id=group_client_places.slug) }}">
+            {{ group_client_places.id }}</a> {{ group_client_places.name }}
+        </p>
+
+    {% endfor %}
+{% else %}
+    <span> <i>is not group client places</i> </span>
+{% endif %}

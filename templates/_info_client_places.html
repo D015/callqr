@@ -1,0 +1,12 @@
+{% if client_places.count() %}
+    {% for client_place in client_places %}
+
+        <p>
+        <a href="{{ url_for('client_place',
+        client_place_slug_to_id=client_place.slug) }}"> {{ client_place.id }}</a> {{ client_place.name }}
+        </p>
+
+    {% endfor %}
+{% else %}
+    <span> <i>is not client place</i> </span>
+{% endif %}

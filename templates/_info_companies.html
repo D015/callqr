@@ -1,9 +1,8 @@
-{% if commpanies and companies.count() %}
+{% if companies and companies.count() %}
     {% for company in companies %}
 
         <p>
-        <a href="{{ url_for('company',
-        corporation_slug_or_id=company.corporation.slug, company_slug_or_id=company.slug) }}">
+        <a href="{{ url_for('company', company_slug_to_id=company.slug) }}">
             {{ company.name }}</a>
         </p>
 

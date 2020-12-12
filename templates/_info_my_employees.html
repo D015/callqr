@@ -9,14 +9,14 @@
         :
 
         <a href="{{ url_for('employee',
-        employee_slug_or_id=employee.slug) }}">
+        employee_slug_to_id=employee.slug) }}">
             {{ employee.role.name }}</a>
 
         of
 
         <a href="{{ url_for('company',
         corporation_slug_or_id=employee.corporation.slug,
-        company_slug_or_id=employee.company.slug) }}">
+        company_slug_to_id=employee.company.slug) }}">
             {{ employee.company.name }}</a>
         </p>
 

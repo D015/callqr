@@ -435,7 +435,15 @@ def admin(admin_slug_to_id, admin):
 @app.route('/employee/<employee_slug_to_id>', methods=['GET', 'POST'])
 @login_required
 def employee(employee_slug_to_id):
-    return
+
+    employee = EmployeeAccess(slug=employee_slug_to_id).employees_by_slug()
+
+    employee_id = employee.id
+
+    company = CompanyAccess(id=employee.company_id).company_by_id()
+
+    return render_template('employee.html', employee_id=employee_id,
+                           employee=employee, company=company)
 
 @app.route('/group_client_places/<group_client_places_slug_to_id>',
            methods=['GET', 'POST'])

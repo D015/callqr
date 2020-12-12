@@ -261,6 +261,11 @@ class EmployeeAccess:
             company_id=self.company_id).order_by(Employee.last_name.asc())
         return empoyees
 
+    def employees_by_slug(self):
+        employee = Employee.query.filter_by(slug=self.slug).first()
+        return employee
+
+
 class ClientAccess:
     def __init__(self, id=None):
         self.id = id

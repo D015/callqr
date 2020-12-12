@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <table>
+        <tr valign="top">
+            <td><img src="{{ url_for('static', filename='qr_codes/0a8edb8db75642f994af67380b0e3d13.png') }}" /></td>
+            <td>
+                <h1>{{ employee.role.name }} of {{ company.name }}</h1>
+                {% if employee.about %}<p>{{ employee.about }}</p>{% endif %}
+            </td>
+        </tr>
+    </table>
+
+    <hr>
+
+    <h3> ID </h3>
+    {{ employee_id }}
+
+    <h3> First name </h3>
+    {{ employee.first_name }}
+
+    <h3> Last name </h3>
+    {{ employee.last_name }}
+
+    <h3> Email </h3>
+    {% if employee.email %}<p>{{ employee.email }}</p>{% else %}<p> - </p>{% endif %}
+
+    <h3> Phone </h3>
+    {% if employee.phone %}<p>{{ employee.phone }}</p>{% else %}<p> - </p>{% endif %}
+
+    <h3> Group client places </h3>
+    {% if employee.groups_client_places %}<p>{{ employee.groups_client_places }}</p>{% else %}<p> - </p>{% endif %}
+
+    <h3> Client places </h3>
+    {% if employee.client_places %}<p>{{ employee.client_places }}</p>{% else %}<p> - </p>{% endif %}
+
+    <h3> Username </h3>
+    {{ employee.user.username }}
+
+    <h3> User ID </h3>
+    {{ employee.user_id }}
+
+{% endblock %}

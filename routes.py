@@ -127,7 +127,7 @@ def create_corporation_view():
 
 
 # Create admin view
-@app.route('/_create_admin/<corporation_slug_or_id>',
+@app.route('/create_admin/<corporation_slug_to_id>',
            endpoint='create_admin_view',
            methods=['GET', 'POST'])
 @login_required
@@ -151,7 +151,7 @@ def create_admin_view(corporation_slug_to_id):
     form.email_admin.data = ''
     form.role_admin.data = ''
 
-    return render_template('_create_admin.html', form=form,
+    return render_template('create_admin.html', form=form,
                            corporation_slug=corporation_slug_to_id)
 
 
@@ -401,7 +401,7 @@ def corporation(corporation_slug_to_id, corporation, first_role):
 @app.route('/company/<company_slug_to_id>',
            endpoint='company',
            methods=['GET', 'POST'])
-@check_role_and_return_company_transform_slug_to_id(role_id=0)
+@check_role_and_return_company_transform_slug_to_id(role_id=999)
 @login_required
 def company(company_slug_to_id, company):
 
@@ -442,19 +442,52 @@ def employee(employee_slug_to_id):
 
     company = CompanyAccess(id=employee.company_id).company_by_id()
 
+    groups_client_places = employee.groups_client_places
+
+    client_places = employee.client_places
+
     return render_template('employee.html', employee_id=employee_id,
-                           employee=employee, company=company)
+                           employee=employee, company=company,
+                           groups_client_places=groups_client_places,
+                           client_places=client_places)
 
 @app.route('/group_client_places/<group_client_places_slug_to_id>',
            methods=['GET', 'POST'])
 @login_required
 def group_client_places(group_client_places_slug_to_id):
-    return
+
+    group_client_places = GroupClientPlacesAccess(
+        slug=group_client_places_slug_to_id).group_client_places_by_slug()
+
+    group_client_places_id = group_client_places.id
+
+    client_places = group_client_places.client_places
+    app.logger.info(client_places)
+
+    employees = group_client_places.employees
+
+    return render_template('group_client_places.html',
+                           client_places=client_places, employees=employees,
+                           group_client_places=group_client_places,
+                           group_client_places_id=group_client_places_id)
 
 @app.route('/client_place/<client_place_slug_to_id>', methods=['GET', 'POST'])
 @login_required
 def client_place(client_place_slug_to_id):
-    return
+
+    client_place = ClientPlaceAccess(
+        slug=client_place_slug_to_id).client_place_by_slug()
+
+    client_place_id = client_place.id
+
+    group_client_places = client_place.group_client_places
+
+    employees = client_place.employees
+
+    return render_template('client_place.html',
+                           client_place=client_place, employees=employees,
+                           client_place_id=client_place_id,
+                           group_client_places=group_client_places)
 
 
 # _Old__routes______________________________________

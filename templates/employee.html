@@ -29,10 +29,10 @@
     {% if employee.phone %}<p>{{ employee.phone }}</p>{% else %}<p> - </p>{% endif %}
 
     <h3> Group client places </h3>
-    {% if employee.groups_client_places %}<p>{{ employee.groups_client_places }}</p>{% else %}<p> - </p>{% endif %}
+    {% include '_info_groups_client_places.html' %}
 
     <h3> Client places </h3>
-    {% if employee.client_places %}<p>{{ employee.client_places }}</p>{% else %}<p> - </p>{% endif %}
+    {% include '_info_client_places.html' %}
 
     <h3> Username </h3>
     {{ employee.user.username }}

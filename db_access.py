@@ -486,8 +486,9 @@ class ClientPlaceAccess:
 def check_role_and_transform_corporation_slug_to_id(role_id=0):
     def decorator_admin(func):
         def check_admin(corporation_slug_to_id, *args, **kwargs):
-            corporation_slug_to_id = CorporationAccess(
-                slug=corporation_slug_to_id).corporation_by_slug.id
+            corporation = CorporationAccess(
+                slug=corporation_slug_to_id).corporation_by_slug()
+            corporation_slug_to_id = corporation.id
 
             admin = current_user.admins.filter(
                 Admin.corporation_id == corporation_slug_to_id,

@@ -179,33 +179,6 @@ def create_relationship_admin_to_user_view(admin_slug):
     return render_template('index.html', title='Home')
 
 
-# # User profile view
-# @app.route('/user/<username>', methods=['GET', 'POST'])
-# @login_required
-# def user(username):
-#     user = User.query.filter_by(username=username).first_or_404()
-#
-#     companys = Company.query.filter_by(creator_user_id=user.id).order_by(
-#         Company.timestamp.desc())
-#
-#     form = CompanyForm()
-#     if request.method == 'POST':
-#         if form.submit.data:
-#             if form.validate_on_submit():
-#                 company = Company(name=form.name.data.strip(),
-#                                   creator=current_user,
-#                                   about=form.about.data.strip())
-#                 db.session.add(company)
-#                 db.session.commit()
-#                 flash('Your company is now live!')
-#
-#     form.name.data = ''
-#     form.about.data = ''
-#
-#     return render_template('test/old/user.html', user=user, companys=companys,
-#                            form=form)
-
-
 # Create company view
 @app.route('/create_company/<corporation_slug_to_id>',
            endpoint='create_company_view',
@@ -297,13 +270,21 @@ def create_relationship_employee_to_user_view(employee_slug):
 def create_group_client_places_view(company_slug_to_id):
     form = GroupClientPlacesForm(company_slug_to_id)
 
-    if request.method == 'POST':
-        if form.submit_group_client_places.data:
-            if form.validate_on_submit():
-                GroupClientPlacesAccess(
-                    name=form.name_group_client_places.data.strip(),
-                    company_id=company_slug_to_id).create_group_client_places()
-                flash('Your group is now live!')
+    next_page = request.args.get('next')
+
+    if request.method == 'POST' and form.submit_group_client_places.data \
+            and form.validate_on_submit():
+        GroupClientPlacesAccess(
+            name=form.name_group_client_places.data.strip(),
+            company_id=company_slug_to_id).create_group_client_places()
+        flash('Your group is now live!')
+        if next_page:
+            return redirect(next_page)
+
+    elif request.method == 'POST' and form.cancel_group_client_places.data:
+        form.name_group_client_places.data = ''
+        if next_page:
+            return redirect(next_page)
 
     form.name_group_client_places.data = ''
 

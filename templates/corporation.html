@@ -15,12 +15,17 @@
 
     <h3> Companies </h3>
     {% include '_info_companies.html' %}
+    <p>
+        <a href="{{ url_for('create_company_view',
+        corporation_slug_to_id=corporation.slug,
+        next=request.path) }}">Create new company</a> in {{ corporation.name }}
+    </p>
 
     <h3> Admins </h3>
     {% include '_info_admins.html' %}
     <p>
-        <a href="{{ url_for('_cr',
-        client_place_slug_to_id=client_place.slug) }}"> {{ client_place.id }}</a> {{ client_place.name }}
+        <a href="{{ url_for('create_admin_view',
+        corporation_slug_to_id=corporation.slug,
+        next=request.path) }}">Create new admin</a> of {{ corporation.name }}
     </p>
-
 {% endblock %}

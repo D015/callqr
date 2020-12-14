@@ -549,32 +549,30 @@ def check_role_and_return_corporation_and_transform_slug_to_id(
 
 def check_role_and_transform_all_slug_to_id(role_id=0):
     def decorator_employee(func):
-        def check_employee(corporation_slug_or_id, company_slug_or_id,
+        def check_employee(company_slug_to_id,
                            *args, **kwargs):
 
-            if type(company_slug_or_id) is not int:
-                company_slug_or_id = CompanyAccess(slug=company_slug_or_id). \
-                    company_by_slug().id
+            company = CompanyAccess(slug=company_slug_to_id). \
+                    company_by_slug()
+            company_slug_to_id = company.id
 
-            if type(corporation_slug_or_id) is not int:
-                corporation_slug_or_id = CorporationAccess(
-                    slug=corporation_slug_or_id).corporation_by_slug().id
+            corporation_id = company.corporation_id
 
             admin = current_user.admins.filter(
-                Admin.corporation_id == corporation_slug_or_id,
+                Admin.corporation_id == corporation_id,
                 Admin.active == True, Admin.archived == False).first()
 
             if admin:
-                return func(corporation_slug_or_id, company_slug_or_id,
+                return func(company_slug_to_id,
                             *args, **kwargs)
             else:
                 employee = current_user.employees.filter(
-                    Employee.company_id == company_slug_or_id,
+                    Employee.company_id == company_slug_to_id,
                     Employee.active == True, Employee.archived == False,
                     Employee.role_id < role_id).first()
 
                 if employee:
-                    return func(corporation_slug_or_id, company_slug_or_id,
+                    return func(company_slug_to_id,
                                 *args, **kwargs)
                 else:
                     flash('Contact your administrator.')

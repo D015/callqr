@@ -140,13 +140,21 @@ def create_admin_view(corporation_slug_to_id):
 
     form = AdminForm(roles_to_choose, corporation_slug_to_id)
 
-    if request.method == 'POST':
-        if form.submit_admin.data:
-            if form.validate_on_submit():
-                AdminAccess(corporation_id=corporation_slug_to_id,
-                            email=form.email_admin.data.strip(),
-                            role_id=form.role_admin.data.strip()).create_admin()
-                flash('Your admin is now live!')
+    next_page = request.args.get('next')
+
+    if request.method == 'POST' and form.submit_admin.data \
+            and form.validate_on_submit():
+        AdminAccess(corporation_id=corporation_slug_to_id,
+                    email=form.email_admin.data.strip(),
+                    role_id=form.role_admin.data.strip()).create_admin()
+        flash('Your admin is now live!')
+        if next_page:
+            return redirect(next_page)
+    elif request.method == 'POST' and form.cancel_admin.data:
+        form.email_admin.data = ''
+        form.role_admin.data = ''
+        if next_page:
+            return redirect(next_page)
 
     form.email_admin.data = ''
     form.role_admin.data = ''
@@ -199,7 +207,7 @@ def create_relationship_admin_to_user_view(admin_slug):
 
 
 # Create company view
-@app.route('/_create_company/<corporation_slug_to_id>',
+@app.route('/create_company/<corporation_slug_to_id>',
            endpoint='create_company_view',
            methods=['GET', 'POST'])
 @login_required
@@ -207,17 +215,26 @@ def create_relationship_admin_to_user_view(admin_slug):
 def create_company_view(corporation_slug_to_id):
     form = CompanyForm(corporation_slug_to_id)
 
-    if request.method == 'POST':
-        if form.submit_company.data:
-            if form.validate_on_submit():
-                CompanyAccess(corporation_id=corporation_slug_to_id,
-                              name=form.name_company.data.strip()). \
-                    create_company()
-                flash('Your company is now live!')
+    next_page = request.args.get('next')
+
+    if request.method == 'POST' and form.submit_company.data \
+            and form.validate_on_submit():
+
+        CompanyAccess(corporation_id=corporation_slug_to_id,
+                      name=form.name_company.data.strip()). \
+            create_company()
+        flash('Your company is now live!')
+        if next_page:
+            return redirect(next_page)
+
+    elif request.method == 'POST' and form.cancel_company.data:
+        form.name_company.data = ''
+        if next_page:
+            return redirect(next_page)
 
     form.name_company.data = ''
 
-    return render_template('_create_company.html', form=form,
+    return render_template('create_company.html', form=form,
                            corporation_slug=corporation_slug_to_id)
 
 
@@ -272,28 +289,27 @@ def create_relationship_employee_to_user_view(employee_slug):
 
 # Create group client places view
 @app.route(
-    '/_create_group_client_places/<corporation_slug_or_id>/<company_slug_or_id>',
+    '/create_group_client_places/<company_slug_to_id>',
     endpoint='create_group_client_places_view',
     methods=['GET', 'POST'])
 @login_required
 @check_role_and_transform_all_slug_to_id(role_id=601)
-def create_group_client_places_view(corporation_slug_or_id, company_slug_or_id):
-    form = GroupClientPlacesForm(company_slug_or_id)
+def create_group_client_places_view(company_slug_to_id):
+    form = GroupClientPlacesForm(company_slug_to_id)
 
     if request.method == 'POST':
         if form.submit_group_client_places.data:
             if form.validate_on_submit():
                 GroupClientPlacesAccess(
                     name=form.name_group_client_places.data.strip(),
-                    company_id=company_slug_or_id).create_group_client_places()
+                    company_id=company_slug_to_id).create_group_client_places()
                 flash('Your group is now live!')
 
     form.name_group_client_places.data = ''
 
-    return render_template('_create_group_client_places.html',
+    return render_template('create_group_client_places.html',
                            form_group_client_places=form,
-                           corporation_slug_or_id=corporation_slug_or_id,
-                           company_slug_or_id=company_slug_or_id)
+                           company_slug_or_id=company_slug_to_id)
 
 
 # Create client place view
@@ -304,7 +320,7 @@ def create_group_client_places_view(corporation_slug_or_id, company_slug_or_id):
 @login_required
 @check_role_and_transform_all_slug_to_id(role_id=601)
 def create_client_place_view(corporation_slug_or_id, company_slug_or_id):
-    groups_client_places = GroupClientPlacesAccess(id=company_slug_or_id).\
+    groups_client_places = GroupClientPlacesAccess(id=company_slug_or_id). \
         groups_client_places_by_company_id()
 
     choices_group_client_places = [(i.id, i.name) for i in groups_client_places]
@@ -323,7 +339,7 @@ def create_client_place_view(corporation_slug_or_id, company_slug_or_id):
                     if form.group_client_places.data else \
                     ClientPlaceAccess(
                         company_id=company_slug_or_id,
-                        name=form.name_client_place.data.strip()).\
+                        name=form.name_client_place.data.strip()). \
                         create_client_place()
 
                 flash('Your client place is now live!')
@@ -385,12 +401,10 @@ def profile():
     first_role_id=500, second_role_id=800)
 @login_required
 def corporation(corporation_slug_to_id, corporation, first_role):
-
     companies = None
     if first_role:
         companies = CompanyAccess(
             corporation_id=corporation_slug_to_id).companies_by_corporation_id()
-        app.logger.info(companies.all())
     admins = AdminAccess(
         corporation_id=corporation_slug_to_id).admins_by_corporation_id()
 
@@ -404,7 +418,6 @@ def corporation(corporation_slug_to_id, corporation, first_role):
 @check_role_and_return_company_transform_slug_to_id(role_id=999)
 @login_required
 def company(company_slug_to_id, company):
-
     groups_client_places = GroupClientPlacesAccess(
         company_id=company_slug_to_id).groups_client_places_by_company_id()
 
@@ -416,7 +429,7 @@ def company(company_slug_to_id, company):
 
     return render_template('company.html', company=company,
                            groups_client_places=groups_client_places,
-                           client_places=client_places, employees=employees )
+                           client_places=client_places, employees=employees)
 
 
 @app.route('/admin/<admin_slug_to_id>',
@@ -424,18 +437,15 @@ def company(company_slug_to_id, company):
 @check_role_and_return_admin_and_transform_slug_to_id(others=True)
 @login_required
 def admin(admin_slug_to_id, admin):
-
     corporation = CorporationAccess(id=admin.corporation_id).corporation_by_id()
 
-
-    return render_template('admin.html', admin_id = admin_slug_to_id,
+    return render_template('admin.html', admin_id=admin_slug_to_id,
                            admin=admin, corporation=corporation)
 
 
 @app.route('/employee/<employee_slug_to_id>', methods=['GET', 'POST'])
 @login_required
 def employee(employee_slug_to_id):
-
     employee = EmployeeAccess(slug=employee_slug_to_id).employees_by_slug()
 
     employee_id = employee.id
@@ -451,11 +461,11 @@ def employee(employee_slug_to_id):
                            groups_client_places=groups_client_places,
                            client_places=client_places)
 
+
 @app.route('/group_client_places/<group_client_places_slug_to_id>',
            methods=['GET', 'POST'])
 @login_required
 def group_client_places(group_client_places_slug_to_id):
-
     group_client_places = GroupClientPlacesAccess(
         slug=group_client_places_slug_to_id).group_client_places_by_slug()
 
@@ -471,10 +481,10 @@ def group_client_places(group_client_places_slug_to_id):
                            group_client_places=group_client_places,
                            group_client_places_id=group_client_places_id)
 
+
 @app.route('/client_place/<client_place_slug_to_id>', methods=['GET', 'POST'])
 @login_required
 def client_place(client_place_slug_to_id):
-
     client_place = ClientPlaceAccess(
         slug=client_place_slug_to_id).client_place_by_slug()
 

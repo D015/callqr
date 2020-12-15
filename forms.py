@@ -170,7 +170,7 @@ class ClientPlaceForm(FlaskForm):
                                     validators=[DataRequired()])
     group_client_places = SelectField('Group', validate_choice=False)
     submit_client_place = SubmitField('Submit')
-    cancel = SubmitField('Cancel')
+    cancel_client_place = SubmitField('Cancel')
 
     def __init__(self, company_id,
                  choices_group_client_places, *args, **kwargs):

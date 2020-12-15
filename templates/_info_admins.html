@@ -3,7 +3,8 @@
 
         <p>
         <a href="{{ url_for('admin',
-        admin_slug_to_id=admin.slug) }}"> {{ admin.id }}</a> {{ admin.role.name }}
+        admin_slug_to_id=admin.slug) }}"> {{ admin.id }}</a>
+            {{ admin.role.name }} : {% if admin.user.username %} {{ admin.user.username }} {% else %} - {% endif %}
         </p>
 
     {% endfor %}

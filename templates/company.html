@@ -23,8 +23,17 @@
 
     <h3> Client places </h3>
     {% include '_info_client_places.html' %}
+    <p>
+        <a href="{{ url_for('create_client_place_view',
+        company_slug_to_id=company.slug,
+        next=request.path) }}">Create new client place</a> in {{ company.name }}
+    </p>
 
     <h3> Employees </h3>
     {% include '_info_employees.html' %}
-
+    <p>
+        <a href="{{ url_for('create_client_place_view',
+        company_slug_to_id=company.slug,
+        next=request.path) }}">Create new client place</a> in {{ company.name }}
+    </p>
 {% endblock %}

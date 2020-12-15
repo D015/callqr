@@ -97,14 +97,15 @@ class AdminAccess:
         return admins
 
     def admins_of_current_user(self):
-        return current_user.admins.filter_by(active=True, archived=False)
+        return current_user.admins.filter_by(active=True, archived=False). \
+            order_by(Admin.role_id.asc(), Admin.id.asc())
 
     def admin_by_slug(self):
         admin = Admin.query.filter_by(slug=self.slug).first()
         return admin
 
     def admins_by_corporation_id(self):
-        admins = Admin.query.filter_by(corporation_id=self.corporation_id).\
+        admins = Admin.query.filter_by(corporation_id=self.corporation_id). \
             order_by(Admin.role_id.desc(), Admin.id.asc())
         return admins
 
@@ -451,9 +452,17 @@ class ClientPlaceAccess:
         self.group_client_places_id = group_client_places_id
 
     def create_client_place(self):
-        client_place = ClientPlace(
-            group_client_places_id=self.group_client_places_id, name=self.name,
-            creator_user_id=current_user.id, company_id=self.company_id)
+
+        if type(self.group_client_places_id) is int:
+            client_place = ClientPlace(
+                group_client_places_id=self.group_client_places_id,
+                name=self.name, creator_user_id=current_user.id,
+                company_id=self.company_id)
+        else:
+            client_place = ClientPlace(name=self.name,
+                                       creator_user_id=current_user.id,
+                                       company_id=self.company_id)
+
 
         db.session.add(client_place)
         db.session.commit()
@@ -511,7 +520,7 @@ def check_role_and_return_corporation_and_transform_slug_to_id(
     def decorator_admin(func):
         def check_admin(corporation_slug_to_id, *args, **kwargs):
             corporation = CorporationAccess(
-               slug=corporation_slug_to_id).corporation_by_slug()
+                slug=corporation_slug_to_id).corporation_by_slug()
 
             corporation_slug_to_id = corporation.id
 
@@ -553,7 +562,7 @@ def check_role_and_transform_all_slug_to_id(role_id=0):
                            *args, **kwargs):
 
             company = CompanyAccess(slug=company_slug_to_id). \
-                    company_by_slug()
+                company_by_slug()
             company_slug_to_id = company.id
 
             corporation_id = company.corporation_id
@@ -563,7 +572,7 @@ def check_role_and_transform_all_slug_to_id(role_id=0):
                 Admin.active == True, Admin.archived == False).first()
 
             if admin:
-                return func(company_slug_to_id,
+                return func(company_slug_to_id, corporation_id,
                             *args, **kwargs)
             else:
                 employee = current_user.employees.filter(
@@ -572,7 +581,7 @@ def check_role_and_transform_all_slug_to_id(role_id=0):
                     Employee.role_id < role_id).first()
 
                 if employee:
-                    return func(company_slug_to_id,
+                    return func(company_slug_to_id, corporation_id,
                                 *args, **kwargs)
                 else:
                     flash('Contact your administrator.')
@@ -587,12 +596,12 @@ def check_role_and_return_company_transform_slug_to_id(role_id=0):
     def decorator_employee(func):
         def check_employee(company_slug_to_id, *args, **kwargs):
 
-            company = CompanyAccess(slug=company_slug_to_id).\
+            company = CompanyAccess(slug=company_slug_to_id). \
                 company_by_slug()
 
             company_slug_to_id = company.id
 
-            corporation = CorporationAccess(id=company.corporation_id).\
+            corporation = CorporationAccess(id=company.corporation_id). \
                 corporation_by_id()
 
             admin = current_user.admins.filter(

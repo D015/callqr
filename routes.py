@@ -110,20 +110,29 @@ def logout():
 
 
 # Create corporation view
-@app.route('/_create_corporation', methods=['GET', 'POST'])
+@app.route('/create_corporation', methods=['GET', 'POST'])
 @login_required
 def create_corporation_view():
     form = CorporationForm()
-    if request.method == 'POST':
-        if form.submit_corporation.data:
-            if form.validate_on_submit():
-                CorporationAccess(name=form.name_corporation.data.strip()). \
-                    create_corporation()
-                flash('Your corporation is now live!')
+
+    next_page = request.args.get('next')
+
+    if request.method == 'POST' and form.submit_corporation.data \
+            and form.validate_on_submit():
+        CorporationAccess(name=form.name_corporation.data.strip()). \
+            create_corporation()
+        flash('Your corporation is now live!')
+        if next_page:
+            return redirect(next_page)
+
+    elif request.method == 'POST' and form.cancel_corporation.data:
+        form.name_corporation.data = ''
+        if next_page:
+            return redirect(next_page)
 
     form.name_corporation.data = ''
 
-    return render_template('_create_corporation.html', form=form)
+    return render_template('create_corporation.html', form=form)
 
 
 # Create admin view
@@ -212,19 +221,19 @@ def create_company_view(corporation_slug_to_id):
 
 
 # Create employee view
-@app.route('/_create_employee/<corporation_slug_to_id>/<company_slug_or_id>',
+@app.route('/create_employee/<company_slug_or_id>',
            endpoint='create_employee_view',
            methods=['GET', 'POST'])
 @login_required
 @check_role_and_transform_all_slug_to_id(role_id=999)
-def create_employee_view(corporation_slug_to_id, company_slug_or_id):
-    roles = RoleAccess(corporation_id=corporation_slug_to_id,
+def create_employee_view(company_slug_or_id, corporation_id, *args):
+    roles = RoleAccess(corporation_id=corporation_id,
                        company_id=company_slug_or_id). \
         roles_available_to_create_employee()
 
     roles_to_choose = [(i.id, i.name) for i in roles]
 
-    form = EmployeeForm(roles_to_choose, corporation_slug_to_id)
+    form = EmployeeForm(roles_to_choose, corporation_id)
 
     if request.method == 'POST':
         if form.submit_employee.data:
@@ -233,7 +242,7 @@ def create_employee_view(corporation_slug_to_id, company_slug_or_id):
                                first_name=form.first_name_employee.data.strip(),
                                email=form.email_employee.data.strip(),
                                role_id=form.role_employee.data.strip(),
-                               corporation_id=corporation_slug_to_id). \
+                               corporation_id=corporation_id). \
                     create_employee()
                 flash('Your employee is now live!')
 
@@ -267,7 +276,7 @@ def create_relationship_employee_to_user_view(employee_slug):
     methods=['GET', 'POST'])
 @login_required
 @check_role_and_transform_all_slug_to_id(role_id=601)
-def create_group_client_places_view(company_slug_to_id):
+def create_group_client_places_view(company_slug_to_id, *args):
     form = GroupClientPlacesForm(company_slug_to_id)
 
     next_page = request.args.get('next')
@@ -295,43 +304,47 @@ def create_group_client_places_view(company_slug_to_id):
 
 # Create client place view
 @app.route(
-    '/_create_client_place/<corporation_slug_or_id>/<company_slug_or_id>',
+    '/create_client_place/<company_slug_to_id>',
     endpoint='create_client_place_view',
     methods=['GET', 'POST'])
 @login_required
 @check_role_and_transform_all_slug_to_id(role_id=601)
-def create_client_place_view(corporation_slug_or_id, company_slug_or_id):
-    groups_client_places = GroupClientPlacesAccess(id=company_slug_or_id). \
-        groups_client_places_by_company_id()
-
+def create_client_place_view(company_slug_to_id, *args):
+    groups_client_places = GroupClientPlacesAccess(
+        company_id=company_slug_to_id).groups_client_places_by_company_id()
+    app.logger.info(groups_client_places)
     choices_group_client_places = [(i.id, i.name) for i in groups_client_places]
-    choices_group_client_places.insert(0, (None, 'group not selected'))
+    app.logger.info(choices_group_client_places)
+    choices_group_client_places.insert(0, ('', 'group not selected'))
+    app.logger.info(choices_group_client_places)
 
-    form = ClientPlaceForm(company_slug_or_id, choices_group_client_places)
+    form = ClientPlaceForm(company_slug_to_id, choices_group_client_places)
 
-    if request.method == 'POST':
-        if form.submit_client_place.data:
-            if form.validate_on_submit():
-                ClientPlaceAccess(company_id=company_slug_or_id,
-                                  name=form.name_client_place.data.strip(),
-                                  group_client_places_id=
-                                  form.group_client_places.data.strip()). \
-                    create_client_place() \
-                    if form.group_client_places.data else \
-                    ClientPlaceAccess(
-                        company_id=company_slug_or_id,
-                        name=form.name_client_place.data.strip()). \
-                        create_client_place()
+    next_page = request.args.get('next')
 
-                flash('Your client place is now live!')
+    if request.method == 'POST' and form.submit_client_place.data \
+            and form.validate_on_submit():
+        ClientPlaceAccess(company_id=company_slug_to_id,
+                          name=form.name_client_place.data.strip(),
+                          group_client_places_id=
+                          form.group_client_places.data.strip()). \
+            create_client_place()
+        flash('Your client place is now live!')
+        if next_page:
+            return redirect(next_page)
+
+    elif request.method == 'POST' and form.cancel_client_place.data:
+        form.name_client_place.data = ''
+        form.group_client_places.data = ''
+        if next_page:
+            return redirect(next_page)
 
     form.name_client_place.data = ''
     form.group_client_places.data = ''
 
-    return render_template('_create_client_place.html',
+    return render_template('create_client_place.html',
                            form_client_place=form,
-                           corporation_slug_or_id=corporation_slug_or_id,
-                           company_slug_or_id=company_slug_or_id)
+                           company_slug_or_id=company_slug_to_id)
 
 
 # Create by yourself relationship to client lace

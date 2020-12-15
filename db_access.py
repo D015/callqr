@@ -453,7 +453,7 @@ class ClientPlaceAccess:
 
     def create_client_place(self):
 
-        if type(self.group_client_places_id) is int:
+        if self.group_client_places_id.isdigit():
             client_place = ClientPlace(
                 group_client_places_id=self.group_client_places_id,
                 name=self.name, creator_user_id=current_user.id,

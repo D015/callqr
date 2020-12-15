@@ -132,7 +132,8 @@ class EmployeeAccess:
         self.client_place_id = client_place_id
 
     def create_employee(self):
-        corporation_id = self.corporation_id if self.corporation_id is None \
+        corporation_id = self.corporation_id \
+            if self.corporation_id is not None \
             else CompanyAccess(id=self.id).company_by_id().corporation_id
 
         employee = Employee(creator_user_id=current_user.id,
@@ -141,7 +142,7 @@ class EmployeeAccess:
                             about=self.about, email=self.email,
                             phone=self.phone, role_id=self.role_id,
                             corporation_id=corporation_id,
-                            company_id=self.id)
+                            company_id=self.company_id)
         db.session.add(employee)
         db.session.commit()
 

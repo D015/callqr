@@ -123,8 +123,8 @@ class EmployeeForm(FlaskForm):
     email_employee = StringField('Email', validators=[DataRequired(), Email()])
     role_employee = SelectField('Role', validate_choice=False)
 
-    submit_employee = SubmitField('Submit_employee')
-    cancel_employee = SubmitField('Cancel_employee')
+    submit_employee = SubmitField('Submit')
+    cancel_employee = SubmitField('Cancel')
 
     def __init__(self, roles_to_choose, corporation_id, *args, **kwargs):
         super(EmployeeForm, self).__init__(*args, **kwargs)

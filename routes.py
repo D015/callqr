@@ -117,20 +117,20 @@ def create_corporation_view():
 
     next_page = request.args.get('next')
 
-    if request.method == 'POST' and form.submit_corporation.data \
-            and form.validate_on_submit():
-        CorporationAccess(name=form.name_corporation.data.strip()). \
-            create_corporation()
-        flash('Your corporation is now live!')
-        if next_page:
-            return redirect(next_page)
+    if request.method == 'POST':
+        if form.submit_corporation.data and form.validate_on_submit():
+            CorporationAccess(name=form.name_corporation.data.strip()). \
+                create_corporation()
+            flash('Your corporation is now live!')
+            if next_page:
+                return redirect(next_page)
+            form.name_corporation.data = ''
 
-    elif request.method == 'POST' and form.cancel_corporation.data:
-        form.name_corporation.data = ''
-        if next_page:
-            return redirect(next_page)
+        elif form.cancel_corporation.data:
+            if next_page:
+                return redirect(next_page)
+            form.name_corporation.data = ''
 
-    form.name_corporation.data = ''
 
     return render_template('create_corporation.html', form=form)
 
@@ -151,22 +151,22 @@ def create_admin_view(corporation_slug_to_id):
 
     next_page = request.args.get('next')
 
-    if request.method == 'POST' and form.submit_admin.data \
-            and form.validate_on_submit():
-        AdminAccess(corporation_id=corporation_slug_to_id,
-                    email=form.email_admin.data.strip(),
-                    role_id=form.role_admin.data.strip()).create_admin()
-        flash('Your admin is now live!')
-        if next_page:
-            return redirect(next_page)
-    elif request.method == 'POST' and form.cancel_admin.data:
-        form.email_admin.data = ''
-        form.role_admin.data = ''
-        if next_page:
-            return redirect(next_page)
+    if request.method == 'POST':
+        if form.submit_admin.data and form.validate_on_submit():
+            AdminAccess(corporation_id=corporation_slug_to_id,
+                        email=form.email_admin.data.strip(),
+                        role_id=form.role_admin.data.strip()).create_admin()
+            flash('Your admin is now live!')
+            if next_page:
+                return redirect(next_page)
+            form.email_admin.data = ''
+            form.role_admin.data = ''
 
-    form.email_admin.data = ''
-    form.role_admin.data = ''
+        elif form.cancel_admin.data:
+            if next_page:
+                return redirect(next_page)
+            form.email_admin.data = ''
+            form.role_admin.data = ''
 
     return render_template('create_admin.html', form=form,
                            corporation_slug=corporation_slug_to_id)
@@ -199,58 +199,66 @@ def create_company_view(corporation_slug_to_id):
 
     next_page = request.args.get('next')
 
-    if request.method == 'POST' and form.submit_company.data \
-            and form.validate_on_submit():
+    if request.method == 'POST':
+        if form.submit_company.data and form.validate_on_submit():
 
-        CompanyAccess(corporation_id=corporation_slug_to_id,
-                      name=form.name_company.data.strip()). \
-            create_company()
-        flash('Your company is now live!')
-        if next_page:
-            return redirect(next_page)
+            CompanyAccess(corporation_id=corporation_slug_to_id,
+                          name=form.name_company.data.strip()). \
+                create_company()
+            flash('Your company is now live!')
+            if next_page:
+                return redirect(next_page)
+            form.name_company.data = ''
 
-    elif request.method == 'POST' and form.cancel_company.data:
-        form.name_company.data = ''
-        if next_page:
-            return redirect(next_page)
-
-    form.name_company.data = ''
+        elif form.cancel_company.data:
+            if next_page:
+                return redirect(next_page)
+            form.name_company.data = ''
 
     return render_template('create_company.html', form=form,
                            corporation_slug=corporation_slug_to_id)
 
 
 # Create employee view
-@app.route('/create_employee/<company_slug_or_id>',
+@app.route('/create_employee/<company_slug_to_id>',
            endpoint='create_employee_view',
            methods=['GET', 'POST'])
 @login_required
 @check_role_and_transform_all_slug_to_id(role_id=999)
-def create_employee_view(company_slug_or_id, corporation_id, *args):
+def create_employee_view(company_slug_to_id, corporation_id, *args):
     roles = RoleAccess(corporation_id=corporation_id,
-                       company_id=company_slug_or_id). \
+                       company_id=company_slug_to_id). \
         roles_available_to_create_employee()
 
     roles_to_choose = [(i.id, i.name) for i in roles]
 
     form = EmployeeForm(roles_to_choose, corporation_id)
 
+    next_page = request.args.get('next')
+
     if request.method == 'POST':
-        if form.submit_employee.data:
-            if form.validate_on_submit():
-                EmployeeAccess(company_id=company_slug_or_id,
-                               first_name=form.first_name_employee.data.strip(),
-                               email=form.email_employee.data.strip(),
-                               role_id=form.role_employee.data.strip(),
-                               corporation_id=corporation_id). \
-                    create_employee()
-                flash('Your employee is now live!')
+        if form.submit_employee.data and form.validate_on_submit():
+            EmployeeAccess(company_id=company_slug_to_id,
+                           first_name=form.first_name_employee.data.strip(),
+                           email=form.email_employee.data.strip(),
+                           role_id=form.role_employee.data.strip(),
+                           corporation_id=corporation_id). \
+                create_employee()
+            flash('Your employee is now live!')
+            if next_page:
+                return redirect(next_page)
+            form.first_name_employee.data = ''
+            form.email_employee.data = ''
+            form.role_employee.data = ''
 
-    form.first_name_employee.data = ''
-    form.email_employee.data = ''
-    form.role_employee.data = ''
+        elif form.cancel_employee.data:
+            if next_page:
+                return redirect(next_page)
+            form.first_name_employee.data = ''
+            form.email_employee.data = ''
+            form.role_employee.data = ''
 
-    return render_template('_create_employee.html', form=form)
+    return render_template('create_employee.html', form=form)
 
 
 # Create relationship employee to user view
@@ -281,21 +289,20 @@ def create_group_client_places_view(company_slug_to_id, *args):
 
     next_page = request.args.get('next')
 
-    if request.method == 'POST' and form.submit_group_client_places.data \
-            and form.validate_on_submit():
-        GroupClientPlacesAccess(
-            name=form.name_group_client_places.data.strip(),
-            company_id=company_slug_to_id).create_group_client_places()
-        flash('Your group is now live!')
-        if next_page:
-            return redirect(next_page)
+    if request.method == 'POST':
+        if form.submit_group_client_places.data and form.validate_on_submit():
+            GroupClientPlacesAccess(
+                name=form.name_group_client_places.data.strip(),
+                company_id=company_slug_to_id).create_group_client_places()
+            flash('Your group is now live!')
+            if next_page:
+                return redirect(next_page)
+            form.name_group_client_places.data = ''
 
-    elif request.method == 'POST' and form.cancel_group_client_places.data:
-        form.name_group_client_places.data = ''
-        if next_page:
-            return redirect(next_page)
-
-    form.name_group_client_places.data = ''
+        elif form.cancel_group_client_places.data:
+            if next_page:
+                return redirect(next_page)
+            form.name_group_client_places.data = ''
 
     return render_template('create_group_client_places.html',
                            form_group_client_places=form,
@@ -312,35 +319,33 @@ def create_group_client_places_view(company_slug_to_id, *args):
 def create_client_place_view(company_slug_to_id, *args):
     groups_client_places = GroupClientPlacesAccess(
         company_id=company_slug_to_id).groups_client_places_by_company_id()
-    app.logger.info(groups_client_places)
+
     choices_group_client_places = [(i.id, i.name) for i in groups_client_places]
-    app.logger.info(choices_group_client_places)
+
     choices_group_client_places.insert(0, ('', 'group not selected'))
-    app.logger.info(choices_group_client_places)
 
     form = ClientPlaceForm(company_slug_to_id, choices_group_client_places)
 
     next_page = request.args.get('next')
 
-    if request.method == 'POST' and form.submit_client_place.data \
-            and form.validate_on_submit():
-        ClientPlaceAccess(company_id=company_slug_to_id,
-                          name=form.name_client_place.data.strip(),
-                          group_client_places_id=
-                          form.group_client_places.data.strip()). \
-            create_client_place()
-        flash('Your client place is now live!')
-        if next_page:
-            return redirect(next_page)
+    if request.method == 'POST':
+        if form.submit_client_place.data and form.validate_on_submit():
+            ClientPlaceAccess(company_id=company_slug_to_id,
+                              name=form.name_client_place.data.strip(),
+                              group_client_places_id=
+                              form.group_client_places.data.strip()). \
+                create_client_place()
+            flash('Your client place is now live!')
+            if next_page:
+                return redirect(next_page)
+            form.name_client_place.data = ''
+            form.group_client_places.data = ''
 
-    elif request.method == 'POST' and form.cancel_client_place.data:
-        form.name_client_place.data = ''
-        form.group_client_places.data = ''
-        if next_page:
-            return redirect(next_page)
-
-    form.name_client_place.data = ''
-    form.group_client_places.data = ''
+        elif form.cancel_client_place.data :
+            if next_page:
+                return redirect(next_page)
+            form.name_client_place.data = ''
+            form.group_client_places.data = ''
 
     return render_template('create_client_place.html',
                            form_client_place=form,
@@ -364,7 +369,8 @@ def create_by_yourself_relationship_to_client_place(client_place_slug):
            methods=['GET', 'POST'])
 def create_by_yourself_relationship_to_group_client_places(
         group_client_places_slug):
-    result = EmployeeAccess(group_client_places_slug=group_client_places_slug). \
+    result = EmployeeAccess(
+        group_client_places_slug=group_client_places_slug). \
         create_relationship_group_client_places_to_employee()
 
     flash(result[1])
@@ -466,7 +472,6 @@ def group_client_places(group_client_places_slug_to_id):
     group_client_places_id = group_client_places.id
 
     client_places = group_client_places.client_places
-    app.logger.info(client_places)
 
     employees = group_client_places.employees
 

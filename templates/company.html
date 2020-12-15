@@ -32,8 +32,8 @@
     <h3> Employees </h3>
     {% include '_info_employees.html' %}
     <p>
-        <a href="{{ url_for('create_client_place_view',
+        <a href="{{ url_for('create_employee_view',
         company_slug_to_id=company.slug,
-        next=request.path) }}">Create new client place</a> in {{ company.name }}
+        next=request.path) }}">Create new employee</a> in {{ company.name }}
     </p>
 {% endblock %}

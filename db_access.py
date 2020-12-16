@@ -74,22 +74,23 @@ class AdminAccess:
 
     def create_relationship_admin_to_user(self):
 
-        admin = Admin.query.filter(
-            Admin.slug == self.slug, Admin.archived == False).first()
+        admin = Admin.query.filter_by(
+            slug=self.slug, active=False, archived=False, user_id=None,
+            email=current_user.email).first()
 
-        user_admin_corporation = current_user.admins.filter_by(
-            corporation_id=admin.corporation_id).first()
+        if admin and current_user.archived is False and current_user.active:
+            current_user_admin_corporation = current_user.admins.filter_by(
+                corporation_id=admin.corporation_id).first()
 
-        if admin.user_id or user_admin_corporation \
-                or current_user.archived or current_user.active is False:
-            pass
-        else:
-            admin.user_id = current_user.id
-            admin.active = True
-            db.session.add(admin)
-            db.session.commit()
+            if current_user_admin_corporation is None:
 
-            return admin
+                admin.user_id = current_user.id
+                admin.active = True
+                db.session.add(admin)
+                db.session.commit()
+
+                return admin
+        return None
 
     def admins_in_corporation_by_email(self):
         admins = Admin.query.filter_by(corporation_id=self.corporation_id,
@@ -108,6 +109,12 @@ class AdminAccess:
         admins = Admin.query.filter_by(corporation_id=self.corporation_id). \
             order_by(Admin.role_id.desc(), Admin.id.asc())
         return admins
+
+    def admins_pending_of_current_user(self):
+        admins_pending = Admin.query.filter_by(email=current_user.email,
+                                               active=False, archived=False,
+                                               user_id=None)
+        return admins_pending
 
 
 class EmployeeAccess:

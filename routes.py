@@ -173,19 +173,22 @@ def create_admin_view(corporation_slug_to_id):
 
 
 # Create relationship admin to user view
-@app.route('/_create_relationship_admin_to_user/<admin_slug>',
+@app.route('/create_relationship_admin_to_user/<admin_pending_slug>',
            methods=['GET', 'POST'])
 @login_required
-def create_relationship_admin_to_user_view(admin_slug):
-    admin = AdminAccess(slug=admin_slug). \
+def create_relationship_admin_to_user_view(admin_pending_slug):
+    admin = AdminAccess(slug=admin_pending_slug). \
         create_relationship_admin_to_user()
 
+    next_page = request.args.get('next')
+
     if admin:
-        flash('The relationship admin to user is created')
+        flash('The relationship admin to user is accepted')
     else:
         flash('Something went wrong!')
-
-    return render_template('index.html', title='Home')
+    if next_page:
+        return redirect(next_page)
+    return render_template('index.html')
 
 
 # Create company view
@@ -390,8 +393,11 @@ def profile():
 
     clients = ClientAccess().clients_of_current_user()
 
+    admins_pending = AdminAccess().admins_pending_of_current_user()
+
     return render_template('profile.html', user=the_user, admins=admins,
-                           employees=employees, clients=clients)
+                           employees=employees, clients=clients,
+                           admins_pending=admins_pending)
 
 
 @app.route('/corporation/<corporation_slug_to_id>',
@@ -614,5 +620,11 @@ def test():
     # print(admins_of_current_user())
     # print(clients_of_current_user())
     # print(the_current_user())
-    print(CompanyAccess().companies_of_current_user_by_corporation_id())
+    # _____________________________________________________
+    # print(CompanyAccess().companies_of_current_user_by_corporation_id())
+    # return render_template('index.html', title='Home')
+    # __________________________________________________________
+    current_user_admin_corporation = current_user.admins.filter_by(
+            corporation_id=1).first()
+    print(current_user_admin_corporation, type(current_user_admin_corporation))
     return render_template('index.html', title='Home')

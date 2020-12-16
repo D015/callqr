@@ -1,0 +1,20 @@
+{% if admins_pending.count() %}
+    {% for admin_pending in admins_pending %}
+
+        <p>
+        <a href="{{ url_for('corporation',
+        corporation_slug_to_id=admin_pending.corporation.slug) }}">
+            {{ admin_pending.corporation.name }}</a>
+        :
+
+        <a href="{{ url_for('admin', admin_slug_to_id=admin_pending.slug) }}">
+            {{ admin_pending.role.name }}</a>
+        -
+        <a href="{{ url_for('create_relationship_admin_to_user_view',
+        admin_pending_slug=admin_pending.slug, next=request.path) }}"> Accept </a>
+        </p>
+
+    {% endfor %}
+{% else %}
+    <p> <i>is not admins pending</i> </p>
+{% endif %}

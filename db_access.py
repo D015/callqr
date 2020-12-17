@@ -143,7 +143,7 @@ class EmployeeAccess:
             if self.corporation_id is not None \
             else CompanyAccess(id=self.id).company_by_id().corporation_id
 
-        employee = Employee(creator_user_id=current_user.id,
+        employee = Employee(creator_user_id=current_user.id, active=False,
                             first_name=self.first_name,
                             last_name=self.last_name,
                             about=self.about, email=self.email,
@@ -156,22 +156,22 @@ class EmployeeAccess:
         return employee
 
     def create_relationship_employee_to_user(self):
-        employee = Employee.query.filter(Employee.slug == self.slug,
-                                         Employee.archived == False).first()
+        employee = Employee.query.filter_by(
+            slug=self.slug, active=False, archived=False, user_id=None,
+            email=current_user.email).first()
 
-        user_employee_corporation = current_user.employees.filter_by(
-            corporation_id=employee.corporation_id).first()
+        if employee and current_user.archived is False and current_user.active:
+            current_user_employee_corporation = current_user.admins.filter_by(
+                corporation_id=employee.corporation_id).first()
 
-        if employee.user_id or user_employee_corporation \
-                or current_user.archived or current_user.active is False:
-            pass
-        else:
-            employee.user_id = current_user.id
-            employee.active = True
-            db.session.add(employee)
-            db.session.commit()
+            if current_user_employee_corporation is None:
+                employee.user_id = current_user.id
+                employee.active = True
+                db.session.add(employee)
+                db.session.commit()
 
-            return employee
+                return employee
+        return None
 
     def employees_in_corporation_by_email(self):
         employees = Employee.query.filter_by(corporation_id=self.corporation_id,
@@ -273,6 +273,12 @@ class EmployeeAccess:
     def employees_by_slug(self):
         employee = Employee.query.filter_by(slug=self.slug).first()
         return employee
+
+    def employees_pending_of_current_user(self):
+        employees_pending = Employee.query.filter_by(email=current_user.email,
+                                               active=False, archived=False,
+                                               user_id=None)
+        return employees_pending
 
 
 class ClientAccess:

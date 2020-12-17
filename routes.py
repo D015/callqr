@@ -186,6 +186,7 @@ def create_relationship_admin_to_user_view(admin_pending_slug):
         flash('The relationship admin to user is accepted')
     else:
         flash('Something went wrong!')
+
     if next_page:
         return redirect(next_page)
     return render_template('index.html')
@@ -265,17 +266,21 @@ def create_employee_view(company_slug_to_id, corporation_id, *args):
 
 
 # Create relationship employee to user view
-@app.route('/_create_relationship_employee_to_user/<employee_slug>',
+@app.route('/create_relationship_employee_to_user/<employee_pending_slug>',
            methods=['GET', 'POST'])
 @login_required
-def create_relationship_employee_to_user_view(employee_slug):
-    employee = EmployeeAccess(
-        slug=employee_slug).create_relationship_employee_to_user()
+def create_relationship_employee_to_user_view(employee_pending_slug):
+    employee = EmployeeAccess(slug=employee_pending_slug).\
+        create_relationship_employee_to_user()
+    next_page = request.args.get('next')
 
     if employee:
         flash('The relationship employee to user is created')
     else:
         flash('Something went wrong!')
+
+    if next_page:
+        return redirect(next_page)
 
     return render_template('index.html', title='Home')
 
@@ -395,9 +400,12 @@ def profile():
 
     admins_pending = AdminAccess().admins_pending_of_current_user()
 
+    employees_pending = EmployeeAccess().employees_pending_of_current_user()
+
     return render_template('profile.html', user=the_user, admins=admins,
                            employees=employees, clients=clients,
-                           admins_pending=admins_pending)
+                           admins_pending=admins_pending,
+                           employees_pending=employees_pending)
 
 
 @app.route('/corporation/<corporation_slug_to_id>',

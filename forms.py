@@ -89,11 +89,7 @@ class AdminForm(FlaskForm):
                              email=email_admin.data.strip()).\
             admins_in_corporation_by_email()
 
-        employees = EmployeeAccess(corporation_id=self.corporation_id,
-                                   email=self.email_admin.data.strip()).\
-            employees_in_corporation_by_email()
-
-        if admins is not None or employees is not None:
+        if admins is not None:
             raise ValidationError('Please use a different Email.')
 
 
@@ -133,15 +129,11 @@ class EmployeeForm(FlaskForm):
         self.corporation_id = corporation_id
 
     def validate_email_employee(self, email_employee):
-        admins = AdminAccess(corporation_id=self.corporation_id,
-                             email=email_employee.data.strip()).\
-            admins_in_corporation_by_email()
-
         employees = EmployeeAccess(corporation_id=self.corporation_id,
                                    email=self.email_employee.data.strip()).\
             employees_in_corporation_by_email()
 
-        if admins is not None or employees is not None:
+        if employees is not None:
             raise ValidationError('Please use a different Email.')
 
 

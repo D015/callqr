@@ -1,0 +1,20 @@
+{% if employees_pending.count() %}
+    {% for employee_pending in employees_pending %}
+
+        <p>
+        <a href="{{ url_for('corporation',
+        corporation_slug_to_id=employee_pending.corporation.slug) }}">
+            {{ employee_pending.corporation.name }}</a>
+        :
+
+        <a href="{{ url_for('employee', employee_slug_to_id=employee_pending.slug) }}">
+            {{ employee_pending.role.name }}</a>
+        -
+        <a href="{{ url_for('create_relationship_employee_to_user_view',
+        employee_pending_slug=employee_pending.slug, next=request.path) }}"> Accept </a>
+        </p>
+
+    {% endfor %}
+{% else %}
+    <p> <i>is not employees pending</i> </p>
+{% endif %}

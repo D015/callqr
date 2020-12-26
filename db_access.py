@@ -11,7 +11,8 @@ from models import User, Admin, Employee, employees_to_groups_client_places, \
 
 class UserAccess:
     def __init__(self, id=None, slug=None, username=None, email=None,
-                 password=None):
+                 about=None, password=None):
+        self.about = about
         self.id = id
         self.slug = slug
         self.username = username
@@ -24,6 +25,13 @@ class UserAccess:
         db.session.add(user)
         db.session.commit()
         return user
+
+    def edit_user(self):
+        user = User(username=self.username, email=self.email, about=self.about)
+        db.session.add(user)
+        db.session.commit()
+        return user
+
 
     def user_by_slug(self):
         user = User.query.filter_by(slug=self.slug).first()

@@ -83,6 +83,25 @@ def register():
     return render_template('register.html', title='Register', form=form)
 
 
+# Profile editor view
+@app.route('/edit_user', methods=['GET', 'POST'])
+@login_required
+def edit_user_view():
+    form = EditProfileForm(current_user.username)
+    if form.validate_on_submit():
+        current_user.username = form.username.data.strip()
+        current_user.about = form.about.data.strip()
+        db.session.commit()
+        flash('Your changes have been saved.')
+        return redirect(url_for('edit_user_view'))
+    elif request.method == 'GET':
+        form.username.data = current_user.username
+        form.email.data = current_user.email
+        form.about.data = current_user.about
+    return render_template('edit_user.html', title='Edit User',
+                           form=form)
+
+
 # Login view function logic
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -511,6 +530,8 @@ def client_place(client_place_slug_to_id):
                            client_place=client_place, employees=employees,
                            client_place_id=client_place_id,
                            group_client_places=group_client_places)
+
+
 
 
 # _Old__routes______________________________________

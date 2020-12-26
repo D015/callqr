@@ -183,6 +183,7 @@ class ClientPlaceForm(FlaskForm):
 # Profile editor
 class EditProfileForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
+    email = StringField('Email', validators=[DataRequired(), Email()])
     about = TextAreaField('About user', validators=[Length(min=0, max=140)])
     submit = SubmitField('Submit')
     cancel = SubmitField('cancel')

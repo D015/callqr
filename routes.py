@@ -88,6 +88,7 @@ def register():
 @login_required
 def edit_user_view():
     form = EditProfileForm(current_user.username)
+    user = UserAccess().the_current_user()
     if form.validate_on_submit():
         current_user.username = form.username.data.strip()
         current_user.about = form.about.data.strip()
@@ -653,7 +654,16 @@ def test():
     # print(CompanyAccess().companies_of_current_user_by_corporation_id())
     # return render_template('index.html', title='Home')
     # __________________________________________________________
-    current_user_admin_corporation = current_user.admins.filter_by(
-            corporation_id=1).first()
-    print(current_user_admin_corporation, type(current_user_admin_corporation))
+    # current_user_admin_corporation = current_user.admins.filter_by(
+    #         corporation_id=1).first()
+    # print(current_user_admin_corporation, type(current_user_admin_corporation))
+    # _________________________________________________________________
+    user = User.query.filter_by(id=5).first()
+    print(user, user.about)
+    user = UserAccess(about='123456', _obj=user).edit_model_object()
+    print(user, user.about)
+
+    user = User.query.filter_by(id=5).first()
+    print(user, user.about)
+
     return render_template('index.html', title='Home')

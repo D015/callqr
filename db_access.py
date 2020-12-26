@@ -9,15 +9,34 @@ from models import User, Admin, Employee, employees_to_groups_client_places, \
     ClientPlace
 
 
-class UserAccess:
-    def __init__(self, id=None, slug=None, username=None, email=None,
+class AccessMixin:
+    def __init__(self, _obj=None):
+        self._obj = _obj
+
+    def edit_model_object(self):
+        for key, value in self.__dict__.items():
+            if key[0] == '_' \
+                    or key == 'id' \
+                    or key == 'password':
+                continue
+            if value:
+                setattr(self._obj, key, value)
+
+        db.session.add(self._obj)
+        db.session.commit()
+        return self._obj
+
+
+class UserAccess(AccessMixin):
+    def __init__(self, _obj=None, id=None, slug=None, username=None, email=None,
                  about=None, password=None):
-        self.about = about
+        super().__init__(_obj)
         self.id = id
         self.slug = slug
         self.username = username
         self.email = email
         self.password = password
+        self.about = about
 
     def create_user(self):
         user = User(username=self.username, email=self.email)
@@ -25,13 +44,6 @@ class UserAccess:
         db.session.add(user)
         db.session.commit()
         return user
-
-    def edit_user(self):
-        user = User(username=self.username, email=self.email, about=self.about)
-        db.session.add(user)
-        db.session.commit()
-        return user
-
 
     def user_by_slug(self):
         user = User.query.filter_by(slug=self.slug).first()
@@ -91,7 +103,6 @@ class AdminAccess:
                 corporation_id=admin.corporation_id).first()
 
             if current_user_admin_corporation is None:
-
                 admin.user_id = current_user.id
                 admin.active = True
                 db.session.add(admin)
@@ -284,8 +295,9 @@ class EmployeeAccess:
 
     def employees_pending_of_current_user(self):
         employees_pending = Employee.query.filter_by(email=current_user.email,
-                                               active=False, archived=False,
-                                               user_id=None)
+                                                     active=False,
+                                                     archived=False,
+                                                     user_id=None)
         return employees_pending
 
 
@@ -484,7 +496,6 @@ class ClientPlaceAccess:
             client_place = ClientPlace(name=self.name,
                                        creator_user_id=current_user.id,
                                        company_id=self.company_id)
-
 
         db.session.add(client_place)
         db.session.commit()

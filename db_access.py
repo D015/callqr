@@ -9,6 +9,11 @@ from models import User, Admin, Employee, employees_to_groups_client_places, \
     ClientPlace
 
 
+def add_commit(db_obj):
+    db.session.add(db_obj)
+    db.session.commit()
+
+
 class AccessMixin:
     def __init__(self, _obj=None):
         self._obj = _obj
@@ -21,9 +26,7 @@ class AccessMixin:
                 continue
             if value:
                 setattr(self._obj, key, value)
-
-        db.session.add(self._obj)
-        db.session.commit()
+        add_commit(self._obj)
         return self._obj
 
 
@@ -41,8 +44,7 @@ class UserAccess(AccessMixin):
     def create_user(self):
         user = User(username=self.username, email=self.email)
         user.set_password(self.password)
-        db.session.add(user)
-        db.session.commit()
+        add_commit(user)
         return user
 
     def user_by_slug(self):
@@ -88,8 +90,7 @@ class AdminAccess:
         admin = Admin(creator_user_id=current_user.id, about=self.about,
                       email=self.email, phone=self.phone, role_id=self.role_id,
                       corporation_id=self.corporation_id, active=False)
-        db.session.add(admin)
-        db.session.commit()
+        add_commit(admin)
         return admin
 
     def create_relationship_admin_to_user(self):

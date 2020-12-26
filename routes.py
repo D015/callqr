@@ -660,7 +660,7 @@ def test():
     # _________________________________________________________________
     user = User.query.filter_by(id=5).first()
     print(user, user.about)
-    user = UserAccess(about='123456', _obj=user).edit_model_object()
+    user = UserAccess(about='12345789', _obj=user).edit_model_object()
     print(user, user.about)
 
     user = User.query.filter_by(id=5).first()

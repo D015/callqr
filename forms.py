@@ -47,14 +47,15 @@ class RegistrationForm(FlaskForm):
     submit = SubmitField('Register')
 
     def validate_username(self, username):
-        user = User.query.filter_by(username=username.data.strip()).first()
+        user = UserAccess(username=username.data.strip()). \
+            users_by_username()
         if user is not None:
             raise ValidationError('Please use a different username.')
 
     def validate_email(self, email):
-        user = User.query.filter_by(email=email.data).first()
-        if user is not None:
-            raise ValidationError('Please use a different email address.')
+        users = UserAccess(email=email.data.strip()).users_by_email()
+        if users is not None:
+            raise ValidationError('Please use a different Email.')
 
 
 # Form creator Corporation
@@ -201,7 +202,6 @@ class EditUserForm(FlaskForm):
     def validate_email(self, email):
         if email.data.lower() != self.user.email.lower():
             users = UserAccess(email=self.email.data.strip()).users_by_email()
-            print(users)
 
             if users is not None:
                 raise ValidationError('Please use a different Email.')

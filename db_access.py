@@ -121,8 +121,9 @@ class AdminAccess:
         return None
 
     def admins_in_corporation_by_email(self):
-        admins = Admin.query.filter_by(corporation_id=self.corporation_id,
-                                       email=self.email).first()
+        admins = Admin.query.filter(
+            Admin.corporation_id == self.corporation_id,
+            Admin.email.ilike(self.email)).first()
         return admins
 
     def admins_of_current_user(self):
@@ -202,8 +203,9 @@ class EmployeeAccess:
         return None
 
     def employees_in_corporation_by_email(self):
-        employees = Employee.query.filter_by(corporation_id=self.corporation_id,
-                                             email=self.email).first()
+        employees = Employee.query.filter(
+            Employee.corporation_id == self.corporation_id,
+            Employee.email.ilike(self.email)).first()
         return employees
 
     def is_relationship_employee_to_group_client_places(self):
@@ -381,8 +383,9 @@ class CorporationAccess:
         #     db.session.rollback()
 
     def same_corporation_name_for_creator_user(self):
-        corporation = Corporation.query.filter_by(
-            creator_user_id=current_user.id, name=self.name).first()
+        corporation = Corporation.query.filter(
+            Corporation.creator_user_id == current_user.id,
+            Corporation.name.ilike(self.name)).first()
         return corporation
 
     def corporation_by_slug(self):
@@ -422,8 +425,9 @@ class CompanyAccess:
         return company
 
     def company_in_corporation_by_name(self):
-        company = Company.query.filter_by(corporation_id=self.corporation_id,
-                                          name=self.name).first()
+        company = Company.query.filter(
+            Company.corporation_id == self.corporation_id,
+            Company.name.ilike(self.name)).first()
         return company
 
     def companies_by_corporation_id(self):
@@ -461,8 +465,9 @@ class GroupClientPlacesAccess:
         return group_client_places
 
     def group_client_places_in_company_by_name(self):
-        group_client_places = GroupClientPlaces.query.filter_by(
-            company_id=self.company_id, name=self.name).first()
+        group_client_places = GroupClientPlaces.query.filter(
+            GroupClientPlaces.company_id == self.company_id,
+            GroupClientPlaces.name.ilike(self.name)).first()
 
         return group_client_places
 
@@ -511,8 +516,9 @@ class ClientPlaceAccess:
         return client_place
 
     def client_place_in_company_by_name(self):
-        client_place = ClientPlace.query.filter_by(
-            company_id=self.company_id, name=self.name).first()
+        client_place = ClientPlace.query.filter(
+            ClientPlace.company_id == self.company_id,
+            ClientPlace.name.ilike(self.name)).first()
 
         return client_place
 

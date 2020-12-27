@@ -58,6 +58,33 @@ class RegistrationForm(FlaskForm):
             raise ValidationError('Please use a different Email.')
 
 
+# Profile editor
+class EditUserForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    about = TextAreaField('About user', validators=[Length(min=0, max=140)])
+    submit = SubmitField('Submit')
+    cancel = SubmitField('cancel')
+
+    def __init__(self, user, *args, **kwargs):
+        super(EditUserForm, self).__init__(*args, **kwargs)
+        self.user = user
+
+    def validate_username(self, username):
+        if username.data.lower() != self.user.username.lower():
+            user = UserAccess(username=self.username.data.strip()).\
+                users_by_username()
+            if user is not None:
+                raise ValidationError('Please use a different username.')
+
+    def validate_email(self, email):
+        if email.data.lower() != self.user.email.lower():
+            users = UserAccess(email=self.email.data.strip()).users_by_email()
+
+            if users is not None:
+                raise ValidationError('Please use a different Email.')
+
+
 # Form creator Corporation
 class CorporationForm(FlaskForm):
     name_corporation = StringField('Enter name new corporation',
@@ -125,13 +152,12 @@ class EmployeeForm(FlaskForm):
 
     def __init__(self, roles_to_choose, corporation_id, *args, **kwargs):
         super(EmployeeForm, self).__init__(*args, **kwargs)
-        self.email_employee.choices = roles_to_choose
         self.role_employee.choices = roles_to_choose
         self.corporation_id = corporation_id
 
     def validate_email_employee(self, email_employee):
         employees = EmployeeAccess(corporation_id=self.corporation_id,
-                                   email=self.email_employee.data.strip()). \
+                                   email=email_employee.data.strip()). \
             employees_in_corporation_by_email()
 
         if employees is not None:
@@ -178,33 +204,6 @@ class ClientPlaceForm(FlaskForm):
 
         if client_place is not None:
             raise ValidationError('Please use a different place name.')
-
-
-# Profile editor
-class EditUserForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired()])
-    email = StringField('Email', validators=[DataRequired(), Email()])
-    about = TextAreaField('About user', validators=[Length(min=0, max=140)])
-    submit = SubmitField('Submit')
-    cancel = SubmitField('cancel')
-
-    def __init__(self, user, *args, **kwargs):
-        super(EditUserForm, self).__init__(*args, **kwargs)
-        self.user = user
-
-    def validate_username(self, username):
-        if username.data.lower() != self.user.username.lower():
-            user = UserAccess(username=self.username.data.strip()).\
-                users_by_username()
-            if user is not None:
-                raise ValidationError('Please use a different username.')
-
-    def validate_email(self, email):
-        if email.data.lower() != self.user.email.lower():
-            users = UserAccess(email=self.email.data.strip()).users_by_email()
-
-            if users is not None:
-                raise ValidationError('Please use a different Email.')
 
 
 # Company editor

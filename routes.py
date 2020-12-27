@@ -63,6 +63,31 @@ def before_request():
 def index():
     return render_template('index.html', title='Home')
 
+# Login view function logic
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.username.data).first()
+        if user is None or not user.check_password(form.password.data):
+            flash('Invalid username or password')
+            return redirect(url_for('login'))
+        login_user(user, remember=form.remember_me.data)
+        next_page = request.args.get('next')
+        if not next_page or url_parse(next_page).netloc != '':
+            next_page = url_for('index')
+        return redirect(next_page)
+    return render_template('login.html', title='Sign In', form=form)
+
+
+# Logout view function
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
+
 
 # Users registration view
 @app.route('/register', methods=['GET', 'POST'])
@@ -103,32 +128,6 @@ def edit_user():
                            form=form)
 
 
-# Login view function logic
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if current_user.is_authenticated:
-        return redirect(url_for('index'))
-    form = LoginForm()
-    if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()
-        if user is None or not user.check_password(form.password.data):
-            flash('Invalid username or password')
-            return redirect(url_for('login'))
-        login_user(user, remember=form.remember_me.data)
-        next_page = request.args.get('next')
-        if not next_page or url_parse(next_page).netloc != '':
-            next_page = url_for('index')
-        return redirect(next_page)
-    return render_template('login.html', title='Sign In', form=form)
-
-
-# Logout view function
-@app.route('/logout')
-def logout():
-    logout_user()
-    return redirect(url_for('index'))
-
-
 # Create corporation view
 @app.route('/create_corporation', methods=['GET', 'POST'])
 @login_required
@@ -152,6 +151,26 @@ def create_corporation_view():
             form.name_corporation.data = ''
 
     return render_template('create_corporation.html', form=form)
+
+
+# Corporation editor view
+# @app.route('/edit_corporation<corporation_slug_to_id>', methods=['GET', 'POST'])
+# @login_required
+# def edit_corporation(corporation_slug_to_id):
+#     Corporation = UserAccess().the_current_user()
+#     form = EditUserForm(user)
+#     if request.method == 'POST' and form.validate_on_submit():
+#         UserAccess(username=form.username.data.strip(),
+#                    about=form.about.data.strip(),
+#                    _obj=user).edit_model_object()
+#         flash('Your changes have been saved.')
+#         return redirect(url_for('profile'))
+#     elif request.method == 'GET':
+#         form.username.data = user.username
+#         form.email.data = user.email
+#         form.about.data = user.about
+#     return render_template('edit_user.html', title='Edit User',
+#                            form=form)
 
 
 # Create admin view

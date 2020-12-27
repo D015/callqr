@@ -15,7 +15,9 @@ def add_commit(db_obj):
 
 
 class BaseAccess:
-    def __init__(self, _obj=None):
+    def __init__(self, id=None, slug=None, _obj=None):
+        self.id = id
+        self.slug = slug
         self._obj = _obj
 
     def edit_model_object(self):
@@ -31,11 +33,9 @@ class BaseAccess:
 
 
 class UserAccess(BaseAccess):
-    def __init__(self, _obj=None, id=None, slug=None, username=None, email=None,
+    def __init__(self, id=None, slug=None, _obj=None, username=None, email=None,
                  about=None, password=None):
-        super().__init__(_obj)
-        self.id = id
-        self.slug = slug
+        super().__init__(_obj, id, slug)
         self.username = username
         self.email = email
         self.password = password
@@ -75,9 +75,10 @@ class UserAccess(BaseAccess):
         return users
 
 
-class AdminAccess:
-    def __init__(self, corporation_id=None, email=None, role_id=None,
-                 slug=None, about=None, phone=None):
+class AdminAccess(BaseAccess):
+    def __init__(self, id=None, slug=None, _obj=None, corporation_id=None,
+                 email=None, role_id=None, about=None, phone=None):
+        super().__init__(_obj, id, slug)
         self.corporation_id = corporation_id
         self.email = email
         self.role_id = role_id
@@ -146,12 +147,13 @@ class AdminAccess:
         return admins_pending
 
 
-class EmployeeAccess:
+class EmployeeAccess(BaseAccess):
     def __init__(self, id=None, slug=None, first_name=None, last_name=None,
                  role_id=None, email=None, phone=None, about=None,
                  corporation_id=None, company_id=None,
                  group_client_places_slug=None, group_client_places_id=None,
                  client_place_slug=None, client_place_id=None):
+        super().__init__()
         self.id = id
         self.slug = slug
         self.first_name = first_name
@@ -312,8 +314,9 @@ class EmployeeAccess:
         return employees_pending
 
 
-class ClientAccess:
+class ClientAccess(BaseAccess):
     def __init__(self, id=None):
+        super().__init__()
         self.id = id
 
     def clients_of_current_user(self):
@@ -363,8 +366,9 @@ class RoleAccess:
         return role
 
 
-class CorporationAccess:
+class CorporationAccess(BaseAccess):
     def __init__(self, id=None, slug=None, name=None):
+        super().__init__()
         self.id = id
         self.slug = slug
         self.name = name
@@ -397,9 +401,10 @@ class CorporationAccess:
         return corporation
 
 
-class CompanyAccess:
+class CompanyAccess(BaseAccess):
     def __init__(self, id=None, slug=None, name=None, about=None,
                  corporation_id=None):
+        super().__init__()
         self.id = id
         self.slug = slug
         self.name = name
@@ -444,9 +449,10 @@ class CompanyAccess:
         return companies
 
 
-class GroupClientPlacesAccess:
+class GroupClientPlacesAccess(BaseAccess):
     def __init__(self, id=None, slug=None, name=None, about=None,
                  company_id=None):
+        super().__init__()
         self.id = id
         self.slug = slug
         self.name = name
@@ -490,9 +496,10 @@ class GroupClientPlacesAccess:
         return group_client_places
 
 
-class ClientPlaceAccess:
+class ClientPlaceAccess(BaseAccess):
     def __init__(self, id=None, slug=None, name=None, company_id=None,
                  group_client_places_id=None):
+        super().__init__()
         self.id = id
         self.slug = slug
         self.name = name

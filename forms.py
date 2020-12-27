@@ -58,7 +58,7 @@ class RegistrationForm(FlaskForm):
             raise ValidationError('Please use a different Email.')
 
 
-# Profile editor
+# User editor
 class EditUserForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired(), Email()])
@@ -97,6 +97,26 @@ class CorporationForm(FlaskForm):
             same_corporation_name_for_creator_user()
         if corporation is not None:
             raise ValidationError('Please use a different Corporation name.')
+
+# Corporation editor
+class EditCorporationForm(FlaskForm):
+    name = StringField('Name corporation', validators=[DataRequired()])
+    about = TextAreaField('About corporation',
+                          validators=[Length(min=0, max=140)])
+    submit = SubmitField('Submit')
+    cancel = SubmitField('Cancel')
+
+    def __init__(self, original_name_corporation, *args, **kwargs):
+        super(EditCorporationForm, self).__init__(*args, **kwargs)
+        self.original_name_corporation = original_name_corporation
+
+    def validate_name(self, name):
+        if name.data != self.original_name_corporation:
+            corporation = CorporationAccess(name=name.data.strip()). \
+                same_corporation_name_for_creator_user()
+            if corporation is not None:
+                raise ValidationError(
+                    'Please use a different Corporation name.')
 
 
 # Form creator Admin

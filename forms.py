@@ -23,12 +23,12 @@ from models import User, \
     Client
 
 from db_access import \
-    AdminAccess,\
-    EmployeeAccess,\
-    CorporationAccess,\
-    CompanyAccess,\
-    GroupClientPlacesAccess,\
-    ClientPlaceAccess
+    AdminAccess, \
+    EmployeeAccess, \
+    CorporationAccess, \
+    CompanyAccess, \
+    GroupClientPlacesAccess, \
+    ClientPlaceAccess, UserAccess
 
 
 class LoginForm(FlaskForm):
@@ -65,7 +65,7 @@ class CorporationForm(FlaskForm):
     cancel_corporation = SubmitField('Cancel')
 
     def validate_name_corporation(self, name_corporation):
-        corporation = CorporationAccess(name=name_corporation.data.strip()).\
+        corporation = CorporationAccess(name=name_corporation.data.strip()). \
             same_corporation_name_for_creator_user()
         if corporation is not None:
             raise ValidationError('Please use a different Corporation name.')
@@ -86,7 +86,7 @@ class AdminForm(FlaskForm):
 
     def validate_email_admin(self, email_admin):
         admins = AdminAccess(corporation_id=self.corporation_id,
-                             email=email_admin.data.strip()).\
+                             email=email_admin.data.strip()). \
             admins_in_corporation_by_email()
 
         if admins is not None:
@@ -105,8 +105,8 @@ class CompanyForm(FlaskForm):
         self.corporation_id = corporation_id
 
     def validate_name_company(self, name_company):
-        company = CompanyAccess( corporation_id=self.corporation_id,
-                                 name=name_company.data.strip()).\
+        company = CompanyAccess(corporation_id=self.corporation_id,
+                                name=name_company.data.strip()). \
             company_in_corporation_by_name()
 
         if company is not None:
@@ -130,7 +130,7 @@ class EmployeeForm(FlaskForm):
 
     def validate_email_employee(self, email_employee):
         employees = EmployeeAccess(corporation_id=self.corporation_id,
-                                   email=self.email_employee.data.strip()).\
+                                   email=self.email_employee.data.strip()). \
             employees_in_corporation_by_email()
 
         if employees is not None:
@@ -171,9 +171,8 @@ class ClientPlaceForm(FlaskForm):
         self.group_client_places.choices = choices_group_client_places
 
     def validate_name_client_place(self, name_client_place):
-
         client_place = ClientPlaceAccess(company_id=self.company_id,
-                                         name=name_client_place.data.strip()).\
+                                         name=name_client_place.data.strip()). \
             client_place_in_company_by_name()
 
         if client_place is not None:
@@ -181,23 +180,31 @@ class ClientPlaceForm(FlaskForm):
 
 
 # Profile editor
-class EditProfileForm(FlaskForm):
+class EditUserForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired(), Email()])
     about = TextAreaField('About user', validators=[Length(min=0, max=140)])
     submit = SubmitField('Submit')
     cancel = SubmitField('cancel')
 
-    def __init__(self, original_username, *args, **kwargs):
-        super(EditProfileForm, self).__init__(*args, **kwargs)
-        self.original_username = original_username
+    def __init__(self, user, *args, **kwargs):
+        super(EditUserForm, self).__init__(*args, **kwargs)
+        self.user = user
 
     def validate_username(self, username):
-        if username.data != self.original_username:
-            user = User.query.filter_by(username=self.username.data.strip()). \
-                first()
+        if username.data.lower() != self.user.username.lower():
+            user = UserAccess(username=self.username.data.strip()).\
+                users_by_username()
             if user is not None:
                 raise ValidationError('Please use a different username.')
+
+    def validate_email(self, email):
+        if email.data.lower() != self.user.email.lower():
+            users = UserAccess(email=self.email.data.strip()).users_by_email()
+            print(users)
+
+            if users is not None:
+                raise ValidationError('Please use a different Email.')
 
 
 # Company editor

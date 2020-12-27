@@ -33,7 +33,7 @@ from forms import ClientPlaceForm, \
     RegistrationForm, \
     LoginForm, \
     CompanyForm, \
-    EditProfileForm, \
+    EditUserForm, \
     EditCompanyForm, \
     EditClientPlaceForm, \
     GroupClientPlacesForm, \
@@ -86,19 +86,19 @@ def register():
 # Profile editor view
 @app.route('/edit_user', methods=['GET', 'POST'])
 @login_required
-def edit_user_view():
-    form = EditProfileForm(current_user.username)
+def edit_user():
     user = UserAccess().the_current_user()
-    if form.validate_on_submit():
-        current_user.username = form.username.data.strip()
-        current_user.about = form.about.data.strip()
-        db.session.commit()
+    form = EditUserForm(user)
+    if request.method == 'POST' and form.validate_on_submit():
+        UserAccess(username=form.username.data.strip(),
+                   about=form.about.data.strip(),
+                   _obj=user).edit_model_object()
         flash('Your changes have been saved.')
-        return redirect(url_for('edit_user_view'))
+        return redirect(url_for('profile'))
     elif request.method == 'GET':
-        form.username.data = current_user.username
-        form.email.data = current_user.email
-        form.about.data = current_user.about
+        form.username.data = user.username
+        form.email.data = user.email
+        form.about.data = user.about
     return render_template('edit_user.html', title='Edit User',
                            form=form)
 
@@ -150,7 +150,6 @@ def create_corporation_view():
             if next_page:
                 return redirect(next_page)
             form.name_corporation.data = ''
-
 
     return render_template('create_corporation.html', form=form)
 
@@ -290,7 +289,7 @@ def create_employee_view(company_slug_to_id, corporation_id, *args):
            methods=['GET', 'POST'])
 @login_required
 def create_relationship_employee_to_user_view(employee_pending_slug):
-    employee = EmployeeAccess(slug=employee_pending_slug).\
+    employee = EmployeeAccess(slug=employee_pending_slug). \
         create_relationship_employee_to_user()
     next_page = request.args.get('next')
 
@@ -369,7 +368,7 @@ def create_client_place_view(company_slug_to_id, *args):
             form.name_client_place.data = ''
             form.group_client_places.data = ''
 
-        elif form.cancel_client_place.data :
+        elif form.cancel_client_place.data:
             if next_page:
                 return redirect(next_page)
             form.name_client_place.data = ''
@@ -533,8 +532,6 @@ def client_place(client_place_slug_to_id):
                            group_client_places=group_client_places)
 
 
-
-
 # _Old__routes______________________________________
 
 @app.route('/test', methods=['GET', 'POST'])
@@ -659,11 +656,12 @@ def test():
     # print(current_user_admin_corporation, type(current_user_admin_corporation))
     # _________________________________________________________________
     user = User.query.filter_by(id=5).first()
-    print(user, user.about)
-    user = UserAccess(about='12345789', _obj=user).edit_model_object()
+    print(user, user.about, user.username)
+    user = UserAccess(about='12345 789', username='UsDmitry1010',
+                      _obj=user).edit_model_object()
     print(user, user.about)
 
     user = User.query.filter_by(id=5).first()
-    print(user, user.about)
+    print(user, user.about, user.username)
 
     return render_template('index.html', title='Home')

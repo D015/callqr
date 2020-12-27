@@ -14,7 +14,7 @@ def add_commit(db_obj):
     db.session.commit()
 
 
-class AccessMixin:
+class BaseAccess:
     def __init__(self, _obj=None):
         self._obj = _obj
 
@@ -30,7 +30,7 @@ class AccessMixin:
         return self._obj
 
 
-class UserAccess(AccessMixin):
+class UserAccess(BaseAccess):
     def __init__(self, _obj=None, id=None, slug=None, username=None, email=None,
                  about=None, password=None):
         super().__init__(_obj)
@@ -65,6 +65,14 @@ class UserAccess(AccessMixin):
 
     def the_current_user(self):
         return current_user
+
+    def users_by_email(self):
+        users = User.query.filter(User.email.ilike(self.email)).first()
+        return users
+
+    def users_by_username(self):
+        users = User.query.filter(User.username.ilike(self.username)).first()
+        return users
 
 
 class AdminAccess:

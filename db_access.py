@@ -118,9 +118,7 @@ class AdminAccess(BaseAccess):
             if current_user_admin_corporation is None:
                 admin.user_id = current_user.id
                 admin.active = True
-                db.session.add(admin)
-                db.session.commit()
-
+                add_commit(admin)
                 return admin
         return None
 
@@ -182,9 +180,7 @@ class EmployeeAccess(BaseAccess):
                             phone=self.phone, role_id=self.role_id,
                             corporation_id=corporation_id,
                             company_id=self.company_id)
-        db.session.add(employee)
-        db.session.commit()
-
+        add_commit(employee)
         return employee
 
     def create_relationship_employee_to_user(self):
@@ -199,9 +195,7 @@ class EmployeeAccess(BaseAccess):
             if current_user_employee_corporation is None:
                 employee.user_id = current_user.id
                 employee.active = True
-                db.session.add(employee)
-                db.session.commit()
-
+                add_commit(employee)
                 return employee
         return None
 
@@ -251,9 +245,7 @@ class EmployeeAccess(BaseAccess):
         if is_relationship is False:
             employee.groups_client_places.append(group_client_places)
 
-            db.session.add(employee)
-            db.session.commit()
-
+            add_commit(employee)
             return True, 'The relationship with the group successfully created'
 
         elif is_relationship:
@@ -284,9 +276,7 @@ class EmployeeAccess(BaseAccess):
         if is_relationship is False:
             employee.client_places.append(client_place)
 
-            db.session.add(employee)
-            db.session.commit()
-
+            add_commit(employee)
             return True, 'The relationship with the place successfully created'
 
         elif is_relationship:
@@ -417,8 +407,7 @@ class CompanyAccess(BaseAccess):
                           about=self.about,
                           corporation_id=self.corporation_id)
 
-        db.session.add(company)
-        db.session.commit()
+        add_commit(company)
         return company
 
     def company_by_slug(self):
@@ -465,9 +454,7 @@ class GroupClientPlacesAccess(BaseAccess):
                                                 about=self.about,
                                                 company_id=self.company_id)
 
-        db.session.add(group_client_places)
-        db.session.commit()
-
+        add_commit(group_client_places)
         return group_client_places
 
     def group_client_places_in_company_by_name(self):
@@ -518,8 +505,7 @@ class ClientPlaceAccess(BaseAccess):
                                        creator_user_id=current_user.id,
                                        company_id=self.company_id)
 
-        db.session.add(client_place)
-        db.session.commit()
+        add_commit(client_place)
         return client_place
 
     def client_place_in_company_by_name(self):

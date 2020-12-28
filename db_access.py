@@ -349,8 +349,9 @@ class RoleAccess:
 
 
 class CorporationAccess(BaseAccess):
-    def __init__(self, id=None, slug=None, _obj=None, name=None):
+    def __init__(self, id=None, slug=None, _obj=None, name=None, about=None):
         super().__init__(id, slug, _obj, model=Corporation)
+        self.about = about
         self.name = name
 
     def create_corporation(self):
@@ -386,7 +387,6 @@ class CompanyAccess(BaseAccess):
                           name=self.name,
                           about=self.about,
                           corporation_id=self.corporation_id)
-
         add_commit(company)
         return company
 

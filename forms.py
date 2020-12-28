@@ -111,7 +111,7 @@ class EditCorporationForm(FlaskForm):
         self.original_name_corporation = original_name_corporation
 
     def validate_name(self, name):
-        if name.data != self.original_name_corporation:
+        if name.data.lower() != self.original_name_corporation.lower():
             corporation = CorporationAccess(name=name.data.strip()). \
                 same_corporation_name_for_creator_user()
             if corporation is not None:

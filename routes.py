@@ -42,7 +42,7 @@ from forms import ClientPlaceForm, \
     PersonForm, \
     EmployeeForm, \
     CorporationForm, \
-    AdminForm
+    AdminForm, EditCorporationForm
 
 from app import app, db
 
@@ -62,6 +62,7 @@ def before_request():
 # @login_required
 def index():
     return render_template('index.html', title='Home')
+
 
 # Login view function logic
 @app.route('/login', methods=['GET', 'POST'])
@@ -154,23 +155,25 @@ def create_corporation_view():
 
 
 # Corporation editor view
-# @app.route('/edit_corporation<corporation_slug_to_id>', methods=['GET', 'POST'])
-# @login_required
-# def edit_corporation(corporation_slug_to_id):
-#     Corporation = UserAccess().the_current_user()
-#     form = EditUserForm(user)
-#     if request.method == 'POST' and form.validate_on_submit():
-#         UserAccess(username=form.username.data.strip(),
-#                    about=form.about.data.strip(),
-#                    _obj=user).edit_model_object()
-#         flash('Your changes have been saved.')
-#         return redirect(url_for('profile'))
-#     elif request.method == 'GET':
-#         form.username.data = user.username
-#         form.email.data = user.email
-#         form.about.data = user.about
-#     return render_template('edit_user.html', title='Edit User',
-#                            form=form)
+@app.route('/edit_corporation<corporation_slug_to_id>',
+           endpoint='edit_corporation',
+           methods=['GET', 'POST'])
+@login_required
+@check_role_and_transform_corporation_slug_to_id(role_id=401)
+def edit_corporation(corporation_slug_to_id):
+    corporation = CorporationAccess(id=corporation_slug_to_id).object_by_id()
+    form = EditCorporationForm(corporation.name)
+    if request.method == 'POST' and form.validate_on_submit():
+        CorporationAccess(name=form.name.data.strip(),
+                          about=form.about.data.strip(),
+                          _obj=corporation).edit_model_object()
+        flash('Your changes have been saved.')
+        return redirect(url_for('profile'))
+    elif request.method == 'GET':
+        form.name.data = corporation.name
+        form.about.data = corporation.about
+    return render_template('edit_corporation.html', title='Edit Corporation',
+                           form=form)
 
 
 # Create admin view
@@ -701,7 +704,7 @@ def test():
     # print(EmployeeAccess(id=7).object_by_id_or_404())
     # print(UserAccess(id=7).object_by_id_or_404())
     print(UserAccess(slug='53adf523953d4c0a9b0dfc00bfcc15ec').object_by_slug())
-    print(UserAccess(slug='53adf523953d4c0a9b0dfc00bfcc15ec').object_by_slug_or_404())
-
+    print(UserAccess(
+        slug='53adf523953d4c0a9b0dfc00bfcc15ec').object_by_slug_or_404())
 
     return render_template('index.html', title='Home')

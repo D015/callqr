@@ -34,21 +34,21 @@ class BaseAccess:
         add_commit(self._obj)
         return self._obj
 
-    def object_by_slug(self):
-        obj = self.model.query.filter_by(slug=self.slug).first()
-        return obj
-
-    def object_by_slug_or_404(self):
-        obj = self.model.query.filter_by(slug=self.slug).first_or_404()
-        return obj
-
-    def object_by_id(self):
-        obj = self.model.query.filter_by(id=self.id).first()
-        return obj
-
-    def object_by_id_or_404(self):
-        obj = self.model.query.filter_by(id=self.id).first_or_404()
-        return obj
+    # def object_by_slug(self):
+    #     obj = self.model.query.filter_by(slug=self.slug).first()
+    #     return obj
+    #
+    # def object_by_slug_or_404(self):
+    #     obj = self.model.query.filter_by(slug=self.slug).first_or_404()
+    #     return obj
+    #
+    # def object_by_id(self):
+    #     obj = self.model.query.filter_by(id=self.id).first()
+    #     return obj
+    #
+    # def object_by_id_or_404(self):
+    #     obj = self.model.query.filter_by(id=self.id).first_or_404()
+    #     return obj
 
 
 class UserAccess(BaseAccess):
@@ -82,12 +82,10 @@ class UserAccess(BaseAccess):
 class AdminAccess(BaseAccess):
     def __init__(self, id=None, slug=None, _obj=None, corporation_id=None,
                  email=None, role_id=None, about=None, phone=None):
-        super().__init__(_obj)
-        self.id = id
+        super().__init__(id, slug, _obj, model=Admin)
         self.corporation_id = corporation_id
         self.email = email
         self.role_id = role_id
-        self.slug = slug
         self.about = about
         self.phone = phone
 
@@ -136,7 +134,7 @@ class AdminAccess(BaseAccess):
         return current_user.admins.filter_by(active=True, archived=False). \
             order_by(Admin.role_id.asc(), Admin.id.asc())
 
-    def admin_by_slug(self):
+    def object_by_slug(self):
         admin = Admin.query.filter_by(slug=self.slug).first()
         return admin
 
@@ -153,14 +151,12 @@ class AdminAccess(BaseAccess):
 
 
 class EmployeeAccess(BaseAccess):
-    def __init__(self, id=None, slug=None, first_name=None, last_name=None,
+    def __init__(self, id=None, slug=None, _obj=None, first_name=None, last_name=None,
                  role_id=None, email=None, phone=None, about=None,
                  corporation_id=None, company_id=None,
                  group_client_places_slug=None, group_client_places_id=None,
                  client_place_slug=None, client_place_id=None):
-        super().__init__()
-        self.id = id
-        self.slug = slug
+        super().__init__(id, slug, _obj, model=Employee)
         self.first_name = first_name
         self.last_name = last_name
         self.role_id = role_id
@@ -307,7 +303,7 @@ class EmployeeAccess(BaseAccess):
             company_id=self.company_id).order_by(Employee.last_name.asc())
         return empoyees
 
-    def employees_by_slug(self):
+    def object_by_slug(self):
         employee = Employee.query.filter_by(slug=self.slug).first()
         return employee
 
@@ -698,7 +694,7 @@ def check_role_and_return_admin_and_transform_slug_to_id(others=False):
 
             elif others:
                 the_admin = AdminAccess(
-                    slug=admin_slug_to_id).admin_by_slug()
+                    slug=admin_slug_to_id).object_by_slug()
 
                 admin = current_user.admins.filter(
                     Admin.corporation_id == the_admin.corporation_id,

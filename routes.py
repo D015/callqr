@@ -104,7 +104,7 @@ def register():
 
         flash('Congratulations, you are now a registered user!')
         return redirect(url_for('login'))
-        flash('Something went wrong!')
+    flash('Something went wrong!')
     return render_template('register.html', title='Register', form=form)
 
 
@@ -489,7 +489,7 @@ def company(company_slug_to_id, company):
 @check_role_and_return_admin_and_transform_slug_to_id(others=True)
 @login_required
 def admin(admin_slug_to_id, admin):
-    corporation = CorporationAccess(id=admin.corporation_id).corporation_by_id()
+    corporation = CorporationAccess(id=admin.corporation_id).object_by_id()
 
     return render_template('admin.html', admin_id=admin_slug_to_id,
                            admin=admin, corporation=corporation)
@@ -502,7 +502,7 @@ def employee(employee_slug_to_id):
 
     employee_id = employee.id
 
-    company = CompanyAccess(id=employee.company_id).company_by_id()
+    company = CompanyAccess(id=employee.company_id).object_by_id()
 
     groups_client_places = employee.groups_client_places
 
@@ -519,7 +519,7 @@ def employee(employee_slug_to_id):
 @login_required
 def group_client_places(group_client_places_slug_to_id):
     group_client_places = GroupClientPlacesAccess(
-        slug=group_client_places_slug_to_id).group_client_places_by_slug()
+        slug=group_client_places_slug_to_id).object_by_slug()
 
     group_client_places_id = group_client_places.id
 
@@ -537,7 +537,7 @@ def group_client_places(group_client_places_slug_to_id):
 @login_required
 def client_place(client_place_slug_to_id):
     client_place = ClientPlaceAccess(
-        slug=client_place_slug_to_id).client_place_by_slug()
+        slug=client_place_slug_to_id).object_by_slug()
 
     client_place_id = client_place.id
 
@@ -682,13 +682,24 @@ def test():
     #
     # user = User.query.filter_by(id=5).first()
     # _____________________________________________________________________
-    print(UserAccess(id=7).object_by_id())
-    print(AdminAccess(id=8).object_by_id())
-    print(EmployeeAccess(id=7).object_by_id())
-    print(UserAccess(id=7).object_by_id_or_404())
-    print(AdminAccess(id=8).object_by_id_or_404())
-    print(EmployeeAccess(id=7).object_by_id_or_404())
-    print(UserAccess(id=7).object_by_id_or_404())
+    # print(UserAccess(id=7).object_by_id())
+    # print(AdminAccess(id=8).object_by_id())
+    # print(EmployeeAccess(id=7).object_by_id())
+    # print(UserAccess(id=7).object_by_id_or_404())
+    # print(AdminAccess(id=8).object_by_id_or_404())
+    # print(EmployeeAccess(id=7).object_by_id_or_404())
+    print(CorporationAccess(id=8).object_by_id())
+    print(CompanyAccess(id=8).object_by_id())
+    print(GroupClientPlacesAccess(id=6).object_by_id())
+    print(ClientPlaceAccess(id=7).object_by_id())
+    print(CorporationAccess(id=8).object_by_id_or_404())
+    print(CompanyAccess(id=8).object_by_id_or_404())
+    print(GroupClientPlacesAccess(id=6).object_by_id_or_404())
+    print(ClientPlaceAccess(id=7).object_by_id_or_404())
+    # print(UserAccess(id=7).object_by_id_or_404())
+    # print(AdminAccess(id=8).object_by_id_or_404())
+    # print(EmployeeAccess(id=7).object_by_id_or_404())
+    # print(UserAccess(id=7).object_by_id_or_404())
     print(UserAccess(slug='53adf523953d4c0a9b0dfc00bfcc15ec').object_by_slug())
     print(UserAccess(slug='53adf523953d4c0a9b0dfc00bfcc15ec').object_by_slug_or_404())
 

@@ -132,10 +132,6 @@ class AdminAccess(BaseAccess):
         return current_user.admins.filter_by(active=True, archived=False). \
             order_by(Admin.role_id.asc(), Admin.id.asc())
 
-    # def object_by_slug(self):
-    #     admin = Admin.query.filter_by(slug=self.slug).first()
-    #     return admin
-
     def admins_by_corporation_id(self):
         admins = Admin.query.filter_by(corporation_id=self.corporation_id). \
             order_by(Admin.role_id.desc(), Admin.id.asc())
@@ -171,7 +167,7 @@ class EmployeeAccess(BaseAccess):
     def create_employee(self):
         corporation_id = self.corporation_id \
             if self.corporation_id is not None \
-            else CompanyAccess(id=self.id).company_by_id().corporation_id
+            else CompanyAccess(id=self.id).object_by_id().corporation_id
 
         employee = Employee(creator_user_id=current_user.id, active=False,
                             first_name=self.first_name,
@@ -225,7 +221,7 @@ class EmployeeAccess(BaseAccess):
 
     def create_relationship_group_client_places_to_employee(self):
         group_client_places = GroupClientPlacesAccess(
-            slug=self.group_client_places_slug).group_client_places_by_slug()
+            slug=self.group_client_places_slug).object_by_slug()
 
         if self.id is None:
             employee = current_user.employees.filter_by(
@@ -256,7 +252,7 @@ class EmployeeAccess(BaseAccess):
 
     def create_relationship_client_place_to_employee(self):
         client_place = ClientPlaceAccess(slug=self.client_place_slug). \
-            client_place_by_slug()
+            object_by_slug()
 
         if self.id is None:
             employee = current_user.employees.filter_by(
@@ -292,10 +288,6 @@ class EmployeeAccess(BaseAccess):
         empoyees = Employee.query.filter_by(
             company_id=self.company_id).order_by(Employee.last_name.asc())
         return empoyees
-
-    # def object_by_slug(self):
-    #     employee = Employee.query.filter_by(slug=self.slug).first()
-    #     return employee
 
     def employees_pending_of_current_user(self):
         employees_pending = Employee.query.filter_by(email=current_user.email,
@@ -357,10 +349,8 @@ class RoleAccess:
 
 
 class CorporationAccess(BaseAccess):
-    def __init__(self, id=None, slug=None, name=None):
-        super().__init__()
-        self.id = id
-        self.slug = slug
+    def __init__(self, id=None, slug=None, _obj=None, name=None):
+        super().__init__(id, slug, _obj, model=Corporation)
         self.name = name
 
     def create_corporation(self):
@@ -382,21 +372,11 @@ class CorporationAccess(BaseAccess):
             Corporation.name.ilike(self.name)).first()
         return corporation
 
-    def corporation_by_slug(self):
-        corporation = Corporation.query.filter_by(slug=self.slug).first()
-        return corporation
-
-    def corporation_by_id(self):
-        corporation = Corporation.query.filter_by(id=self.id).first()
-        return corporation
-
 
 class CompanyAccess(BaseAccess):
-    def __init__(self, id=None, slug=None, name=None, about=None,
+    def __init__(self, id=None, slug=None, _obj=None, name=None, about=None,
                  corporation_id=None):
-        super().__init__()
-        self.id = id
-        self.slug = slug
+        super().__init__(id, slug, _obj, model=Company)
         self.name = name
         self.about = about
         self.corporation_id = corporation_id
@@ -408,14 +388,6 @@ class CompanyAccess(BaseAccess):
                           corporation_id=self.corporation_id)
 
         add_commit(company)
-        return company
-
-    def company_by_slug(self):
-        company = Company.query.filter_by(slug=self.slug).first()
-        return company
-
-    def company_by_id(self):
-        company = Company.query.filter_by(id=self.id).first()
         return company
 
     def company_in_corporation_by_name(self):
@@ -439,11 +411,9 @@ class CompanyAccess(BaseAccess):
 
 
 class GroupClientPlacesAccess(BaseAccess):
-    def __init__(self, id=None, slug=None, name=None, about=None,
+    def __init__(self, id=None, slug=None, _obj=None, name=None, about=None,
                  company_id=None):
-        super().__init__()
-        self.id = id
-        self.slug = slug
+        super().__init__(id, slug, _obj, model=GroupClientPlaces)
         self.name = name
         self.about = about
         self.company_id = company_id
@@ -470,25 +440,11 @@ class GroupClientPlacesAccess(BaseAccess):
             order_by(GroupClientPlaces.name.asc())
         return groups_client_places
 
-    def group_client_places_by_id(self):
-        group_client_places = GroupClientPlaces.query. \
-            filter_by(id=self.id).first()
-
-        return group_client_places
-
-    def group_client_places_by_slug(self):
-        group_client_places = GroupClientPlaces.query.filter_by(
-            slug=self.slug).first()
-
-        return group_client_places
-
 
 class ClientPlaceAccess(BaseAccess):
-    def __init__(self, id=None, slug=None, name=None, company_id=None,
+    def __init__(self, id=None, slug=None, _obj=None, name=None, company_id=None,
                  group_client_places_id=None):
-        super().__init__()
-        self.id = id
-        self.slug = slug
+        super().__init__(id, slug, _obj, model=ClientPlace)
         self.name = name
         self.company_id = company_id
         self.group_client_places_id = group_client_places_id
@@ -515,18 +471,6 @@ class ClientPlaceAccess(BaseAccess):
 
         return client_place
 
-    def client_place_by_id(self):
-        client_place = ClientPlace.query.filter_by(
-            id=self.id).first()
-
-        return client_place
-
-    def client_place_by_slug(self):
-        client_place = ClientPlace.query.filter_by(
-            slug=self.slug).first()
-
-        return client_place
-
     def client_places_by_company_id(self):
         client_places = ClientPlace.query.filter_by(
             company_id=self.company_id).order_by(ClientPlace.name.asc())
@@ -537,7 +481,7 @@ def check_role_and_transform_corporation_slug_to_id(role_id=0):
     def decorator_admin(func):
         def check_admin(corporation_slug_to_id, *args, **kwargs):
             corporation = CorporationAccess(
-                slug=corporation_slug_to_id).corporation_by_slug()
+                slug=corporation_slug_to_id).object_by_slug()
             corporation_slug_to_id = corporation.id
 
             admin = current_user.admins.filter(
@@ -561,7 +505,7 @@ def check_role_and_return_corporation_and_transform_slug_to_id(
     def decorator_admin(func):
         def check_admin(corporation_slug_to_id, *args, **kwargs):
             corporation = CorporationAccess(
-                slug=corporation_slug_to_id).corporation_by_slug()
+                slug=corporation_slug_to_id).object_by_slug()
 
             corporation_slug_to_id = corporation.id
 
@@ -603,7 +547,7 @@ def check_role_and_transform_all_slug_to_id(role_id=0):
                            *args, **kwargs):
 
             company = CompanyAccess(slug=company_slug_to_id). \
-                company_by_slug()
+                object_by_slug()
             company_slug_to_id = company.id
 
             corporation_id = company.corporation_id
@@ -638,12 +582,12 @@ def check_role_and_return_company_transform_slug_to_id(role_id=0):
         def check_employee(company_slug_to_id, *args, **kwargs):
 
             company = CompanyAccess(slug=company_slug_to_id). \
-                company_by_slug()
+                object_by_slug()
 
             company_slug_to_id = company.id
 
             corporation = CorporationAccess(id=company.corporation_id). \
-                corporation_by_id()
+                object_by_id()
 
             admin = current_user.admins.filter(
                 Admin.corporation_id == corporation.id,

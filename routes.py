@@ -683,6 +683,11 @@ def test():
     # user = User.query.filter_by(id=5).first()
     # _____________________________________________________________________
     print(UserAccess(id=7).object_by_id())
+    print(AdminAccess(id=8).object_by_id())
+    print(EmployeeAccess(id=7).object_by_id())
+    print(UserAccess(id=7).object_by_id_or_404())
+    print(AdminAccess(id=8).object_by_id_or_404())
+    print(EmployeeAccess(id=7).object_by_id_or_404())
     print(UserAccess(id=7).object_by_id_or_404())
     print(UserAccess(slug='53adf523953d4c0a9b0dfc00bfcc15ec').object_by_slug())
     print(UserAccess(slug='53adf523953d4c0a9b0dfc00bfcc15ec').object_by_slug_or_404())

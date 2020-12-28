@@ -6,7 +6,7 @@ from sqlalchemy import or_
 from app import db
 from models import User, Admin, Employee, employees_to_groups_client_places, \
     employees_to_client_places, Role, Corporation, Company, GroupClientPlaces, \
-    ClientPlace
+    ClientPlace, Client
 
 
 def add_commit(db_obj):
@@ -34,21 +34,21 @@ class BaseAccess:
         add_commit(self._obj)
         return self._obj
 
-    # def object_by_slug(self):
-    #     obj = self.model.query.filter_by(slug=self.slug).first()
-    #     return obj
-    #
-    # def object_by_slug_or_404(self):
-    #     obj = self.model.query.filter_by(slug=self.slug).first_or_404()
-    #     return obj
-    #
-    # def object_by_id(self):
-    #     obj = self.model.query.filter_by(id=self.id).first()
-    #     return obj
-    #
-    # def object_by_id_or_404(self):
-    #     obj = self.model.query.filter_by(id=self.id).first_or_404()
-    #     return obj
+    def object_by_slug(self):
+        obj = self.model.query.filter_by(slug=self.slug).first()
+        return obj
+
+    def object_by_slug_or_404(self):
+        obj = self.model.query.filter_by(slug=self.slug).first_or_404()
+        return obj
+
+    def object_by_id(self):
+        obj = self.model.query.filter_by(id=self.id).first()
+        return obj
+
+    def object_by_id_or_404(self):
+        obj = self.model.query.filter_by(id=self.id).first_or_404()
+        return obj
 
 
 class UserAccess(BaseAccess):
@@ -134,9 +134,9 @@ class AdminAccess(BaseAccess):
         return current_user.admins.filter_by(active=True, archived=False). \
             order_by(Admin.role_id.asc(), Admin.id.asc())
 
-    def object_by_slug(self):
-        admin = Admin.query.filter_by(slug=self.slug).first()
-        return admin
+    # def object_by_slug(self):
+    #     admin = Admin.query.filter_by(slug=self.slug).first()
+    #     return admin
 
     def admins_by_corporation_id(self):
         admins = Admin.query.filter_by(corporation_id=self.corporation_id). \
@@ -303,9 +303,9 @@ class EmployeeAccess(BaseAccess):
             company_id=self.company_id).order_by(Employee.last_name.asc())
         return empoyees
 
-    def object_by_slug(self):
-        employee = Employee.query.filter_by(slug=self.slug).first()
-        return employee
+    # def object_by_slug(self):
+    #     employee = Employee.query.filter_by(slug=self.slug).first()
+    #     return employee
 
     def employees_pending_of_current_user(self):
         employees_pending = Employee.query.filter_by(email=current_user.email,
@@ -316,9 +316,8 @@ class EmployeeAccess(BaseAccess):
 
 
 class ClientAccess(BaseAccess):
-    def __init__(self, id=None):
-        super().__init__()
-        self.id = id
+    def __init__(self, id=None, slug=None, _obj=None):
+        super().__init__(id, slug, _obj, model=Client)
 
     def clients_of_current_user(self):
         return current_user.clients.filter_by(active=True, archived=False)

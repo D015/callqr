@@ -15,10 +15,13 @@ def add_commit(db_obj):
 
 
 class BaseAccess:
-    def __init__(self, id=None, slug=None, _obj=None):
+
+    def __init__(self, id=None, slug=None, _obj=None, model=None):
+
         self.id = id
         self.slug = slug
         self._obj = _obj
+        self.model = model
 
     def edit_model_object(self):
         for key, value in self.__dict__.items():
@@ -31,11 +34,28 @@ class BaseAccess:
         add_commit(self._obj)
         return self._obj
 
+    def object_by_slug(self):
+        obj = self.model.query.filter_by(slug=self.slug).first()
+        return obj
+
+    def object_by_slug_or_404(self):
+        obj = self.model.query.filter_by(slug=self.slug).first_or_404()
+        return obj
+
+    def object_by_id(self):
+        obj = self.model.query.filter_by(id=self.id).first()
+        return obj
+
+    def object_by_id_or_404(self):
+        obj = self.model.query.filter_by(id=self.id).first_or_404()
+        return obj
+
 
 class UserAccess(BaseAccess):
     def __init__(self, id=None, slug=None, _obj=None, username=None, email=None,
                  about=None, password=None):
-        super().__init__(_obj, id, slug)
+        super().__init__(id, slug, _obj, model=User)
+
         self.username = username
         self.email = email
         self.password = password
@@ -45,22 +65,6 @@ class UserAccess(BaseAccess):
         user = User(username=self.username, email=self.email)
         user.set_password(self.password)
         add_commit(user)
-        return user
-
-    def user_by_slug(self):
-        user = User.query.filter_by(slug=self.slug).first()
-        return user
-
-    def user_by_slug_or_404(self):
-        user = User.query.filter_by(slug=self.slug).first_or_404()
-        return user
-
-    def user_by_id(self):
-        user = User.query.filter_by(id=self.id).first()
-        return user
-
-    def user_by_id_or_404(self):
-        user = User.query.filter_by(id=self.id).first_or_404()
         return user
 
     def the_current_user(self):
@@ -78,7 +82,8 @@ class UserAccess(BaseAccess):
 class AdminAccess(BaseAccess):
     def __init__(self, id=None, slug=None, _obj=None, corporation_id=None,
                  email=None, role_id=None, about=None, phone=None):
-        super().__init__(_obj, id, slug)
+        super().__init__(_obj)
+        self.id = id
         self.corporation_id = corporation_id
         self.email = email
         self.role_id = role_id

@@ -674,13 +674,18 @@ def test():
     #         corporation_id=1).first()
     # print(current_user_admin_corporation, type(current_user_admin_corporation))
     # _________________________________________________________________
-    user = User.query.filter_by(id=5).first()
-    print(user, user.about, user.username)
-    user = UserAccess(about='12345 789', username='UsDmitry1010',
-                      _obj=user).edit_model_object()
-    print(user, user.about)
+    # user = User.query.filter_by(id=5).first()
+    # print(user, user.about, user.username)
+    # user = UserAccess(about='12345 789', username='UsDmitry1010',
+    #                   _obj=user).edit_model_object()
+    # print(user, user.about)
+    #
+    # user = User.query.filter_by(id=5).first()
+    # _____________________________________________________________________
+    print(UserAccess(id=7).object_by_id())
+    print(UserAccess(id=7).object_by_id_or_404())
+    print(UserAccess(slug='53adf523953d4c0a9b0dfc00bfcc15ec').object_by_slug())
+    print(UserAccess(slug='53adf523953d4c0a9b0dfc00bfcc15ec').object_by_slug_or_404())
 
-    user = User.query.filter_by(id=5).first()
-    print(user, user.about, user.username)
 
     return render_template('index.html', title='Home')

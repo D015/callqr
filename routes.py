@@ -240,7 +240,8 @@ def create_relationship_admin_to_user_view(admin_pending_slug):
            methods=['GET', 'POST'])
 @login_required
 # @check_role_and_transform_corporation_slug_to_id(role_id=401)
-@check_role_and_return_object_and_transform_slug_to_id(role_id=401, others=False)
+@check_role_and_return_object_and_transform_slug_to_id(role_id=401,
+                                                       others=False)
 def create_company_view(corporation_slug_to_id):
     form = CompanyForm(corporation_slug_to_id)
 
@@ -262,8 +263,7 @@ def create_company_view(corporation_slug_to_id):
                 return redirect(next_page)
             form.name_company.data = ''
 
-    return render_template('create_company.html', form=form,
-                           corporation_slug=corporation_slug_to_id)
+    return render_template('create_company.html', form=form)
 
 
 # Company editor view
@@ -575,192 +575,9 @@ def client_place(client_place_slug_to_id):
                            group_client_places=group_client_places)
 
 
-# _Old__routes______________________________________
 
 @app.route('/test', methods=['GET', 'POST'])
 # @login_required
 def test():
-    # __________________________
-    # arg1 = request.args.get('arg1')
-    # arg2 = request.args.get('arg2')
-    # _____________________________
-    # user_id = current_user.id
-    # corporation, admin = create_corporation(user_id, 'name_corporation',
-    #                                         'about_corporation',
-    #                                         'about_admin', '15@admin.com',
-    #                                         '15', user_id)
-    # print(corporation)
-    # print("___")
-    # print(admin)
-    # print(corporation.admins.all())
-    # _________________________________
-    # admin = create_admin(user_id, 'about_admin', '12@admin.com', '12', '4', '33')
-    # print(admin)
-    # print(admin.corporation.name)
-    # admin = Employee.query.filter_by(
-    #     slug='552ebd2ec8cf4a59aa0c5d7a152c3e97').first_or_404()
-    # print(admin)
-    # __________________________________
-    # user_admin_corporation = current_user.admins.filter_by(
-    #     corporation_id=37).first()
-    # print(user_admin_corporation)
-    # _________________________________
-    # user_id = user_by_id(1)
-    # not_user_id = user_by_id(2)
-    # user_slag = user_by_slug('3a6b4f3b493b4f12a214709622888268')
-    # not_user_slag = user_by_slug('a6b4f3b493b4f12a214709622888268')
-    #
-    # print(user_id)
-    # print(not_user_id)
-    # print(user_slag)
-    # print(not_user_slag)
-    # ________________________________
-    # user_id = user_by_slug_or_404('a6b4f3b493b4f12a214709622888268')
-    # not_user_id = user_by_id(2)
-    # user_slag = user_by_slug('3a6b4f3b493b4f12a214709622888268')
-    # not_user_slag = user_by_slug('a6b4f3b493b4f12a214709622888268')
-
-    # print(user_id)
-    # print(not_user_id)
-    # print(user_slag)
-    # print(not_user_slag)
-    # ____________________________________
-    # corporation_id = corporation_by_slug('ef65ef6686d04a25a357dd8065122c8b').id
-    # print(corporation_id)
-    # _________________________________________________
-    # role_id_creator_admin = (current_user.admins.filter_by(
-    #     corporation_id=corporation_by_slug(
-    #         'ef65ef6686d04a25a357dd8065122c8b').id).first()).first_role_id
-    # print(role_id_creator_admin)
-    # __________________________________________________
-    # roles = Role.query.filter(Role.code == 10).order_by(Role.id.asc()).all()
-    #
-    # print(roles)
-    # _________________________________________
-    # next_page = request.args.get('next')
-    # print(request.args)
-    # # return redirect(next_page)
-    # _____________________________________
-    # print(roles_available_to_create_admin(current_user,'ef65ef6686d04a25a357dd8065122c8b'))
-    # ___________________________________________
-    # @check_role_and_relationship_to_corporation()
-    # def func_test(corporation_id, c, b):
-    #     result = corporation_id + c + b
-    #     return result
-    # a = func_test(18, 101, 3)
-    # print(a)
-    # _______________________________________
-    # admin = Admin.query.filter(
-    #     Admin.slug == 'bac41c4ac8194b23b736ea5d7533a91e',
-    #     Admin.archived == False).first()
-    # print(admin)
-    # _____________________________________________
-    # employee = Employee.query.filter(
-    # Employee.slug == '37f917f33e9949c299a4071f95ca1f82', Employee.archived == False).first()
-    # print(employee.corporation_id)
-    # ________________________________
-    # employee = current_user.employees.filter(
-    #     Employee.corporation_id == 18,
-    #     Employee.active == True, Employee.archived == False,
-    #     Employee.first_role_id < 701).first()
-    # print(employee)
-    # _________________________________________________
-    # employee3 = Employee.query.filter_by(id=3).first()
-    # print(employee3, employee3.client_places.all())
-    #
-    # employee2 = Employee.query.filter_by(id=2).first()
-    # print(employee2, employee2.client_places.all())
-    #
-    # client_place1 = ClientPlace.query.filter_by(id=1).first()
-    # print(client_place1, client_place1.employees.all())
-    #
-    # client_place2 = ClientPlace.query.filter_by(id=2).first()
-    # print(client_place2, client_place2.employees.all())
-    #
-    # client_place3 = ClientPlace.query.filter_by(id=3).first()
-    # print(client_place3, client_place3.employees.all())
-    #
-    # client_place4 = ClientPlace.query.filter_by(id=4).first()
-    # print(client_place4, client_place4.employees.all())
-    # ___________________________________________________
-    # rce = is_relationship_employee_to_client_place(3, 1)
-    # print(rce)
-    # ___________________________________________________
-    # print(employees_of_current_user())
-    # print(admins_of_current_user())
-    # print(clients_of_current_user())
-    # print(the_current_user())
-    # _____________________________________________________
-    # print(CompanyAccess().companies_of_current_user_by_corporation_id())
-    # return render_template('index.html', title='Home')
-    # __________________________________________________________
-    # current_user_admin_corporation = current_user.admins.filter_by(
-    #         corporation_id=1).first()
-    # print(current_user_admin_corporation, type(current_user_admin_corporation))
-    # _________________________________________________________________
-    # user = User.query.filter_by(id=5).first()
-    # print(user, user.about, user.username)
-    # user = UserAccess(about='12345 789', username='UsDmitry1010',
-    #                   _obj=user).edit_model_object()
-    # print(user, user.about)
-    #
-    # user = User.query.filter_by(id=5).first()
-    # _____________________________________________________________________
-    # print(UserAccess(id=7).object_by_id())
-    # print(AdminAccess(id=8).object_by_id())
-    # print(EmployeeAccess(id=7).object_by_id())
-    # print(UserAccess(id=7).object_by_id_or_404())
-    # print(AdminAccess(id=8).object_by_id_or_404())
-    # print(EmployeeAccess(id=7).object_by_id_or_404())
-    # print(CorporationAccess(id=8).object_by_id())
-    # print(CompanyAccess(id=8).object_by_id())
-    # print(GroupClientPlacesAccess(id=6).object_by_id())
-    # print(ClientPlaceAccess(id=7).object_by_id())
-    # print(CorporationAccess(id=8).object_by_id_or_404())
-    # print(CompanyAccess(id=8).object_by_id_or_404())
-    # print(GroupClientPlacesAccess(id=6).object_by_id_or_404())
-    # print(ClientPlaceAccess(id=7).object_by_id_or_404())
-    # # print(UserAccess(id=7).object_by_id_or_404())
-    # # print(AdminAccess(id=8).object_by_id_or_404())
-    # # print(EmployeeAccess(id=7).object_by_id_or_404())
-    # # print(UserAccess(id=7).object_by_id_or_404())
-    # print(UserAccess(slug='53adf523953d4c0a9b0dfc00bfcc15ec').object_by_slug())
-    # print(UserAccess(
-    #     slug='53adf523953d4c0a9b0dfc00bfcc15ec').object_by_slug_or_404())
-    # __________________________________________________________
-
-    # vv = globals()
-    # v = dict()
-    # v.update(vv)
-    # print(type(v))
-    # for ki, vi in v.items():
-    #     print('{ki} ---- {vi}'.format(ki=ki, vi=vi))
-    # _______________________________________________________
-    #
-    # def func(client_place_slug_to_id):
-    #     return client_place_slug_to_id
-    #
-    # import inspect
-    #
-    # slug_arg_name = inspect.getfullargspec(func).args[0]
-    # obj_name = slug_arg_name[:slug_arg_name.find('_slug')]
-    # obj_name_underscore_replaced_by_spaces = obj_name.replace('_', ' ')
-    # cls_name_with_spaces = obj_name_underscore_replaced_by_spaces.title()
-    # cls_name = cls_name_with_spaces.replace(' ', '')
-    # cls_name_access = cls_name + 'Access'
-    # import time
-    # start_time = time.time()
-    # # another option is to get the class
-    # # import importlib
-    # # cls = getattr(importlib.import_module("db_access"), cls_name_access)
-    # cls = globals()[cls_name_access]
-    # print("--- %s seconds ---" % (time.time() - start_time))
-    #
-    # print(cls)
-    #
-    # adm = cls(id=8).object_by_id()
-    #
-    # print(adm)
-    # ________________________________________________
-
+    print(' --- TEST --- ')
     return render_template('index.html', title='Home')

@@ -1,5 +1,3 @@
-import inspect
-
 from app import app
 from flask import flash, redirect, url_for, render_template
 from flask_login import current_user
@@ -9,28 +7,6 @@ from app import db
 from models import User, Admin, Employee, employees_to_groups_client_places, \
     employees_to_client_places, Role, Corporation, Company, GroupClientPlaces, \
     ClientPlace, Client
-
-
-# vv = globals()
-# v = dict()
-# v.update(vv)
-# print(type(v))
-# for ki, vi in v.items():
-#     print('{ki} ---- {vi}'.format(ki=ki, vi=vi))
-
-# def func(admin_slug_to_id):
-#     return admin_slug_to_id
-#
-#
-# slug_arg_name = inspect.getfullargspec(func).args[0]
-# obj_name = slug_arg_name[:slug_arg_name.find('_slug')]
-# obj_name_underscore_replaced_by_spaces = obj_name.replace('-', ' ')
-# cls_name = obj_name_underscore_replaced_by_spaces.title()
-# cls = globals()[cls_name]
-#
-# print(getattr(cls), cls)
-# # print(cls)
-# # print(type(cls))
 
 
 def add_commit(db_obj):
@@ -672,46 +648,60 @@ def check_role_and_return_object_and_transform_slug_to_id(
     def decorator_role(func):
         def check_role(*args, **kwargs):
 
+            slug_arg_name = None
+            obj_slug = None
 
+            # Getting the name of the argument and its value
+            for arg_key, arg_value in kwargs.items():
+                if '_slug_to_id' in arg_key:
+                    slug_arg_name = arg_key
+                    obj_slug = arg_value
+                    break
 
-            obj_slug_to_id = args[0]
+            if slug_arg_name is None:
+                return render_template('404.html')
 
-            slug_arg_name = inspect.getfullargspec(func).args[0]
+            # Converting argument name to class-access name
             obj_name = slug_arg_name[:slug_arg_name.find('_slug')]
             obj_name_underscore_replaced_by_spaces = obj_name.replace('_', ' ')
             cls_name_with_spaces = \
                 obj_name_underscore_replaced_by_spaces.title()
             cls_name = cls_name_with_spaces.replace(' ', '')
             cls_name_access = cls_name + 'Access'
-            # TODO handle error if there is no class
-            cls = globals()[cls_name_access]
-            # another option is to get the class
-            # import importlib
-            # cls = getattr(importlib.import_module("db_access"), cls_name_access)
 
-            obj = cls(slug=obj_slug_to_id).object_by_slug_or_404()
+            # Assigning the class-access to the variable
+            cls = globals().get(cls_name_access)
+            # class-access object creation
+            obj = cls(slug=obj_slug).object_by_slug_or_404()
+
             obj_id = obj.id
 
-            args = list(args)
-            args[0] = obj.id
-            args = tuple(args)
+            # Changing the slug in the argument of the decorated function
+            # to the id of this object
+            kwargs[slug_arg_name] = obj_id
 
-            if cls == 'CorporationAccess':
+            company_id = None
+            corporation_id = None
+
+            # Getting company_id and company_id depending on the object class
+            if cls.__name__ == 'CorporationAccess':
                 company_id = None
                 corporation_id = obj_id
-            elif cls == 'CompanyAccess':
+            elif cls.__name__ == 'CompanyAccess':
                 company_id = obj_id
                 corporation_id = obj.corporation_id
-            elif cls == 'AdminAccess' or cls == 'ClientAccess':
+            elif cls.__name__ == 'AdminAccess' or cls == 'ClientAccess':
                 company_id = None
                 corporation_id = obj.corporation_id
-            elif cls == 'EmployeeAccess':
+            elif cls.__name__ == 'EmployeeAccess':
                 company_id = obj.company_id
                 corporation_id = obj.corporation_id
-            elif cls == 'GroupClientPlacesAccess' or cls == 'ClientPlaceAccess':
+            elif cls.__name__ == 'GroupClientPlacesAccess' or cls == 'ClientPlaceAccess':
                 company_id = obj.company_id
                 corporation_id = CompanyAccess(id=company_id).object_by_id().id
 
+            # Сhecking the role of the current user
+            # and choosing a path depending on the result of the check
             admin = current_user.admins.filter(
                 Admin.corporation_id == corporation_id,
                 Admin.active == True, Admin.archived == False).first()

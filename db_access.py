@@ -1,3 +1,5 @@
+import inspect
+
 from app import app
 from flask import flash, redirect, url_for
 from flask_login import current_user
@@ -7,6 +9,27 @@ from app import db
 from models import User, Admin, Employee, employees_to_groups_client_places, \
     employees_to_client_places, Role, Corporation, Company, GroupClientPlaces, \
     ClientPlace, Client
+
+# vv = globals()
+# v = dict()
+# v.update(vv)
+# print(type(v))
+# for ki, vi in v.items():
+#     print('{ki} ---- {vi}'.format(ki=ki, vi=vi))
+
+# def func(admin_slug_to_id):
+#     return admin_slug_to_id
+#
+#
+# slug_arg_name = inspect.getfullargspec(func).args[0]
+# obj_name = slug_arg_name[:slug_arg_name.find('_slug')]
+# obj_name_underscore_replaced_by_spaces = obj_name.replace('-', ' ')
+# cls_name = obj_name_underscore_replaced_by_spaces.title()
+# cls = globals()[cls_name]
+#
+# print(getattr(cls), cls)
+# # print(cls)
+# # print(type(cls))
 
 
 def add_commit(db_obj):
@@ -145,7 +168,8 @@ class AdminAccess(BaseAccess):
 
 
 class EmployeeAccess(BaseAccess):
-    def __init__(self, id=None, slug=None, _obj=None, first_name=None, last_name=None,
+    def __init__(self, id=None, slug=None, _obj=None, first_name=None,
+                 last_name=None,
                  role_id=None, email=None, phone=None, about=None,
                  corporation_id=None, company_id=None,
                  group_client_places_slug=None, group_client_places_id=None,
@@ -442,7 +466,8 @@ class GroupClientPlacesAccess(BaseAccess):
 
 
 class ClientPlaceAccess(BaseAccess):
-    def __init__(self, id=None, slug=None, _obj=None, name=None, company_id=None,
+    def __init__(self, id=None, slug=None, _obj=None, name=None,
+                 company_id=None,
                  group_client_places_id=None):
         super().__init__(id, slug, _obj, model=ClientPlace)
         self.name = name

@@ -264,6 +264,25 @@ def create_company_view(corporation_slug_to_id):
                            corporation_slug=corporation_slug_to_id)
 
 
+# Company editor view
+# @app.route('/edit_company/<company_slug_to_id>', methods=['GET', 'POST'])
+# @login_required
+# def edit_company(company_slug_to_id, company):
+#     form = EditCompanyForm(company.name)
+#     if form.validate_on_submit():
+#         company.name = form.name.data.strip()
+#         company.about = form.about.data.strip()
+#         db.session.commit()
+#         flash('Your changes have been saved.')
+#         return redirect(url_for('edit_company', slug=company.slug))
+#     elif request.method == 'GET':
+#         form.name.data = company.name
+#         form.about.data = company.about
+#     return render_template('test/old/edit_company.html',
+#                            title='Edit company{}'.format(company.name),
+#                            form=form)
+
+
 # Create employee view
 @app.route('/create_employee/<company_slug_to_id>',
            endpoint='create_employee_view',
@@ -691,20 +710,55 @@ def test():
     # print(UserAccess(id=7).object_by_id_or_404())
     # print(AdminAccess(id=8).object_by_id_or_404())
     # print(EmployeeAccess(id=7).object_by_id_or_404())
-    print(CorporationAccess(id=8).object_by_id())
-    print(CompanyAccess(id=8).object_by_id())
-    print(GroupClientPlacesAccess(id=6).object_by_id())
-    print(ClientPlaceAccess(id=7).object_by_id())
-    print(CorporationAccess(id=8).object_by_id_or_404())
-    print(CompanyAccess(id=8).object_by_id_or_404())
-    print(GroupClientPlacesAccess(id=6).object_by_id_or_404())
-    print(ClientPlaceAccess(id=7).object_by_id_or_404())
-    # print(UserAccess(id=7).object_by_id_or_404())
-    # print(AdminAccess(id=8).object_by_id_or_404())
-    # print(EmployeeAccess(id=7).object_by_id_or_404())
-    # print(UserAccess(id=7).object_by_id_or_404())
-    print(UserAccess(slug='53adf523953d4c0a9b0dfc00bfcc15ec').object_by_slug())
-    print(UserAccess(
-        slug='53adf523953d4c0a9b0dfc00bfcc15ec').object_by_slug_or_404())
+    # print(CorporationAccess(id=8).object_by_id())
+    # print(CompanyAccess(id=8).object_by_id())
+    # print(GroupClientPlacesAccess(id=6).object_by_id())
+    # print(ClientPlaceAccess(id=7).object_by_id())
+    # print(CorporationAccess(id=8).object_by_id_or_404())
+    # print(CompanyAccess(id=8).object_by_id_or_404())
+    # print(GroupClientPlacesAccess(id=6).object_by_id_or_404())
+    # print(ClientPlaceAccess(id=7).object_by_id_or_404())
+    # # print(UserAccess(id=7).object_by_id_or_404())
+    # # print(AdminAccess(id=8).object_by_id_or_404())
+    # # print(EmployeeAccess(id=7).object_by_id_or_404())
+    # # print(UserAccess(id=7).object_by_id_or_404())
+    # print(UserAccess(slug='53adf523953d4c0a9b0dfc00bfcc15ec').object_by_slug())
+    # print(UserAccess(
+    #     slug='53adf523953d4c0a9b0dfc00bfcc15ec').object_by_slug_or_404())
+    # __________________________________________________________
+
+    # vv = globals()
+    # v = dict()
+    # v.update(vv)
+    # print(type(v))
+    # for ki, vi in v.items():
+    #     print('{ki} ---- {vi}'.format(ki=ki, vi=vi))
+    # _______________________________________________________
+    #
+    # def func(client_place_slug_to_id):
+    #     return client_place_slug_to_id
+    #
+    # import inspect
+    #
+    # slug_arg_name = inspect.getfullargspec(func).args[0]
+    # obj_name = slug_arg_name[:slug_arg_name.find('_slug')]
+    # obj_name_underscore_replaced_by_spaces = obj_name.replace('_', ' ')
+    # cls_name_with_spaces = obj_name_underscore_replaced_by_spaces.title()
+    # cls_name = cls_name_with_spaces.replace(' ', '')
+    # cls_name_access = cls_name + 'Access'
+    # import time
+    # start_time = time.time()
+    # # another option is to get the class
+    # # import importlib
+    # # cls = getattr(importlib.import_module("db_access"), cls_name_access)
+    # cls = globals()[cls_name_access]
+    # print("--- %s seconds ---" % (time.time() - start_time))
+    #
+    # print(cls)
+    #
+    # adm = cls(id=8).object_by_id()
+    #
+    # print(adm)
+    # ________________________________________________
 
     return render_template('index.html', title='Home')

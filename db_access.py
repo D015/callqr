@@ -1,7 +1,7 @@
 import inspect
 
 from app import app
-from flask import flash, redirect, url_for
+from flask import flash, redirect, url_for, render_template
 from flask_login import current_user
 from sqlalchemy import or_
 
@@ -9,6 +9,7 @@ from app import db
 from models import User, Admin, Employee, employees_to_groups_client_places, \
     employees_to_client_places, Role, Corporation, Company, GroupClientPlaces, \
     ClientPlace, Client
+
 
 # vv = globals()
 # v = dict()
@@ -664,3 +665,74 @@ def check_role_and_return_admin_and_transform_slug_to_id(others=False):
         return check_admin
 
     return decorator_admin
+
+
+def check_role_and_return_object_and_transform_slug_to_id(
+        role_id=0, others=False):
+    def decorator_role(func):
+        def check_role(*args, **kwargs):
+
+
+
+            obj_slug_to_id = args[0]
+
+            slug_arg_name = inspect.getfullargspec(func).args[0]
+            obj_name = slug_arg_name[:slug_arg_name.find('_slug')]
+            obj_name_underscore_replaced_by_spaces = obj_name.replace('_', ' ')
+            cls_name_with_spaces = \
+                obj_name_underscore_replaced_by_spaces.title()
+            cls_name = cls_name_with_spaces.replace(' ', '')
+            cls_name_access = cls_name + 'Access'
+            # TODO handle error if there is no class
+            cls = globals()[cls_name_access]
+            # another option is to get the class
+            # import importlib
+            # cls = getattr(importlib.import_module("db_access"), cls_name_access)
+
+            obj = cls(slug=obj_slug_to_id).object_by_slug_or_404()
+            obj_id = obj.id
+
+            args = list(args)
+            args[0] = obj.id
+            args = tuple(args)
+
+            if cls == 'CorporationAccess':
+                company_id = None
+                corporation_id = obj_id
+            elif cls == 'CompanyAccess':
+                company_id = obj_id
+                corporation_id = obj.corporation_id
+            elif cls == 'AdminAccess' or cls == 'ClientAccess':
+                company_id = None
+                corporation_id = obj.corporation_id
+            elif cls == 'EmployeeAccess':
+                company_id = obj.company_id
+                corporation_id = obj.corporation_id
+            elif cls == 'GroupClientPlacesAccess' or cls == 'ClientPlaceAccess':
+                company_id = obj.company_id
+                corporation_id = CompanyAccess(id=company_id).object_by_id().id
+
+            admin = current_user.admins.filter(
+                Admin.corporation_id == corporation_id,
+                Admin.active == True, Admin.archived == False).first()
+            if admin:
+                current_user_role = admin.role_id
+            else:
+                employee = current_user.employees.filter(
+                    Employee.company_id == company_id,
+                    Employee.active == True, Employee.archived == False).first()
+                if employee:
+                    current_user_role = employee.role_id
+                else:
+                    return render_template('404.html')
+
+            if current_user_role < role_id:
+                return func(*args, **kwargs)
+            else:
+                flash('Contact your administrator.')
+                return redirect(url_for('index'))
+
+        return check_role
+    return decorator_role
+
+

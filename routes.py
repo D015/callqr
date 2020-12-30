@@ -27,7 +27,8 @@ from db_access import \
     check_role_and_transform_all_slug_to_id, \
     check_role_and_return_admin_and_transform_slug_to_id, \
     check_role_and_transform_corporation_slug_to_id, \
-    check_role_and_return_company_transform_slug_to_id
+    check_role_and_return_company_transform_slug_to_id, \
+    check_role_and_return_object_and_transform_slug_to_id
 
 from forms import ClientPlaceForm, \
     RegistrationForm, \
@@ -238,7 +239,8 @@ def create_relationship_admin_to_user_view(admin_pending_slug):
            endpoint='create_company_view',
            methods=['GET', 'POST'])
 @login_required
-@check_role_and_transform_corporation_slug_to_id(role_id=401)
+# @check_role_and_transform_corporation_slug_to_id(role_id=401)
+@check_role_and_return_object_and_transform_slug_to_id(role_id=401, others=False)
 def create_company_view(corporation_slug_to_id):
     form = CompanyForm(corporation_slug_to_id)
 

@@ -7,11 +7,7 @@ from app import db
 from models import User, Admin, Employee, employees_to_groups_client_places, \
     employees_to_client_places, Role, Corporation, Company, GroupClientPlaces, \
     ClientPlace, Client
-
-
-def add_commit(db_obj):
-    db.session.add(db_obj)
-    db.session.commit()
+from utils_add import add_commit, sort_dict_value
 
 
 class BaseAccess:
@@ -480,29 +476,6 @@ class ClientPlaceAccess(BaseAccess):
         return client_places
 
 
-def check_role_and_transform_corporation_slug_to_id(role_id=0):
-    def decorator_admin(func):
-        def check_admin(corporation_slug_to_id, *args, **kwargs):
-            corporation = CorporationAccess(
-                slug=corporation_slug_to_id).object_by_slug()
-            corporation_slug_to_id = corporation.id
-
-            admin = current_user.admins.filter(
-                Admin.corporation_id == corporation_slug_to_id,
-                Admin.active == True, Admin.archived == False,
-                Admin.role_id < role_id).first()
-
-            if admin:
-                return func(corporation_slug_to_id, *args, **kwargs)
-
-            flash('Contact your administrator.')
-            return redirect(url_for('index'))
-
-        return check_admin
-
-    return decorator_admin
-
-
 def check_role_and_return_corporation_and_transform_slug_to_id(
         first_role_id=0, second_role_id=0):
     def decorator_admin(func):
@@ -644,11 +617,17 @@ def check_role_and_return_admin_and_transform_slug_to_id(others=False):
     return decorator_admin
 
 
-def check_role_and_return_object_and_transform_slug_to_id(**kwargs_decor):
-    """ role_id, myself, id_diff, another_id_limit """
+def role_validation_object_return_transform_slug_to_id(myself=None,
+                                                       another_id_limit=1000,
+                                                       **kwargs_decor):
+    """ role_id: (role_id=300, role_id_1=500, ... role_id_n = 700)
+    OR
+     myself: (myself=True or myself=False),
+     another_id_limit=701,
+     id_diff:(id_diff_1=-300, id_diff_2=-200, id_diff_3=100 ) """
 
     def decorator_role(func):
-        def check_role(*args, **kwargs):
+        def check_role(**kwargs):
 
             slug_arg_name = None
             obj_slug = None
@@ -682,6 +661,8 @@ def check_role_and_return_object_and_transform_slug_to_id(**kwargs_decor):
             # to the id of this object
             kwargs[slug_arg_name] = obj_id
 
+            kwargs.update({obj_name: obj})
+
             company_id = None
             corporation_id = None
 
@@ -690,35 +671,32 @@ def check_role_and_return_object_and_transform_slug_to_id(**kwargs_decor):
             if cls.__name__ == 'AdminAccess':
                 corporation_id = obj.corporation_id
 
-                if kwargs_decor.get('myself') \
-                        and current_user.admins.filter(
-                    Admin.id == obj_id,
-                    Admin.active == True,
-                    Admin.active == False).first():
-                    kwargs.update({'check_myself': True})
+                if myself and current_user.admins.filter(
+                        Admin.id == obj_id,
+                        Admin.active == True,
+                        Admin.active == False).first():
+                    kwargs.update({'valid_myself': True})
                     return func(**kwargs)
 
             elif cls.__name__ == 'ClientAccess':
                 corporation_id = obj.corporation_id
 
-                if kwargs_decor.get('myself') \
-                        and current_user.clients.filter(
-                    Client.id == obj_id,
-                    Client.active == True,
-                    Client.active == False).first():
-                    kwargs.update({'check_myself': True})
+                if myself and current_user.clients.filter(
+                        Client.id == obj_id,
+                        Client.active == True,
+                        Client.active == False).first():
+                    kwargs.update({'valid_myself': True})
                     return func(**kwargs)
 
             elif cls.__name__ == 'EmployeeAccess':
                 company_id = obj.company_id
                 corporation_id = obj.corporation_id
 
-                if kwargs_decor.get('myself') \
-                        and current_user.employees.filter(
-                    Employee.id == obj_id,
-                    Employee.active == True,
-                    Employee.active == False).first():
-                    kwargs.update({'check_myself': True})
+                if myself and current_user.employees.filter(
+                        Employee.id == obj_id,
+                        Employee.active == True,
+                        Employee.active == False).first():
+                    kwargs.update({'valid_myself': True})
                     return func(**kwargs)
 
             elif cls.__name__ == 'CorporationAccess':
@@ -751,23 +729,22 @@ def check_role_and_return_object_and_transform_slug_to_id(**kwargs_decor):
 
             # Checking the role of the current user
             # and choosing a path depending on the result of the check
-            for arg_decor_key, arg_decor_value in kwargs_decor:
 
-                another_id_limit = 999 \
-                    if kwargs_decor.get('another_id_limit') is None \
-                    else kwargs_decor.get('another_id_limit')
+            for arg_decor_key, arg_decor_value in sort_dict_value(kwargs_decor):
 
-                if 'myself' in kwargs_decor \
-                        and 'id_diff' in arg_decor_key \
-                        and current_user_role < another_id_limit \
-                        # and current_user_role \
-                        # <= obj_id - kwargs_decor.get(arg_decor_value):
+                if myself is not None and 'id_diff' in arg_decor_key \
+                        and current_user_role <= another_id_limit \
+                        and current_user_role \
+                        <= obj_id + arg_decor_value:
+                    kwargs.update({'valid_' + arg_decor_key: True})
                     return func(**kwargs)
                 elif 'role_id' in arg_decor_key and \
-                        current_user_role < kwargs_decor.get(arg_decor_value):
+                        current_user_role < arg_decor_value:
+                    kwargs.update({'valid_' + arg_decor_key: True})
                     return func(**kwargs)
 
             return render_template('404.html')
 
         return check_role
+
     return decorator_role

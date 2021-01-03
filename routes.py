@@ -26,9 +26,8 @@ from db_access import \
     check_role_and_return_corporation_and_transform_slug_to_id, \
     check_role_and_transform_all_slug_to_id, \
     check_role_and_return_admin_and_transform_slug_to_id, \
-    check_role_and_transform_corporation_slug_to_id, \
     check_role_and_return_company_transform_slug_to_id, \
-    check_role_and_return_object_and_transform_slug_to_id
+    role_validation_object_return_transform_slug_to_id
 
 from forms import ClientPlaceForm, \
     RegistrationForm, \
@@ -160,10 +159,9 @@ def create_corporation_view():
            endpoint='edit_corporation',
            methods=['GET', 'POST'])
 @login_required
-# @check_role_and_transform_corporation_slug_to_id(role_id=401)
-@ check_role_and_return_object_and_transform_slug_to_id(role_id=401)
-def edit_corporation(corporation_slug_to_id):
-    corporation = CorporationAccess(id=corporation_slug_to_id).object_by_id()
+@ role_validation_object_return_transform_slug_to_id(role_id=400)
+def edit_corporation(corporation_slug_to_id, **kwargs):
+    corporation = kwargs['corporation']
     form = EditCorporationForm(corporation.name)
     if request.method == 'POST' and form.validate_on_submit():
         CorporationAccess(name=form.name.data.strip(),
@@ -183,9 +181,8 @@ def edit_corporation(corporation_slug_to_id):
            endpoint='create_admin_view',
            methods=['GET', 'POST'])
 @login_required
-# @check_role_and_transform_corporation_slug_to_id(role_id=401)
-@ check_role_and_return_object_and_transform_slug_to_id(role_id=401)
-def create_admin_view(corporation_slug_to_id):
+@ role_validation_object_return_transform_slug_to_id(role_id=400)
+def create_admin_view(corporation_slug_to_id, **kwargs):
     roles = RoleAccess(
         corporation_id=corporation_slug_to_id).roles_available_to_create_admin()
 
@@ -212,8 +209,7 @@ def create_admin_view(corporation_slug_to_id):
             form.email_admin.data = ''
             form.role_admin.data = ''
 
-    return render_template('create_admin.html', form=form,
-                           corporation_slug=corporation_slug_to_id)
+    return render_template('create_admin.html', form=form)
 
 
 # Create relationship admin to user view
@@ -241,10 +237,8 @@ def create_relationship_admin_to_user_view(admin_pending_slug):
            endpoint='create_company_view',
            methods=['GET', 'POST'])
 @login_required
-# @check_role_and_transform_corporation_slug_to_id(role_id=401)
-@check_role_and_return_object_and_transform_slug_to_id(role_id=401,
-                                                       others=False)
-def create_company_view(corporation_slug_to_id):
+@role_validation_object_return_transform_slug_to_id(role_id=400)
+def create_company_view(corporation_slug_to_id, **kwargs):
     form = CompanyForm(corporation_slug_to_id)
 
     next_page = request.args.get('next')
@@ -292,9 +286,9 @@ def create_company_view(corporation_slug_to_id):
            endpoint='create_employee_view',
            methods=['GET', 'POST'])
 @login_required
-@check_role_and_transform_all_slug_to_id(role_id=999)
-# @ check_role_and_return_object_and_transform_slug_to_id(role_id=601)
-def create_employee_view(company_slug_to_id, corporation_id, *args):
+@ role_validation_object_return_transform_slug_to_id(role_id=600)
+def create_employee_view(company_slug_to_id, **kwargs):
+    corporation_id = kwargs['company'].corporation_id
     roles = RoleAccess(corporation_id=corporation_id,
                        company_id=company_slug_to_id). \
         roles_available_to_create_employee()
@@ -357,8 +351,8 @@ def create_relationship_employee_to_user_view(employee_pending_slug):
     methods=['GET', 'POST'])
 @login_required
 # @check_role_and_transform_all_slug_to_id(role_id=601)
-@ check_role_and_return_object_and_transform_slug_to_id(role_id=601)
-def create_group_client_places_view(company_slug_to_id, *args):
+@ role_validation_object_return_transform_slug_to_id(role_id=600)
+def create_group_client_places_view(company_slug_to_id, **kwargs):
     form = GroupClientPlacesForm(company_slug_to_id)
 
     next_page = request.args.get('next')
@@ -379,8 +373,7 @@ def create_group_client_places_view(company_slug_to_id, *args):
             form.name_group_client_places.data = ''
 
     return render_template('create_group_client_places.html',
-                           form_group_client_places=form,
-                           company_slug_or_id=company_slug_to_id)
+                           form_group_client_places=form)
 
 
 # Create client place view
@@ -390,8 +383,8 @@ def create_group_client_places_view(company_slug_to_id, *args):
     methods=['GET', 'POST'])
 @login_required
 # @check_role_and_transform_all_slug_to_id(role_id=601)
-@ check_role_and_return_object_and_transform_slug_to_id(role_id=601)
-def create_client_place_view(company_slug_to_id, *args):
+@ role_validation_object_return_transform_slug_to_id(role_id=600)
+def create_client_place_view(company_slug_to_id, **kwargs):
     groups_client_places = GroupClientPlacesAccess(
         company_id=company_slug_to_id).groups_client_places_by_company_id()
 
@@ -423,8 +416,7 @@ def create_client_place_view(company_slug_to_id, *args):
             form.group_client_places.data = ''
 
     return render_template('create_client_place.html',
-                           form_client_place=form,
-                           company_slug_or_id=company_slug_to_id)
+                           form_client_place=form)
 
 
 # Create by yourself relationship to client lace

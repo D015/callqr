@@ -23,10 +23,6 @@ from db_access import \
     GroupClientPlacesAccess, \
     ClientPlaceAccess, \
     ClientAccess, \
-    check_role_and_return_corporation_and_transform_slug_to_id, \
-    check_role_and_transform_all_slug_to_id, \
-    check_role_and_return_admin_and_transform_slug_to_id, \
-    check_role_and_return_company_transform_slug_to_id, \
     role_validation_object_return_transform_slug_to_id
 
 from forms import ClientPlaceForm, \
@@ -39,7 +35,6 @@ from forms import ClientPlaceForm, \
     GroupClientPlacesForm, \
     ChoiceClientPlaceForm, \
     EditGroupClientPlacesForm, \
-    PersonForm, \
     EmployeeForm, \
     CorporationForm, \
     AdminForm, EditCorporationForm
@@ -159,7 +154,7 @@ def create_corporation_view():
            endpoint='edit_corporation',
            methods=['GET', 'POST'])
 @login_required
-@ role_validation_object_return_transform_slug_to_id(role_id=400)
+@role_validation_object_return_transform_slug_to_id(role_id=400)
 def edit_corporation(corporation_slug_to_id, **kwargs):
     corporation = kwargs['corporation']
     form = EditCorporationForm(corporation.name)
@@ -181,7 +176,7 @@ def edit_corporation(corporation_slug_to_id, **kwargs):
            endpoint='create_admin_view',
            methods=['GET', 'POST'])
 @login_required
-@ role_validation_object_return_transform_slug_to_id(role_id=400)
+@role_validation_object_return_transform_slug_to_id(role_id=400)
 def create_admin_view(corporation_slug_to_id, **kwargs):
     roles = RoleAccess(
         corporation_id=corporation_slug_to_id).roles_available_to_create_admin()
@@ -212,6 +207,7 @@ def create_admin_view(corporation_slug_to_id, **kwargs):
     return render_template('create_admin.html', form=form)
 
 
+# TODO check compliance conditions
 # Create relationship admin to user view
 @app.route('/create_relationship_admin_to_user/<admin_pending_slug>',
            methods=['GET', 'POST'])
@@ -286,7 +282,7 @@ def create_company_view(corporation_slug_to_id, **kwargs):
            endpoint='create_employee_view',
            methods=['GET', 'POST'])
 @login_required
-@ role_validation_object_return_transform_slug_to_id(role_id=600)
+@role_validation_object_return_transform_slug_to_id(role_id=600)
 def create_employee_view(company_slug_to_id, **kwargs):
     corporation_id = kwargs['company'].corporation_id
     roles = RoleAccess(corporation_id=corporation_id,
@@ -324,6 +320,7 @@ def create_employee_view(company_slug_to_id, **kwargs):
     return render_template('create_employee.html', form=form)
 
 
+# TODO check compliance conditions
 # Create relationship employee to user view
 @app.route('/create_relationship_employee_to_user/<employee_pending_slug>',
            methods=['GET', 'POST'])
@@ -350,8 +347,7 @@ def create_relationship_employee_to_user_view(employee_pending_slug):
     endpoint='create_group_client_places_view',
     methods=['GET', 'POST'])
 @login_required
-# @check_role_and_transform_all_slug_to_id(role_id=601)
-@ role_validation_object_return_transform_slug_to_id(role_id=600)
+@role_validation_object_return_transform_slug_to_id(role_id=600)
 def create_group_client_places_view(company_slug_to_id, **kwargs):
     form = GroupClientPlacesForm(company_slug_to_id)
 
@@ -382,8 +378,7 @@ def create_group_client_places_view(company_slug_to_id, **kwargs):
     endpoint='create_client_place_view',
     methods=['GET', 'POST'])
 @login_required
-# @check_role_and_transform_all_slug_to_id(role_id=601)
-@ role_validation_object_return_transform_slug_to_id(role_id=600)
+@role_validation_object_return_transform_slug_to_id(role_id=600)
 def create_client_place_view(company_slug_to_id, **kwargs):
     groups_client_places = GroupClientPlacesAccess(
         company_id=company_slug_to_id).groups_client_places_by_company_id()
@@ -419,6 +414,7 @@ def create_client_place_view(company_slug_to_id, **kwargs):
                            form_client_place=form)
 
 
+# TODO check compliance conditions
 # Create by yourself relationship to client lace
 @app.route('/_yourself_to_client_place/<client_place_slug>',
            methods=['GET', 'POST'])
@@ -431,6 +427,7 @@ def create_by_yourself_relationship_to_client_place(client_place_slug):
     return render_template('index.html', title='Home')
 
 
+# TODO check compliance conditions
 # Create by yourself relationship to group client places
 @app.route('/_yourself_to_group_client_places/<group_client_places_slug>',
            methods=['GET', 'POST'])
@@ -470,12 +467,12 @@ def profile():
 @app.route('/corporation/<corporation_slug_to_id>',
            endpoint='corporation',
            methods=['GET', 'POST'])
-@check_role_and_return_corporation_and_transform_slug_to_id(
-    first_role_id=500, second_role_id=800)
 @login_required
-def corporation(corporation_slug_to_id, corporation, first_role):
+@role_validation_object_return_transform_slug_to_id(role_id=500, role_id_1=900)
+def corporation(corporation_slug_to_id, **kwargs):
     companies = None
-    if first_role:
+    print(kwargs['valid_role_id'])
+    if kwargs['valid_role_id']:
         companies = CompanyAccess(
             corporation_id=corporation_slug_to_id).companies_by_corporation_id()
     admins = AdminAccess(
@@ -488,9 +485,12 @@ def corporation(corporation_slug_to_id, corporation, first_role):
 @app.route('/company/<company_slug_to_id>',
            endpoint='company',
            methods=['GET', 'POST'])
-@check_role_and_return_company_transform_slug_to_id(role_id=999)
 @login_required
-def company(company_slug_to_id, company):
+@role_validation_object_return_transform_slug_to_id(role_id=700, role_id_1=800)
+def company(company_slug_to_id, **kwargs):
+
+    company = kwargs['company']
+
     groups_client_places = GroupClientPlacesAccess(
         company_id=company_slug_to_id).groups_client_places_by_company_id()
 
@@ -498,7 +498,8 @@ def company(company_slug_to_id, company):
         company_id=company_slug_to_id).client_places_by_company_id()
 
     employees = EmployeeAccess(
-        company_id=company_slug_to_id).employees_by_company_id()
+        company_id=company_slug_to_id).employees_by_company_id() \
+        if kwargs['valid_role_id'] else None
 
     return render_template('company.html', company=company,
                            groups_client_places=groups_client_places,
@@ -506,22 +507,29 @@ def company(company_slug_to_id, company):
 
 
 @app.route('/admin/<admin_slug_to_id>',
-           endpoint='admin', methods=['GET', 'POST'])
-@check_role_and_return_admin_and_transform_slug_to_id(others=True)
+           endpoint='admin',
+           methods=['GET', 'POST'])
 @login_required
-def admin(admin_slug_to_id, admin):
+@role_validation_object_return_transform_slug_to_id(myself=True, id_diff=-100,
+                                                    another_id_limit=400)
+def admin(admin_slug_to_id, **kwargs):
+    admin = kwargs['admin']
+
     corporation = CorporationAccess(id=admin.corporation_id).object_by_id()
 
     return render_template('admin.html', admin_id=admin_slug_to_id,
                            admin=admin, corporation=corporation)
 
 
-@app.route('/employee/<employee_slug_to_id>', methods=['GET', 'POST'])
+@app.route('/employee/<employee_slug_to_id>',
+           endpoint='employee',
+           methods=['GET', 'POST'])
 @login_required
-def employee(employee_slug_to_id):
-    employee = EmployeeAccess(slug=employee_slug_to_id).object_by_slug()
+@role_validation_object_return_transform_slug_to_id(myself=True, id_diff=-100,
+                                                    another_id_limit=700)
+def employee(employee_slug_to_id, **kwargs):
 
-    employee_id = employee.id
+    employee = kwargs['employee']
 
     company = CompanyAccess(id=employee.company_id).object_by_id()
 
@@ -529,20 +537,19 @@ def employee(employee_slug_to_id):
 
     client_places = employee.client_places
 
-    return render_template('employee.html', employee_id=employee_id,
+    return render_template('employee.html', employee_id=employee_slug_to_id,
                            employee=employee, company=company,
                            groups_client_places=groups_client_places,
                            client_places=client_places)
 
 
 @app.route('/group_client_places/<group_client_places_slug_to_id>',
+           endpoint='group_client_places',
            methods=['GET', 'POST'])
 @login_required
-def group_client_places(group_client_places_slug_to_id):
-    group_client_places = GroupClientPlacesAccess(
-        slug=group_client_places_slug_to_id).object_by_slug()
-
-    group_client_places_id = group_client_places.id
+@role_validation_object_return_transform_slug_to_id(role_id=800)
+def group_client_places(group_client_places_slug_to_id, **kwargs):
+    group_client_places = kwargs['group_client_places']
 
     client_places = group_client_places.client_places
 
@@ -551,16 +558,17 @@ def group_client_places(group_client_places_slug_to_id):
     return render_template('group_client_places.html',
                            client_places=client_places, employees=employees,
                            group_client_places=group_client_places,
-                           group_client_places_id=group_client_places_id)
+                           group_client_places_id=\
+                               group_client_places_slug_to_id)
 
 
-@app.route('/client_place/<client_place_slug_to_id>', methods=['GET', 'POST'])
+@app.route('/client_place/<client_place_slug_to_id>',
+           endpoint='client_place',
+           methods=['GET', 'POST'])
 @login_required
-def client_place(client_place_slug_to_id):
-    client_place = ClientPlaceAccess(
-        slug=client_place_slug_to_id).object_by_slug()
-
-    client_place_id = client_place.id
+@role_validation_object_return_transform_slug_to_id(role_id=900)
+def client_place(client_place_slug_to_id, **kwargs):
+    client_place = kwargs['client_place']
 
     group_client_places = client_place.group_client_places
 
@@ -568,9 +576,8 @@ def client_place(client_place_slug_to_id):
 
     return render_template('client_place.html',
                            client_place=client_place, employees=employees,
-                           client_place_id=client_place_id,
+                           client_place_id=client_place_slug_to_id,
                            group_client_places=group_client_places)
-
 
 
 @app.route('/test', methods=['GET', 'POST'])

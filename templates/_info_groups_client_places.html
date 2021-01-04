@@ -3,7 +3,7 @@
 
         <p>
         <a href="{{ url_for('group_client_places', group_client_places_slug_to_id=group_client_places.slug) }}">
-            {{ group_client_places.id }}</a> {{ group_client_places.name }}
+            {{ group_client_places.id }}</a> {{ group_client_places.name }}, {{ group_client_places.slug }}
         </p>
 
     {% endfor %}

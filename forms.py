@@ -111,7 +111,7 @@ class EditCorporationForm(FlaskForm):
         self.original_name_corporation = original_name_corporation
 
     def validate_name(self, name):
-        if name.data.lower() != self.original_name_corporation.lower():
+        if name.data.strip().lower() != self.original_name_corporation.lower():
             corporation = CorporationAccess(name=name.data.strip()). \
                 same_corporation_name_for_creator_user()
             if corporation is not None:
@@ -158,7 +158,28 @@ class CompanyForm(FlaskForm):
             company_in_corporation_by_name()
 
         if company is not None:
-            raise ValidationError('Please use a different company name.')
+            raise ValidationError('Please use a different Company name.')
+
+
+# Company editor
+class EditCompanyForm(FlaskForm):
+    name = StringField('Name company', validators=[DataRequired()])
+    about = TextAreaField('About company', validators=[Length(min=0, max=140)])
+    submit = SubmitField('Submit')
+    cancel = SubmitField('Cancel')
+
+    def __init__(self, original_name_company, corporation_id, *args, **kwargs):
+        super(EditCompanyForm, self).__init__(*args, **kwargs)
+        self.corporation_id = corporation_id
+        self.original_name_company = original_name_company
+
+    def validate_name(self, name):
+        if name.data.strip().lower() != self.original_name_company.lower():
+            company = CompanyAccess(corporation_id=self.corporation_id,
+                                    name=name.data.strip()). \
+                company_in_corporation_by_name()
+            if company is not None:
+                raise ValidationError('Please use a different Company name.')
 
 
 # Form creator Employee
@@ -226,26 +247,6 @@ class ClientPlaceForm(FlaskForm):
             raise ValidationError('Please use a different place name.')
 
 
-# Company editor
-class EditCompanyForm(FlaskForm):
-    name = StringField('Name company', validators=[DataRequired()])
-    about = TextAreaField('About company', validators=[Length(min=0, max=140)])
-    submit = SubmitField('Submit')
-    cancel = SubmitField('Cancel')
-
-    def __init__(self, original_name_company, *args, **kwargs):
-        super(EditCompanyForm, self).__init__(*args, **kwargs)
-        self.original_name_company = original_name_company
-
-    def validate_name(self, name):
-        if name.data != self.original_name_company:
-            company = Company.query. \
-                filter_by(creator_user_id=current_user.id,
-                          name=name.data.strip()).first()
-            if company is not None:
-                raise ValidationError('Please use a different company name.')
-
-
 # Form Group editor
 class EditGroupClientPlacesForm(FlaskForm):
     name = StringField('Enter name new group',
@@ -303,19 +304,3 @@ class MultiCheckboxField(SelectMultipleField):
 class ChoiceClientPlaceForm(FlaskForm):
     choices = MultiCheckboxField(coerce=int)
     submit_choice_client_places = SubmitField("Submit")
-
-
-# This form for creating and editing Person
-class PersonForm(FlaskForm):
-    first_name = StringField('First Name', validators=[DataRequired()])
-    last_name = StringField('Last Name', validators=[DataRequired()])
-    about = TextAreaField('About user', validators=[Length(min=0, max=140)])
-    submit = SubmitField('Submit')
-    cancel = SubmitField('Cancel')
-
-    def __init__(self, original_first_name, original_last_name, original_about,
-                 *args, **kwargs):
-        super(PersonForm, self).__init__(*args, **kwargs)
-        self.original_first_name = original_first_name
-        self.original_last_name = original_last_name
-        self.original_about = original_about

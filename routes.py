@@ -150,20 +150,22 @@ def create_corporation_view():
 
 
 # Corporation editor view
-@app.route('/edit_corporation<corporation_slug_to_id>',
+@app.route('/edit_corporation/<corporation_slug_to_id>',
            endpoint='edit_corporation',
            methods=['GET', 'POST'])
 @login_required
 @role_validation_object_return_transform_slug_to_id(role_id=400)
 def edit_corporation(corporation_slug_to_id, **kwargs):
     corporation = kwargs['corporation']
+    print(corporation)
     form = EditCorporationForm(corporation.name)
     if request.method == 'POST' and form.validate_on_submit():
         CorporationAccess(name=form.name.data.strip(),
                           about=form.about.data.strip(),
                           _obj=corporation).edit_model_object()
         flash('Your changes have been saved.')
-        return redirect(url_for('profile'))
+        return redirect(url_for('corporation',
+                                corporation_slug_to_id=corporation.slug))
     elif request.method == 'GET':
         form.name.data = corporation.name
         form.about.data = corporation.about
@@ -259,22 +261,27 @@ def create_company_view(corporation_slug_to_id, **kwargs):
 
 
 # Company editor view
-# @app.route('/edit_company/<company_slug_to_id>', methods=['GET', 'POST'])
-# @login_required
-# def edit_company(company_slug_to_id, company):
-#     form = EditCompanyForm(company.name)
-#     if form.validate_on_submit():
-#         company.name = form.name.data.strip()
-#         company.about = form.about.data.strip()
-#         db.session.commit()
-#         flash('Your changes have been saved.')
-#         return redirect(url_for('edit_company', slug=company.slug))
-#     elif request.method == 'GET':
-#         form.name.data = company.name
-#         form.about.data = company.about
-#     return render_template('test/old/edit_company.html',
-#                            title='Edit company{}'.format(company.name),
-#                            form=form)
+@app.route('/edit_company/<company_slug_to_id>',
+           endpoint='edit_company',
+           methods=['GET', 'POST'])
+@login_required
+@role_validation_object_return_transform_slug_to_id(role_id=400)
+def edit_company(company_slug_to_id, **kwargs):
+    company = kwargs['company']
+    form = EditCompanyForm(company.name, company.corporation_id)
+    if request.method == 'POST' and form.validate_on_submit():
+        CompanyAccess(name=form.name.data.strip(),
+                      about=form.about.data.strip(),
+                      _obj=company).edit_model_object()
+        flash('Your changes have been saved.')
+        return redirect(url_for('company',
+                                company_slug_to_id=company.slug))
+    elif request.method == 'GET':
+        form.name.data = company.name
+        form.about.data = company.about
+    return render_template('edit_company.html',
+                           title='Edit company{}'.format(company.name),
+                           form=form)
 
 
 # Create employee view
@@ -284,7 +291,7 @@ def create_company_view(corporation_slug_to_id, **kwargs):
 @login_required
 @role_validation_object_return_transform_slug_to_id(role_id=600)
 def create_employee_view(company_slug_to_id, **kwargs):
-    corporation_id = kwargs['company'].corporation_id
+    corporation_id = kwargs['corporation_id']
     roles = RoleAccess(corporation_id=corporation_id,
                        company_id=company_slug_to_id). \
         roles_available_to_create_employee()
@@ -471,7 +478,6 @@ def profile():
 @role_validation_object_return_transform_slug_to_id(role_id=500, role_id_1=900)
 def corporation(corporation_slug_to_id, **kwargs):
     companies = None
-    print(kwargs['valid_role_id'])
     if kwargs['valid_role_id']:
         companies = CompanyAccess(
             corporation_id=corporation_slug_to_id).companies_by_corporation_id()
@@ -479,7 +485,7 @@ def corporation(corporation_slug_to_id, **kwargs):
         corporation_id=corporation_slug_to_id).admins_by_corporation_id()
 
     return render_template('corporation.html', companies=companies,
-                           admins=admins, corporation=corporation)
+                           admins=admins, corporation=kwargs['corporation'])
 
 
 @app.route('/company/<company_slug_to_id>',
@@ -488,7 +494,6 @@ def corporation(corporation_slug_to_id, **kwargs):
 @login_required
 @role_validation_object_return_transform_slug_to_id(role_id=700, role_id_1=800)
 def company(company_slug_to_id, **kwargs):
-
     company = kwargs['company']
 
     groups_client_places = GroupClientPlacesAccess(
@@ -528,7 +533,6 @@ def admin(admin_slug_to_id, **kwargs):
 @role_validation_object_return_transform_slug_to_id(myself=True, id_diff=-100,
                                                     another_id_limit=700)
 def employee(employee_slug_to_id, **kwargs):
-
     employee = kwargs['employee']
 
     company = CompanyAccess(id=employee.company_id).object_by_id()
@@ -558,7 +562,7 @@ def group_client_places(group_client_places_slug_to_id, **kwargs):
     return render_template('group_client_places.html',
                            client_places=client_places, employees=employees,
                            group_client_places=group_client_places,
-                           group_client_places_id=\
+                           group_client_places_id= \
                                group_client_places_slug_to_id)
 
 

@@ -499,7 +499,6 @@ def role_validation_object_return_transform_slug_to_id(myself=None,
 
             if slug_arg_name is None:
                 return render_template('404.html')
-            print(1)
 
             # Converting argument name to class-access name
             obj_name = slug_arg_name[:slug_arg_name.find('_slug')]
@@ -513,7 +512,6 @@ def role_validation_object_return_transform_slug_to_id(myself=None,
             cls = globals().get(cls_name_access)
             # class-access object creation
             obj = cls(slug=obj_slug).object_by_slug_or_404()
-            print(2)
 
             obj_id = obj.id
 
@@ -577,7 +575,6 @@ def role_validation_object_return_transform_slug_to_id(myself=None,
             admin = current_user.admins.filter(
                 Admin.corporation_id == corporation_id,
                 Admin.active == True, Admin.archived == False).first()
-            print(admin)
             if admin:
                 current_user_role = admin.role_id
 

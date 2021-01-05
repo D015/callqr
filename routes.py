@@ -104,6 +104,28 @@ def register():
     return render_template('register.html', title='Register', form=form)
 
 
+# Profile view
+@app.route('/profile')
+@login_required
+def profile():
+    the_user = UserAccess().the_current_user()
+
+    admins = AdminAccess().admins_of_current_user()
+
+    employees = EmployeeAccess().employees_of_current_user()
+
+    clients = ClientAccess().clients_of_current_user()
+
+    admins_pending = AdminAccess().admins_pending_of_current_user()
+
+    employees_pending = EmployeeAccess().employees_pending_of_current_user()
+
+    return render_template('profile.html', user=the_user, admins=admins,
+                           employees=employees, clients=clients,
+                           admins_pending=admins_pending,
+                           employees_pending=employees_pending)
+
+
 # Profile editor view
 @app.route('/edit_user', methods=['GET', 'POST'])
 @login_required
@@ -121,55 +143,6 @@ def edit_user():
         form.email.data = user.email
         form.about.data = user.about
     return render_template('edit_user.html', title='Edit User',
-                           form=form)
-
-
-# Create corporation view
-@app.route('/create_corporation', methods=['GET', 'POST'])
-@login_required
-def create_corporation_view():
-    form = CorporationForm()
-
-    next_page = request.args.get('next')
-
-    if request.method == 'POST':
-        if form.submit_corporation.data and form.validate_on_submit():
-            CorporationAccess(name=form.name_corporation.data.strip()). \
-                create_corporation()
-            flash('Your corporation is now live!')
-            if next_page:
-                return redirect(next_page)
-            form.name_corporation.data = ''
-
-        elif form.cancel_corporation.data:
-            if next_page:
-                return redirect(next_page)
-            form.name_corporation.data = ''
-
-    return render_template('create_corporation.html', form=form)
-
-
-# Corporation editor view
-@app.route('/edit_corporation/<corporation_slug_to_id>',
-           endpoint='edit_corporation',
-           methods=['GET', 'POST'])
-@login_required
-@role_validation_object_return_transform_slug_to_id(role_id=400)
-def edit_corporation(corporation_slug_to_id, **kwargs):
-    corporation = kwargs['corporation']
-    print(corporation)
-    form = EditCorporationForm(corporation.name)
-    if request.method == 'POST' and form.validate_on_submit():
-        CorporationAccess(name=form.name.data.strip(),
-                          about=form.about.data.strip(),
-                          _obj=corporation).edit_model_object()
-        flash('Your changes have been saved.')
-        return redirect(url_for('corporation',
-                                corporation_slug_to_id=corporation.slug))
-    elif request.method == 'GET':
-        form.name.data = corporation.name
-        form.about.data = corporation.about
-    return render_template('edit_corporation.html', title='Edit Corporation',
                            form=form)
 
 
@@ -230,59 +203,19 @@ def create_relationship_admin_to_user_view(admin_pending_slug):
     return render_template('index.html')
 
 
-# Create company view
-@app.route('/create_company/<corporation_slug_to_id>',
-           endpoint='create_company_view',
+@app.route('/admin/<admin_slug_to_id>',
+           endpoint='admin',
            methods=['GET', 'POST'])
 @login_required
-@role_validation_object_return_transform_slug_to_id(role_id=400)
-def create_company_view(corporation_slug_to_id, **kwargs):
-    form = CompanyForm(corporation_slug_to_id)
+@role_validation_object_return_transform_slug_to_id(myself=True, id_diff=-100,
+                                                    another_id_limit=400)
+def admin(admin_slug_to_id, **kwargs):
+    admin = kwargs['admin']
 
-    next_page = request.args.get('next')
+    corporation = CorporationAccess(id=admin.corporation_id).object_by_id()
 
-    if request.method == 'POST':
-        if form.submit_company.data and form.validate_on_submit():
-
-            CompanyAccess(corporation_id=corporation_slug_to_id,
-                          name=form.name_company.data.strip()). \
-                create_company()
-            flash('Your company is now live!')
-            if next_page:
-                return redirect(next_page)
-            form.name_company.data = ''
-
-        elif form.cancel_company.data:
-            if next_page:
-                return redirect(next_page)
-            form.name_company.data = ''
-
-    return render_template('create_company.html', form=form)
-
-
-# todo cancel
-# Company editor view
-@app.route('/edit_company/<company_slug_to_id>',
-           endpoint='edit_company',
-           methods=['GET', 'POST'])
-@login_required
-@role_validation_object_return_transform_slug_to_id(role_id=400)
-def edit_company(company_slug_to_id, **kwargs):
-    company = kwargs['company']
-    form = EditCompanyForm(company.name, company.corporation_id)
-    if request.method == 'POST' and form.validate_on_submit():
-        CompanyAccess(name=form.name.data.strip(),
-                      about=form.about.data.strip(),
-                      _obj=company).edit_model_object()
-        flash('Your changes have been saved.')
-        return redirect(url_for('company',
-                                company_slug_to_id=company.slug))
-    elif request.method == 'GET':
-        form.name.data = company.name
-        form.about.data = company.about
-    return render_template('edit_company.html',
-                           title='Edit company{}'.format(company.name),
-                           form=form)
+    return render_template('admin.html', admin_id=admin_slug_to_id,
+                           admin=admin, corporation=corporation)
 
 
 # Create employee view
@@ -349,6 +282,172 @@ def create_relationship_employee_to_user_view(employee_pending_slug):
     return render_template('index.html', title='Home')
 
 
+@app.route('/employee/<employee_slug_to_id>',
+           endpoint='employee',
+           methods=['GET', 'POST'])
+@login_required
+@role_validation_object_return_transform_slug_to_id(myself=True, id_diff=-100,
+                                                    another_id_limit=700)
+def employee(employee_slug_to_id, **kwargs):
+    employee = kwargs['employee']
+
+    company = CompanyAccess(id=employee.company_id).object_by_id()
+
+    groups_client_places = employee.groups_client_places
+
+    client_places = employee.client_places
+
+    return render_template('employee.html', employee_id=employee_slug_to_id,
+                           employee=employee, company=company,
+                           groups_client_places=groups_client_places,
+                           client_places=client_places)
+
+
+# Create corporation view
+@app.route('/create_corporation', methods=['GET', 'POST'])
+@login_required
+def create_corporation_view():
+    form = CorporationForm()
+
+    next_page = request.args.get('next')
+
+    if request.method == 'POST':
+        if form.submit_corporation.data and form.validate_on_submit():
+            CorporationAccess(name=form.name_corporation.data.strip()). \
+                create_corporation()
+            flash('Your corporation is now live!')
+            if next_page:
+                return redirect(next_page)
+            form.name_corporation.data = ''
+
+        elif form.cancel_corporation.data:
+            if next_page:
+                return redirect(next_page)
+            form.name_corporation.data = ''
+
+    return render_template('create_corporation.html', form=form)
+
+
+@app.route('/corporation/<corporation_slug_to_id>',
+           endpoint='corporation',
+           methods=['GET', 'POST'])
+@login_required
+@role_validation_object_return_transform_slug_to_id(role_id=500, role_id_1=900)
+def corporation(corporation_slug_to_id, **kwargs):
+    companies = None
+    if kwargs['valid_role_id']:
+        companies = CompanyAccess(
+            corporation_id=corporation_slug_to_id).companies_by_corporation_id()
+    admins = AdminAccess(
+        corporation_id=corporation_slug_to_id).admins_by_corporation_id()
+
+    return render_template('corporation.html', companies=companies,
+                           admins=admins, corporation=kwargs['corporation'])
+
+
+# Corporation editor view
+@app.route('/edit_corporation/<corporation_slug_to_id>',
+           endpoint='edit_corporation',
+           methods=['GET', 'POST'])
+@login_required
+@role_validation_object_return_transform_slug_to_id(role_id=400)
+def edit_corporation(corporation_slug_to_id, **kwargs):
+    corporation = kwargs['corporation']
+
+    form = EditCorporationForm(corporation.name)
+
+    if request.method == 'POST' and form.validate_on_submit():
+        CorporationAccess(name=form.name.data.strip(),
+                          about=form.about.data.strip(),
+                          _obj=corporation).edit_model_object()
+        flash('Your changes have been saved.')
+        return redirect(url_for('corporation',
+                                corporation_slug_to_id=corporation.slug))
+    elif request.method == 'GET':
+        form.name.data = corporation.name
+        form.about.data = corporation.about
+    return render_template('edit_corporation.html', title='Edit Corporation',
+                           form=form)
+
+
+# Create company view
+@app.route('/create_company/<corporation_slug_to_id>',
+           endpoint='create_company_view',
+           methods=['GET', 'POST'])
+@login_required
+@role_validation_object_return_transform_slug_to_id(role_id=400)
+def create_company_view(corporation_slug_to_id, **kwargs):
+    form = CompanyForm(corporation_slug_to_id)
+
+    next_page = request.args.get('next')
+
+    if request.method == 'POST':
+        if form.submit_company.data and form.validate_on_submit():
+
+            CompanyAccess(corporation_id=corporation_slug_to_id,
+                          name=form.name_company.data.strip()). \
+                create_company()
+            flash('Your company is now live!')
+            if next_page:
+                return redirect(next_page)
+            form.name_company.data = ''
+
+        elif form.cancel_company.data:
+            if next_page:
+                return redirect(next_page)
+            form.name_company.data = ''
+
+    return render_template('create_company.html', form=form)
+
+
+@app.route('/company/<company_slug_to_id>',
+           endpoint='company',
+           methods=['GET', 'POST'])
+@login_required
+@role_validation_object_return_transform_slug_to_id(role_id=700, role_id_1=800)
+def company(company_slug_to_id, **kwargs):
+    company = kwargs['company']
+
+    groups_client_places = GroupClientPlacesAccess(
+        company_id=company_slug_to_id).groups_client_places_by_company_id()
+
+    client_places = ClientPlaceAccess(
+        company_id=company_slug_to_id).client_places_by_company_id()
+
+    employees = EmployeeAccess(
+        company_id=company_slug_to_id).employees_by_company_id() \
+        if kwargs['valid_role_id'] else None
+
+    return render_template('company.html', company=company,
+                           groups_client_places=groups_client_places,
+                           client_places=client_places, employees=employees)
+
+
+# todo cancel
+# Company editor view
+@app.route('/edit_company/<company_slug_to_id>',
+           endpoint='edit_company',
+           methods=['GET', 'POST'])
+@login_required
+@role_validation_object_return_transform_slug_to_id(role_id=400)
+def edit_company(company_slug_to_id, **kwargs):
+    company = kwargs['company']
+    form = EditCompanyForm(company.name, company.corporation_id)
+    if request.method == 'POST' and form.validate_on_submit():
+        CompanyAccess(name=form.name.data.strip(),
+                      about=form.about.data.strip(),
+                      _obj=company).edit_model_object()
+        flash('Your changes have been saved.')
+        return redirect(url_for('company',
+                                company_slug_to_id=company.slug))
+    elif request.method == 'GET':
+        form.name.data = company.name
+        form.about.data = company.about
+    return render_template('edit_company.html',
+                           title='Edit company{}'.format(company.name),
+                           form=form)
+
+
 # Create group client places view
 @app.route(
     '/create_group_client_places/<company_slug_to_id>',
@@ -378,6 +477,73 @@ def create_group_client_places_view(company_slug_to_id, **kwargs):
 
     return render_template('create_group_client_places.html',
                            form_group_client_places=form)
+
+
+# TODO check compliance conditions
+# Create by yourself relationship to group client places
+@app.route('/_yourself_to_group_client_places/<group_client_places_slug>',
+           methods=['GET', 'POST'])
+def create_by_yourself_relationship_to_group_client_places(
+        group_client_places_slug):
+    result = EmployeeAccess(
+        group_client_places_slug=group_client_places_slug). \
+        create_relationship_group_client_places_to_employee()
+
+    flash(result[1])
+
+    return render_template('index.html', title='Home')
+
+
+@app.route('/group_client_places/<group_client_places_slug_to_id>',
+           endpoint='group_client_places',
+           methods=['GET', 'POST'])
+@login_required
+@role_validation_object_return_transform_slug_to_id(role_id=800)
+def group_client_places(group_client_places_slug_to_id, **kwargs):
+    group_client_places = kwargs['group_client_places']
+
+    client_places = group_client_places.client_places
+
+    employees = group_client_places.employees
+
+    return render_template('group_client_places.html',
+                           client_places=client_places, employees=employees,
+                           group_client_places=group_client_places,
+                           group_client_places_id= \
+                               group_client_places_slug_to_id)
+
+
+# Group Client places editor view
+@app.route('/edit_group_client_places/<group_client_places_slug_to_id>',
+           endpoint='edit_group_client_places',
+           methods=['GET', 'POST'])
+@login_required
+@role_validation_object_return_transform_slug_to_id(role_id=600)
+def edit_group_client_places(group_client_places_slug_to_id, **kwargs):
+    group_client_places = kwargs['group_client_places']
+
+    form = EditGroupClientPlacesForm(group_client_places.company_id,
+                                     group_client_places.name,
+                                     group_client_places.about)
+    if request.method == 'POST':
+        if form.submit.data and form.validate_on_submit():
+            GroupClientPlacesAccess(
+                name=form.name.data.strip(),
+                about=form.about.data.strip(),
+                _obj=group_client_places). \
+                edit_model_object()
+        flash('Your changes have been saved.')
+        return redirect(url_for(
+            'group_client_places',
+            group_client_places_slug_to_id=group_client_places.slug))
+    elif request.method == 'GET':
+        form.name.data = group_client_places.name
+        form.about.data = group_client_places.about
+
+    return render_template('edit_group_client_places.html',
+                           title='Edit group client places {}'.format(
+                               group_client_places.name),
+                           form=form)
 
 
 # Create client place view
@@ -422,6 +588,37 @@ def create_client_place_view(company_slug_to_id, **kwargs):
                            form_client_place=form)
 
 
+# TODO check compliance conditions
+# Create by yourself relationship to client lace
+@app.route('/_yourself_to_client_place/<client_place_slug>',
+           methods=['GET', 'POST'])
+def create_by_yourself_relationship_to_client_place(client_place_slug):
+    result = EmployeeAccess(client_place_slug=client_place_slug). \
+        create_relationship_client_place_to_employee()
+
+    flash(result[1])
+
+    return render_template('index.html', title='Home')
+
+
+@app.route('/client_place/<client_place_slug_to_id>',
+           endpoint='client_place',
+           methods=['GET', 'POST'])
+@login_required
+@role_validation_object_return_transform_slug_to_id(role_id=900)
+def client_place(client_place_slug_to_id, **kwargs):
+    client_place = kwargs['client_place']
+
+    group_client_places = client_place.group_client_places
+
+    employees = client_place.employees
+
+    return render_template('client_place.html',
+                           client_place=client_place, employees=employees,
+                           client_place_id=client_place.id,
+                           group_client_places=group_client_places)
+
+
 # todo cancel
 # Client place editor view
 @app.route('/edit_client_place/<client_place_slug_to_id>',
@@ -446,181 +643,17 @@ def edit_client_place(client_place_slug_to_id, **kwargs):
             ClientPlaceAccess(
                 name=form.name.data.strip(),
                 group_client_places_id=form.group_client_places.data.strip(),
-                _obj=client_place).\
+                _obj=client_place). \
                 edit_model_object()
             flash('Your changes have been saved.')
-            return redirect(
-                url_for('client_place',
-                        client_place_slug_to_id=client_place.slug))
+            return redirect(url_for('client_place',
+                                    client_place_slug_to_id=client_place.slug))
     elif request.method == 'GET':
         form.name.data = client_place.name
     return render_template('edit_client_place.html',
                            title='Edit client place {}'.format(
                                client_place.name),
                            form=form)
-
-
-# TODO check compliance conditions
-# Create by yourself relationship to client lace
-@app.route('/_yourself_to_client_place/<client_place_slug>',
-           methods=['GET', 'POST'])
-def create_by_yourself_relationship_to_client_place(client_place_slug):
-    result = EmployeeAccess(client_place_slug=client_place_slug). \
-        create_relationship_client_place_to_employee()
-
-    flash(result[1])
-
-    return render_template('index.html', title='Home')
-
-
-# TODO check compliance conditions
-# Create by yourself relationship to group client places
-@app.route('/_yourself_to_group_client_places/<group_client_places_slug>',
-           methods=['GET', 'POST'])
-def create_by_yourself_relationship_to_group_client_places(
-        group_client_places_slug):
-    result = EmployeeAccess(
-        group_client_places_slug=group_client_places_slug). \
-        create_relationship_group_client_places_to_employee()
-
-    flash(result[1])
-
-    return render_template('index.html', title='Home')
-
-
-# Profile view
-@app.route('/profile')
-@login_required
-def profile():
-    the_user = UserAccess().the_current_user()
-
-    admins = AdminAccess().admins_of_current_user()
-
-    employees = EmployeeAccess().employees_of_current_user()
-
-    clients = ClientAccess().clients_of_current_user()
-
-    admins_pending = AdminAccess().admins_pending_of_current_user()
-
-    employees_pending = EmployeeAccess().employees_pending_of_current_user()
-
-    return render_template('profile.html', user=the_user, admins=admins,
-                           employees=employees, clients=clients,
-                           admins_pending=admins_pending,
-                           employees_pending=employees_pending)
-
-
-@app.route('/corporation/<corporation_slug_to_id>',
-           endpoint='corporation',
-           methods=['GET', 'POST'])
-@login_required
-@role_validation_object_return_transform_slug_to_id(role_id=500, role_id_1=900)
-def corporation(corporation_slug_to_id, **kwargs):
-    companies = None
-    if kwargs['valid_role_id']:
-        companies = CompanyAccess(
-            corporation_id=corporation_slug_to_id).companies_by_corporation_id()
-    admins = AdminAccess(
-        corporation_id=corporation_slug_to_id).admins_by_corporation_id()
-
-    return render_template('corporation.html', companies=companies,
-                           admins=admins, corporation=kwargs['corporation'])
-
-
-@app.route('/company/<company_slug_to_id>',
-           endpoint='company',
-           methods=['GET', 'POST'])
-@login_required
-@role_validation_object_return_transform_slug_to_id(role_id=700, role_id_1=800)
-def company(company_slug_to_id, **kwargs):
-    company = kwargs['company']
-
-    groups_client_places = GroupClientPlacesAccess(
-        company_id=company_slug_to_id).groups_client_places_by_company_id()
-
-    client_places = ClientPlaceAccess(
-        company_id=company_slug_to_id).client_places_by_company_id()
-
-    employees = EmployeeAccess(
-        company_id=company_slug_to_id).employees_by_company_id() \
-        if kwargs['valid_role_id'] else None
-
-    return render_template('company.html', company=company,
-                           groups_client_places=groups_client_places,
-                           client_places=client_places, employees=employees)
-
-
-@app.route('/admin/<admin_slug_to_id>',
-           endpoint='admin',
-           methods=['GET', 'POST'])
-@login_required
-@role_validation_object_return_transform_slug_to_id(myself=True, id_diff=-100,
-                                                    another_id_limit=400)
-def admin(admin_slug_to_id, **kwargs):
-    admin = kwargs['admin']
-
-    corporation = CorporationAccess(id=admin.corporation_id).object_by_id()
-
-    return render_template('admin.html', admin_id=admin_slug_to_id,
-                           admin=admin, corporation=corporation)
-
-
-@app.route('/employee/<employee_slug_to_id>',
-           endpoint='employee',
-           methods=['GET', 'POST'])
-@login_required
-@role_validation_object_return_transform_slug_to_id(myself=True, id_diff=-100,
-                                                    another_id_limit=700)
-def employee(employee_slug_to_id, **kwargs):
-    employee = kwargs['employee']
-
-    company = CompanyAccess(id=employee.company_id).object_by_id()
-
-    groups_client_places = employee.groups_client_places
-
-    client_places = employee.client_places
-
-    return render_template('employee.html', employee_id=employee_slug_to_id,
-                           employee=employee, company=company,
-                           groups_client_places=groups_client_places,
-                           client_places=client_places)
-
-
-@app.route('/group_client_places/<group_client_places_slug_to_id>',
-           endpoint='group_client_places',
-           methods=['GET', 'POST'])
-@login_required
-@role_validation_object_return_transform_slug_to_id(role_id=800)
-def group_client_places(group_client_places_slug_to_id, **kwargs):
-    group_client_places = kwargs['group_client_places']
-
-    client_places = group_client_places.client_places
-
-    employees = group_client_places.employees
-
-    return render_template('group_client_places.html',
-                           client_places=client_places, employees=employees,
-                           group_client_places=group_client_places,
-                           group_client_places_id= \
-                               group_client_places_slug_to_id)
-
-
-@app.route('/client_place/<client_place_slug_to_id>',
-           endpoint='client_place',
-           methods=['GET', 'POST'])
-@login_required
-@role_validation_object_return_transform_slug_to_id(role_id=900)
-def client_place(client_place_slug_to_id, **kwargs):
-    client_place = kwargs['client_place']
-
-    group_client_places = client_place.group_client_places
-
-    employees = client_place.employees
-
-    return render_template('client_place.html',
-                           client_place=client_place, employees=employees,
-                           client_place_id=client_place_slug_to_id,
-                           group_client_places=group_client_places)
 
 
 @app.route('/test', methods=['GET', 'POST'])

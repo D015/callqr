@@ -266,7 +266,8 @@ class EditGroupClientPlacesForm(FlaskForm):
         self.original_about = original_about
 
     def validate_name(self, name):
-        if name.data != self.original_name_group_client_places:
+        if name.data.strip().lower() \
+                != self.original_name_group_client_places.lower():
             group_client_places = GroupClientPlaces.query. \
                 filter_by(company_id=self.company_id,
                           name=name.data.strip()).first()

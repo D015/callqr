@@ -72,7 +72,7 @@ class EditUserForm(FlaskForm):
 
     def validate_username(self, username):
         if username.data.lower() != self.user.username.lower():
-            user = UserAccess(username=self.username.data.strip()).\
+            user = UserAccess(username=self.username.data.strip()). \
                 users_by_username()
             if user is not None:
                 raise ValidationError('Please use a different username.')
@@ -97,6 +97,7 @@ class CorporationForm(FlaskForm):
             same_corporation_name_for_creator_user()
         if corporation is not None:
             raise ValidationError('Please use a different Corporation name.')
+
 
 # Corporation editor
 class EditCorporationForm(FlaskForm):
@@ -288,10 +289,11 @@ class EditClientPlaceForm(FlaskForm):
         self.group_client_places.choices = choices_group_client_places
 
     def validate_name(self, name):
-        if name.data != self.original_name_place:
-            client_place = ClientPlace.query. \
-                filter_by(company_id=self.company_id,
-                          name=name.data.strip()).first()
+        if name.data.strip().lower() != self.original_name_place.lower():
+            client_place = ClientPlaceAccess(
+                company_id=self.company_id,
+                name=name.data.strip()). \
+                client_place_in_company_by_name()
             if client_place is not None:
                 raise ValidationError('Please use a different place name.')
 

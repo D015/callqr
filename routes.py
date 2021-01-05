@@ -260,6 +260,7 @@ def create_company_view(corporation_slug_to_id, **kwargs):
     return render_template('create_company.html', form=form)
 
 
+# todo cancel
 # Company editor view
 @app.route('/edit_company/<company_slug_to_id>',
            endpoint='edit_company',
@@ -419,6 +420,44 @@ def create_client_place_view(company_slug_to_id, **kwargs):
 
     return render_template('create_client_place.html',
                            form_client_place=form)
+
+
+# todo cancel
+# Client place editor view
+@app.route('/edit_client_place/<client_place_slug_to_id>',
+           endpoint='edit_client_place',
+           methods=['GET', 'POST'])
+@login_required
+@role_validation_object_return_transform_slug_to_id(role_id=600)
+def edit_client_place(client_place_slug_to_id, **kwargs):
+    client_place = kwargs['client_place']
+
+    groups_client_places = GroupClientPlacesAccess(
+        company_id=client_place.company_id).groups_client_places_by_company_id()
+
+    choices_group_client_places = [(i.id, i.name) for i in groups_client_places]
+    choices_group_client_places.insert(0, ('', 'group not selected'))
+
+    form = EditClientPlaceForm(
+        client_place.company_id, client_place.name, choices_group_client_places,
+        group_client_places=client_place.group_client_places_id)
+    if request.method == 'POST':
+        if form.submit.data and form.validate_on_submit():
+            ClientPlaceAccess(
+                name=form.name.data.strip(),
+                group_client_places_id=form.group_client_places.data.strip(),
+                _obj=client_place).\
+                edit_model_object()
+            flash('Your changes have been saved.')
+            return redirect(
+                url_for('client_place',
+                        client_place_slug_to_id=client_place.slug))
+    elif request.method == 'GET':
+        form.name.data = client_place.name
+    return render_template('edit_client_place.html',
+                           title='Edit client place {}'.format(
+                               client_place.name),
+                           form=form)
 
 
 # TODO check compliance conditions

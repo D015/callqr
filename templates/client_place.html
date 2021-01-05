@@ -9,15 +9,20 @@
                 {% if client_place.about %}<p>{{ client_place.about }}</p>{% endif %}
             </td>
         </tr>
+        <tr>
+            <td>
+                <a href="{{  url_for('edit_client_place', client_place_slug_to_id=client_place.slug) }}">Edit</a>
+            </td>
+        </tr>
     </table>
 
     <hr>
 
-    <h3> Groups client places </h3>
-    {{ group_client_places.name }}
+{#    <h3> Groups client places </h3>#}
+{#    {{ group_client_places.name }}#}
 {#    {% include '_info_groups_client_places.html' %}#}
-
-    <h3> Employees </h3>
-    {% include '_info_employees.html' %}
+{##}
+{#    <h3> Employees </h3>#}
+{#    {% include '_info_employees.html' %}#}
 
 {% endblock %}

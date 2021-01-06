@@ -224,17 +224,19 @@ def admin(admin_slug_to_id, **kwargs):
            endpoint='edit_admin',
            methods=['GET', 'POST'])
 @login_required
-@role_validation_object_return_transform_slug_to_id(myself=True, id_diff=-100,
+@role_validation_object_return_transform_slug_to_id(myself=False, id_diff=-100,
                                                     another_id_limit=600)
 def edit_admin(admin_slug_to_id, **kwargs):
     admin = kwargs['admin']
 
-    print(kwargs.get('valid_myself'))
+    roles_to_choose = [(admin.role_id, admin.role.name)]
 
-    roles = RoleAccess(
-        corporation_id=admin.corporation_id).roles_available_to_create_admin()
+    if kwargs.get('valid_myself') is not True:
 
-    roles_to_choose = [(i.id, i.name) for i in roles]
+        roles = RoleAccess(
+            corporation_id=admin.corporation_id).roles_available_to_create_admin()
+
+        roles_to_choose = [(i.id, i.name) for i in roles]
 
     form = EditAdminForm(roles_to_choose, admin, role=admin.role_id)
     if request.method == 'POST':
@@ -246,16 +248,15 @@ def edit_admin(admin_slug_to_id, **kwargs):
                 role_id=form.role.data.strip(),
                 _obj=admin). \
                 edit_model_object()
+            return redirect(url_for('admin', admin_slug_to_id=admin.slug))
             flash('Your changes have been saved.')
-            return redirect(url_for('admin',
-                                    admin_slug_to_id=admin.slug))
     elif request.method == 'GET':
         form.about.data = admin.about
         form.phone.data = admin.phone
         form.email.data = admin.email
     return render_template('edit_admin.html',
                            title='Edit admin {}'.format(admin.id),
-                           form=form)
+                           form=form, valid_myself=kwargs.get('valid_myself'))
 
 
 

@@ -78,7 +78,7 @@ class EditUserForm(FlaskForm):
                 raise ValidationError('Please use a different username.')
 
     def validate_email(self, email):
-        if email.data.lower() != self.user.email.lower():
+        if email.data.strip().lower() != self.user.email.lower():
             users = UserAccess(email=self.email.data.strip()).users_by_email()
 
             if users is not None:
@@ -140,6 +140,47 @@ class AdminForm(FlaskForm):
 
         if admins is not None:
             raise ValidationError('Please use a different Email.')
+
+    # Form editor Admin
+
+
+class EditAdminForm(FlaskForm):
+    about = TextAreaField('About group',
+                          validators=[Length(min=0, max=140)])
+    phone = StringField('Enter phone number')
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    role = SelectField('Role', validate_choice=False)
+
+    submit = SubmitField('Submit')
+    cancel = SubmitField('Cancel')
+
+    def __init__(self, roles_to_choose, admin, *args, **kwargs):
+        super(EditAdminForm, self).__init__(*args, **kwargs)
+        self.role.choices = roles_to_choose
+        self.admin = admin
+
+    def validate_email(self, email):
+        if email.data.strip().lower() != self.admin.email.lower():
+            admins = AdminAccess(corporation_id=self.admin.corporation_id,
+                                 email=email.data.strip()). \
+                admins_in_corporation_by_email()
+
+            if admins is not None:
+                raise ValidationError('Please use a different Email.')
+
+    def validate_phone(self, phone):
+        if phone.data is not None and phone.data.strip() != '' \
+                and phone.data.strip().lower() != self.admin.email.lower():
+            if phone.data.strip().isdigit() is False:
+                raise ValidationError(
+                    'Use only digits')
+
+            admins = AdminAccess(corporation_id=self.admin.corporation_id,
+                                 email=phone.data.strip()). \
+                admins_in_corporation_by_email()
+
+            if admins is not None:
+                raise ValidationError('Please use a different Email.')
 
 
 # Form creator Company

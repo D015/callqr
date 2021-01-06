@@ -3,11 +3,16 @@
 {% block content %}
     <table>
         <tr valign="top">
-            <td><img src="{{ url_for('static', filename='qr_codes/0a8edb8db75642f994af67380b0e3d13.png') }}" /></td>
+            <td><img src="{{ url_for('static', filename='qr_codes/0a8edb8db75642f994af67380b0e3d13.png') }}"/></td>
             <td>
                 <h1>{{ admin.role.name }} of {{ corporation.name }}</h1>
                 {% if admin.about %}<p>{{ admin.about }}</p>{% endif %}
-            {{ admin.role_id }}
+                {{ admin.role_id }}
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <a href="{{ url_for('edit_admin', admin_slug_to_id=admin.slug) }}">Edit</a>
             </td>
         </tr>
     </table>

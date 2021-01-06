@@ -553,6 +553,10 @@ def role_validation_object_return_transform_slug_to_id(myself=None,
                         Admin.archived == False).first():
                     kwargs.update({'valid_myself': True})
                     return func(**kwargs)
+            #todo fixing 404
+
+            # elif True:
+            #     kwargs.update({'valid_myself': False})
 
             elif cls.__name__ == 'CorporationAccess':
                 corporation_id = obj_id

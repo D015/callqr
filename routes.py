@@ -37,7 +37,7 @@ from forms import ClientPlaceForm, \
     EditGroupClientPlacesForm, \
     EmployeeForm, \
     CorporationForm, \
-    AdminForm, EditCorporationForm
+    AdminForm, EditCorporationForm, EditAdminForm
 
 from app import app, db
 
@@ -216,6 +216,47 @@ def admin(admin_slug_to_id, **kwargs):
 
     return render_template('admin.html', admin_id=admin_slug_to_id,
                            admin=admin, corporation=corporation)
+
+
+# todo cancel
+# Admin editor view
+@app.route('/edit_admin/<admin_slug_to_id>',
+           endpoint='edit_admin',
+           methods=['GET', 'POST'])
+@login_required
+@role_validation_object_return_transform_slug_to_id(myself=True, id_diff=-100,
+                                                    another_id_limit=600)
+def edit_admin(admin_slug_to_id, **kwargs):
+    admin = kwargs['admin']
+
+    print(kwargs.get('valid_myself'))
+
+    roles = RoleAccess(
+        corporation_id=admin.corporation_id).roles_available_to_create_admin()
+
+    roles_to_choose = [(i.id, i.name) for i in roles]
+
+    form = EditAdminForm(roles_to_choose, admin, role=admin.role_id)
+    if request.method == 'POST':
+        if form.submit.data and form.validate_on_submit():
+            AdminAccess(
+                about=form.about.data.strip(),
+                phone=form.phone.data.strip(),
+                email=form.email.data.strip(),
+                role_id=form.role.data.strip(),
+                _obj=admin). \
+                edit_model_object()
+            flash('Your changes have been saved.')
+            return redirect(url_for('admin',
+                                    admin_slug_to_id=admin.slug))
+    elif request.method == 'GET':
+        form.about.data = admin.about
+        form.phone.data = admin.phone
+        form.email.data = admin.email
+    return render_template('edit_admin.html',
+                           title='Edit admin {}'.format(admin.id),
+                           form=form)
+
 
 
 # Create employee view

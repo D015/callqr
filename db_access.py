@@ -124,6 +124,12 @@ class AdminAccess(BaseAccess):
             Admin.email.ilike(self.email)).first()
         return admins
 
+    def admins_in_corporation_by_phone(self):
+        admins = Admin.query.filter(
+            Admin.corporation_id == self.corporation_id,
+            Admin.phone == self.phone).first()
+        return admins
+
     def admins_of_current_user(self):
         return current_user.admins.filter_by(active=True, archived=False). \
             order_by(Admin.role_id.asc(), Admin.id.asc())

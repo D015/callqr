@@ -85,41 +85,6 @@ class EditUserForm(FlaskForm):
                 raise ValidationError('Please use a different Email.')
 
 
-# Form creator Corporation
-class CorporationForm(FlaskForm):
-    name_corporation = StringField('Enter name new corporation',
-                                   validators=[DataRequired()])
-    submit_corporation = SubmitField('Submit')
-    cancel_corporation = SubmitField('Cancel')
-
-    def validate_name_corporation(self, name_corporation):
-        corporation = CorporationAccess(name=name_corporation.data.strip()). \
-            same_corporation_name_for_creator_user()
-        if corporation is not None:
-            raise ValidationError('Please use a different Corporation name.')
-
-
-# Corporation editor
-class EditCorporationForm(FlaskForm):
-    name = StringField('Name corporation', validators=[DataRequired()])
-    about = TextAreaField('About corporation',
-                          validators=[Length(min=0, max=140)])
-    submit = SubmitField('Submit')
-    cancel = SubmitField('Cancel')
-
-    def __init__(self, original_name_corporation, *args, **kwargs):
-        super(EditCorporationForm, self).__init__(*args, **kwargs)
-        self.original_name_corporation = original_name_corporation
-
-    def validate_name(self, name):
-        if name.data.strip().lower() != self.original_name_corporation.lower():
-            corporation = CorporationAccess(name=name.data.strip()). \
-                same_corporation_name_for_creator_user()
-            if corporation is not None:
-                raise ValidationError(
-                    'Please use a different Corporation name.')
-
-
 # Form creator Admin
 class AdminForm(FlaskForm):
     email_admin = StringField('Email', validators=[DataRequired(), Email()])
@@ -169,8 +134,74 @@ class EditAdminForm(FlaskForm):
                 raise ValidationError('Please use a different Email.')
 
     def validate_phone(self, phone):
+        if phone.data.strip().isdigit() is False:
+            raise ValidationError('Use only digits')
         if phone.data is not None and phone.data.strip() != '' \
-                and phone.data.strip().lower() != self.admin.email.lower():
+                and int(phone.data.strip()) != self.admin.phone:
+            if phone.data.strip().isdigit() is False:
+                raise ValidationError('Use only digits')
+
+            admins = AdminAccess(corporation_id=self.admin.corporation_id,
+                                 phone=phone.data.strip()). \
+                admins_in_corporation_by_phone()
+
+            if admins is not None:
+                raise ValidationError('Please use a different Phone.')
+
+
+# Form creator Employee
+class EmployeeForm(FlaskForm):
+    first_name_employee = StringField('First name', validators=[DataRequired()])
+    email_employee = StringField('Email', validators=[DataRequired(), Email()])
+    role_employee = SelectField('Role', validate_choice=False)
+
+    submit_employee = SubmitField('Submit')
+    cancel_employee = SubmitField('Cancel')
+
+    def __init__(self, roles_to_choose, corporation_id, *args, **kwargs):
+        super(EmployeeForm, self).__init__(*args, **kwargs)
+        self.role_employee.choices = roles_to_choose
+        self.corporation_id = corporation_id
+
+    def validate_email_employee(self, email_employee):
+        employees = EmployeeAccess(corporation_id=self.corporation_id,
+                                   email=email_employee.data.strip()). \
+            employees_in_corporation_by_email()
+
+        if employees is not None:
+            raise ValidationError('Please use a different Email.')
+
+
+# Form editor Employee
+class EditEmployeeForm(FlaskForm):
+    first_name = StringField('First name', validators=[DataRequired()])
+    last_name = StringField('Enter last name')
+    phone = StringField('Enter phone number')
+    about = TextAreaField('About group',
+                          validators=[Length(min=0, max=140)])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    role = SelectField('Role', validate_choice=False)
+
+    submit = SubmitField('Submit')
+    cancel = SubmitField('Cancel')
+
+    def __init__(self, roles_to_choose, corporation_id, *args, **kwargs):
+        super(EmployeeForm, self).__init__(*args, **kwargs)
+        self.role.choices = roles_to_choose
+        self.corporation_id = corporation_id
+
+    def validate_email_employee(self, email):
+        if email.data.strip().lower() != self.admin.email.lower():
+            employees = EmployeeAccess(corporation_id=self.corporation_id,
+                                       email=email.data.strip()). \
+                employees_in_corporation_by_email()
+
+            if employees is not None:
+                raise ValidationError('Please use a different Email.')
+
+    def validate_phone(self, phone):
+        if phone.data is not None and phone.data.strip() != '' \
+                and phone.data.strip().lower() != self.admin.phone.lower():
             if phone.data.strip().isdigit() is False:
                 raise ValidationError(
                     'Use only digits')
@@ -181,6 +212,41 @@ class EditAdminForm(FlaskForm):
 
             if admins is not None:
                 raise ValidationError('Please use a different Email.')
+
+
+# Form creator Corporation
+class CorporationForm(FlaskForm):
+    name_corporation = StringField('Enter name new corporation',
+                                   validators=[DataRequired()])
+    submit_corporation = SubmitField('Submit')
+    cancel_corporation = SubmitField('Cancel')
+
+    def validate_name_corporation(self, name_corporation):
+        corporation = CorporationAccess(name=name_corporation.data.strip()). \
+            same_corporation_name_for_creator_user()
+        if corporation is not None:
+            raise ValidationError('Please use a different Corporation name.')
+
+
+# Corporation editor
+class EditCorporationForm(FlaskForm):
+    name = StringField('Name corporation', validators=[DataRequired()])
+    about = TextAreaField('About corporation',
+                          validators=[Length(min=0, max=140)])
+    submit = SubmitField('Submit')
+    cancel = SubmitField('Cancel')
+
+    def __init__(self, original_name_corporation, *args, **kwargs):
+        super(EditCorporationForm, self).__init__(*args, **kwargs)
+        self.original_name_corporation = original_name_corporation
+
+    def validate_name(self, name):
+        if name.data.strip().lower() != self.original_name_corporation.lower():
+            corporation = CorporationAccess(name=name.data.strip()). \
+                same_corporation_name_for_creator_user()
+            if corporation is not None:
+                raise ValidationError(
+                    'Please use a different Corporation name.')
 
 
 # Form creator Company
@@ -222,29 +288,6 @@ class EditCompanyForm(FlaskForm):
                 company_in_corporation_by_name()
             if company is not None:
                 raise ValidationError('Please use a different Company name.')
-
-
-# Form creator Employee
-class EmployeeForm(FlaskForm):
-    first_name_employee = StringField('First name', validators=[DataRequired()])
-    email_employee = StringField('Email', validators=[DataRequired(), Email()])
-    role_employee = SelectField('Role', validate_choice=False)
-
-    submit_employee = SubmitField('Submit')
-    cancel_employee = SubmitField('Cancel')
-
-    def __init__(self, roles_to_choose, corporation_id, *args, **kwargs):
-        super(EmployeeForm, self).__init__(*args, **kwargs)
-        self.role_employee.choices = roles_to_choose
-        self.corporation_id = corporation_id
-
-    def validate_email_employee(self, email_employee):
-        employees = EmployeeAccess(corporation_id=self.corporation_id,
-                                   email=email_employee.data.strip()). \
-            employees_in_corporation_by_email()
-
-        if employees is not None:
-            raise ValidationError('Please use a different Email.')
 
 
 # Form creator Group

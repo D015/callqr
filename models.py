@@ -93,6 +93,19 @@ class User(UserMixin, db.Model, BaseModel):
         return check_password_hash(self.password_hash, password)
 
 
+class Role(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    active = db.Column(db.Boolean(), default=True)
+    archived = db.Column(db.Boolean(), default=False)
+
+    code = db.Column(db.Integer, index=True, nullable=False)
+    name = db.Column(db.String(120), index=True, nullable=False, unique=True)
+    about = db.Column(db.String(120), index=True, unique=True)
+
+    admins = db.relationship('Admin', backref='role', lazy='dynamic')
+    employees = db.relationship('Employee', backref='role', lazy='dynamic')
+
+
 class Admin(BaseModel, db.Model):
     about = db.Column(db.String(140))
     email = db.Column(db.String(120), index=True)
@@ -105,19 +118,6 @@ class Admin(BaseModel, db.Model):
 
     def __repr__(self):
         return '<Admin {} {}>'.format(self.email, self.id)
-
-
-class Role(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    active = db.Column(db.Boolean(), default=True)
-    archived = db.Column(db.Boolean(), default=False)
-
-    code = db.Column(db.Integer, index=True, nullable=False)
-    name = db.Column(db.String(120), index=True, nullable=False, unique=True)
-    about = db.Column(db.String(120), index=True, unique=True)
-
-    admins = db.relationship('Admin', backref='role', lazy='dynamic')
-    employees = db.relationship('Employee', backref='role', lazy='dynamic')
 
 
 class Employee(BaseModel, db.Model):

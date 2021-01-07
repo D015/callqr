@@ -224,7 +224,7 @@ def admin(admin_slug_to_id, **kwargs):
            endpoint='edit_admin',
            methods=['GET', 'POST'])
 @login_required
-@role_validation_object_return_transform_slug_to_id(myself=False, id_diff=-100,
+@role_validation_object_return_transform_slug_to_id(myself=True, id_diff=-100,
                                                     another_id_limit=600)
 def edit_admin(admin_slug_to_id, **kwargs):
     admin = kwargs['admin']
@@ -248,8 +248,8 @@ def edit_admin(admin_slug_to_id, **kwargs):
                 role_id=form.role.data.strip(),
                 _obj=admin). \
                 edit_model_object()
-            return redirect(url_for('admin', admin_slug_to_id=admin.slug))
             flash('Your changes have been saved.')
+            return redirect(url_for('admin', admin_slug_to_id=admin.slug))
     elif request.method == 'GET':
         form.about.data = admin.about
         form.phone.data = admin.phone

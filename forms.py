@@ -134,12 +134,13 @@ class EditAdminForm(FlaskForm):
                 raise ValidationError('Please use a different Email.')
 
     def validate_phone(self, phone):
-        if phone.data.strip().isdigit() is False:
-            raise ValidationError('Use only digits')
+
         if phone.data is not None and phone.data.strip() != '' \
+                and phone.data.strip().isdigit() is False:
+            raise ValidationError('Use only digits')
+
+        if phone.data.strip().isdigit() is True \
                 and int(phone.data.strip()) != self.admin.phone:
-            if phone.data.strip().isdigit() is False:
-                raise ValidationError('Use only digits')
 
             admins = AdminAccess(corporation_id=self.admin.corporation_id,
                                  phone=phone.data.strip()). \
@@ -175,43 +176,52 @@ class EmployeeForm(FlaskForm):
 # Form editor Employee
 class EditEmployeeForm(FlaskForm):
     first_name = StringField('First name', validators=[DataRequired()])
-    last_name = StringField('Enter last name')
-    phone = StringField('Enter phone number')
+    last_name = StringField('Last name')
     about = TextAreaField('About group',
                           validators=[Length(min=0, max=140)])
+    phone = StringField('Phone number')
     email = StringField('Email', validators=[DataRequired(), Email()])
     role = SelectField('Role', validate_choice=False)
 
     submit = SubmitField('Submit')
     cancel = SubmitField('Cancel')
 
-    def __init__(self, roles_to_choose, corporation_id, *args, **kwargs):
-        super(EmployeeForm, self).__init__(*args, **kwargs)
+    def __init__(self, roles_to_choose, employee, *args, **kwargs):
+        super(EditEmployeeForm, self).__init__(*args, **kwargs)
         self.role.choices = roles_to_choose
-        self.corporation_id = corporation_id
+        self.employee = employee
 
-    def validate_email_employee(self, email):
-        if email.data.strip().lower() != self.admin.email.lower():
-            employees = EmployeeAccess(corporation_id=self.corporation_id,
-                                       email=email.data.strip()). \
-                employees_in_corporation_by_email()
+    def validate_email(self, email):
+        if email.data.strip().lower() != self.employee.email.lower():
+            employees = EmployeeAccess(
+                corporation_id=self.employee.corporation_id,
+                email=email.data.strip()).employees_in_corporation_by_email()
 
             if employees is not None:
                 raise ValidationError('Please use a different Email.')
 
     def validate_phone(self, phone):
+
         if phone.data is not None and phone.data.strip() != '' \
-                and phone.data.strip().lower() != self.admin.phone.lower():
-            if phone.data.strip().isdigit() is False:
-                raise ValidationError(
-                    'Use only digits')
+                and phone.data.strip().isdigit() is False:
+            raise ValidationError('Use only digits')
 
-            admins = AdminAccess(corporation_id=self.admin.corporation_id,
-                                 email=phone.data.strip()). \
-                admins_in_corporation_by_email()
+        if phone.data.strip().isdigit() is True \
+                and int(phone.data.strip()) != self.employee.phone:
 
-            if admins is not None:
-                raise ValidationError('Please use a different Email.')
+            employees = EmployeeAccess(
+                corporation_id=self.employee.corporation_id,
+                phone=phone.data.strip()).employees_in_corporation_by_phone()
+
+            if employees is not None:
+                raise ValidationError('Please use a different Phone.')
+
+
+
+
+        # if phone.data is not None and phone.data.strip() != '' \
+        #         and phone.data.strip().isdigit() is not True:
+        #     raise ValidationError('Use only digits')
 
 
 # Form creator Corporation

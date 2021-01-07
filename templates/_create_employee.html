@@ -1,28 +1,28 @@
 {% if form %}
-<form action="" method="post" novalidate>
-{{ form.hidden_tag() }}
-<p>
-    {{ form.first_name_employee.label }}<br>
-    {{ form.first_name_employee(size=50) }}<br>
-    {% for error in form.first_name_employee.errors %}
-    <span style="color: red;">[{{ error }}]</span>
-    {% endfor %}
-</p>
-<p>
-    {{ form.email_employee.label }}<br>
-    {{ form.email_employee(size=50) }}<br>
-    {% for error in form.email_employee.errors %}
-    <span style="color: red;">[{{ error }}]</span>
-    {% endfor %}
-</p>
-<p>
-    {{ form.role_employee.label }}<br>
-    {{ form.role_employee }}<br>
-    {% for error in form.role_employee.errors %}
-    <span style="color: red;">[{{ error }}]</span>
-    {% endfor %}
-</p>
-<p>{{ form.submit_employee() }}</p>
-<p>{{ form.cancel_employee() }}</p>
-</form>
+    <form action="" method="post" novalidate>
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.first_name_employee.label }}<br>
+            {{ form.first_name_employee(size=50) }}<br>
+            {% for error in form.first_name_employee.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.email_employee.label }}<br>
+            {{ form.email_employee(size=50) }}<br>
+            {% for error in form.email_employee.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.role_employee.label }}<br>
+            {{ form.role_employee }}<br>
+            {% for error in form.role_employee.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>{{ form.submit_employee() }}</p>
+        <p>{{ form.cancel_employee() }}</p>
+    </form>
 {% endif %}

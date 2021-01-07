@@ -204,6 +204,12 @@ class EmployeeAccess(BaseAccess):
             Employee.email.ilike(self.email)).first()
         return employees
 
+    def employees_in_corporation_by_phone(self):
+        employees = Employee.query.filter(
+            Employee.corporation_id == self.corporation_id,
+            Employee.phone == self.phone).first()
+        return employees
+
     def is_relationship_employee_to_group_client_places(self):
         employee = Employee.query.filter_by(id=self.id).first_or_404()
 

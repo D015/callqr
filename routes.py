@@ -37,7 +37,7 @@ from forms import ClientPlaceForm, \
     EditGroupClientPlacesForm, \
     EmployeeForm, \
     CorporationForm, \
-    AdminForm, EditCorporationForm, EditAdminForm
+    AdminForm, EditCorporationForm, EditAdminForm, EditEmployeeForm
 
 from app import app, db
 
@@ -232,7 +232,6 @@ def edit_admin(admin_slug_to_id, **kwargs):
     roles_to_choose = [(admin.role_id, admin.role.name)]
 
     if kwargs.get('valid_myself') is not True:
-
         roles = RoleAccess(
             corporation_id=admin.corporation_id).roles_available_to_create_admin()
 
@@ -243,11 +242,12 @@ def edit_admin(admin_slug_to_id, **kwargs):
         if form.submit.data and form.validate_on_submit():
             AdminAccess(
                 about=form.about.data.strip(),
-                phone=form.phone.data.strip(),
+                phone=None if form.phone.data.strip() == '' \
+                    else form.phone.data.strip(),
                 email=form.email.data.strip(),
                 role_id=form.role.data.strip(),
-                _obj=admin). \
-                edit_model_object()
+                _obj=admin).edit_model_object()
+
             flash('Your changes have been saved.')
             return redirect(url_for('admin', admin_slug_to_id=admin.slug))
     elif request.method == 'GET':
@@ -257,7 +257,6 @@ def edit_admin(admin_slug_to_id, **kwargs):
     return render_template('edit_admin.html',
                            title='Edit admin {}'.format(admin.id),
                            form=form, valid_myself=kwargs.get('valid_myself'))
-
 
 
 # Create employee view
@@ -343,6 +342,53 @@ def employee(employee_slug_to_id, **kwargs):
                            employee=employee, company=company,
                            groups_client_places=groups_client_places,
                            client_places=client_places)
+
+
+# todo cancel
+# Employee editor view
+@app.route('/edit_employee/<employee_slug_to_id>',
+           endpoint='edit_employee',
+           methods=['GET', 'POST'])
+@login_required
+@role_validation_object_return_transform_slug_to_id(myself=True, id_diff=-100,
+                                                    another_id_limit=600)
+def edit_employee(employee_slug_to_id, **kwargs):
+    employee = kwargs['employee']
+
+    roles_to_choose = [(employee.role_id, employee.role.name)]
+
+    if kwargs.get('valid_myself') is not True:
+        roles = RoleAccess(corporation_id=employee.corporation_id). \
+            roles_available_to_create_employee()
+
+        roles_to_choose = [(i.id, i.name) for i in roles]
+
+    form = EditEmployeeForm(roles_to_choose, employee, role=employee.role_id)
+    if request.method == 'POST':
+
+        if form.submit.data and form.validate_on_submit():
+            EmployeeAccess(
+                first_name=form.first_name.data.strip(),
+                last_name=form.last_name.data.strip(),
+                about=form.about.data.strip(),
+                phone=None if form.phone.data.strip() == '' \
+                    else form.phone.data.strip(),
+                email=form.email.data.strip(),
+                role_id=form.role.data.strip(),
+                _obj=employee).edit_model_object()
+
+            flash('Your changes have been saved.')
+            return redirect(url_for('employee',
+                                    employee_slug_to_id=employee.slug))
+    elif request.method == 'GET':
+        form.first_name.data = employee.first_name
+        form.last_name.data = employee.last_name
+        form.about.data = employee.about
+        form.phone.data = employee.phone
+        form.email.data = employee.email
+    return render_template('edit_employee.html',
+                           title='Edit employee {}'.format(employee.id),
+                           form=form, valid_myself=kwargs.get('valid_myself'))
 
 
 # Create corporation view

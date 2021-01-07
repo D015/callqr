@@ -3,10 +3,15 @@
 {% block content %}
     <table>
         <tr valign="top">
-            <td><img src="{{ url_for('static', filename='qr_codes/0a8edb8db75642f994af67380b0e3d13.png') }}" /></td>
+            <td><img src="{{ url_for('static', filename='qr_codes/0a8edb8db75642f994af67380b0e3d13.png') }}"/></td>
             <td>
                 <h1>{{ employee.role.name }} of {{ company.name }}</h1>
                 {% if employee.about %}<p>{{ employee.about }}</p>{% endif %}
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <a href="{{ url_for('edit_employee', employee_slug_to_id=employee.slug) }}">Edit</a>
             </td>
         </tr>
     </table>

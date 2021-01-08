@@ -18,15 +18,9 @@ class BaseAccess:
         self._obj = _obj
         self.model = model
 
-    def edit_model_object(self):
-        for key, value in self.__dict__.items():
-            if key[0] == '_' \
-                    or key == 'id' \
-                    or key == 'password' \
-                    or key == 'slug':
-                continue
-            if value:
-                setattr(self._obj, key, value)
+    def edit_model_object(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self._obj, key, value)
         add_commit(self._obj)
         return self._obj
 
@@ -198,6 +192,11 @@ class EmployeeAccess(BaseAccess):
                 return employee
         return None
 
+    def id_employee_of_current_user(self):
+        employee = current_user.employees.filter_by(
+            company_id=self.company_id).first()
+        return employee.id if employee else None
+
     def employees_in_corporation_by_email(self):
         employees = Employee.query.filter(
             Employee.corporation_id == self.corporation_id,
@@ -220,7 +219,7 @@ class EmployeeAccess(BaseAccess):
         return is_relationship
 
     def is_relationship_employee_to_client_place(self):
-        employee = Employee.query.filter_by(id=self.id).first_or_404()
+        employee = Employee.query.filter_by(id=self.id).first()
 
         is_relationship = employee.client_places.filter(
             employees_to_client_places.c.client_place_id == \
@@ -229,8 +228,10 @@ class EmployeeAccess(BaseAccess):
         return is_relationship
 
     def create_relationship_group_client_places_to_employee(self):
+        print(self.group_client_places_id)
         group_client_places = GroupClientPlacesAccess(
-            slug=self.group_client_places_slug).object_by_slug()
+            id=self.group_client_places_id).object_by_id()
+        print(group_client_places)
 
         if self.id is None:
             employee = current_user.employees.filter_by(

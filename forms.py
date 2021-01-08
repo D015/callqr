@@ -172,7 +172,7 @@ class EmployeeForm(FlaskForm):
         if employees is not None:
             raise ValidationError('Please use a different Email.')
 
-
+# todo make the same size for all about fields
 # Form editor Employee
 class EditEmployeeForm(FlaskForm):
     first_name = StringField('First name', validators=[DataRequired()])

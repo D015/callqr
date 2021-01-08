@@ -133,9 +133,9 @@ def edit_user():
     user = UserAccess().the_current_user()
     form = EditUserForm(user)
     if request.method == 'POST' and form.validate_on_submit():
-        UserAccess(username=form.username.data.strip(),
-                   about=form.about.data.strip(),
-                   _obj=user).edit_model_object()
+        UserAccess(_obj=user).edit_model_object(
+            username=form.username.data.strip(),
+            about=form.about.data.strip())
         flash('Your changes have been saved.')
         return redirect(url_for('profile'))
     elif request.method == 'GET':
@@ -240,13 +240,12 @@ def edit_admin(admin_slug_to_id, **kwargs):
     form = EditAdminForm(roles_to_choose, admin, role=admin.role_id)
     if request.method == 'POST':
         if form.submit.data and form.validate_on_submit():
-            AdminAccess(
+            AdminAccess(_obj=admin).edit_model_object(
                 about=form.about.data.strip(),
                 phone=None if form.phone.data.strip() == '' \
                     else form.phone.data.strip(),
                 email=form.email.data.strip(),
-                role_id=form.role.data.strip(),
-                _obj=admin).edit_model_object()
+                role_id=form.role.data.strip())
 
             flash('Your changes have been saved.')
             return redirect(url_for('admin', admin_slug_to_id=admin.slug))
@@ -367,15 +366,14 @@ def edit_employee(employee_slug_to_id, **kwargs):
     if request.method == 'POST':
 
         if form.submit.data and form.validate_on_submit():
-            EmployeeAccess(
+            EmployeeAccess(_obj=employee).edit_model_object(
                 first_name=form.first_name.data.strip(),
                 last_name=form.last_name.data.strip(),
                 about=form.about.data.strip(),
                 phone=None if form.phone.data.strip() == '' \
                     else form.phone.data.strip(),
                 email=form.email.data.strip(),
-                role_id=form.role.data.strip(),
-                _obj=employee).edit_model_object()
+                role_id=form.role.data.strip())
 
             flash('Your changes have been saved.')
             return redirect(url_for('employee',
@@ -416,6 +414,7 @@ def create_corporation_view():
     return render_template('create_corporation.html', form=form)
 
 
+# todo - to Corporation for an employee(role>role_id Add his company or ...(?)
 @app.route('/corporation/<corporation_slug_to_id>',
            endpoint='corporation',
            methods=['GET', 'POST'])
@@ -445,9 +444,9 @@ def edit_corporation(corporation_slug_to_id, **kwargs):
     form = EditCorporationForm(corporation.name)
 
     if request.method == 'POST' and form.validate_on_submit():
-        CorporationAccess(name=form.name.data.strip(),
-                          about=form.about.data.strip(),
-                          _obj=corporation).edit_model_object()
+        CorporationAccess(_obj=corporation).edit_model_object(
+            name=form.name.data.strip(),
+            about=form.about.data.strip())
         flash('Your changes have been saved.')
         return redirect(url_for('corporation',
                                 corporation_slug_to_id=corporation.slug))
@@ -494,21 +493,44 @@ def create_company_view(corporation_slug_to_id, **kwargs):
 @login_required
 @role_validation_object_return_transform_slug_to_id(role_id=700, role_id_1=800)
 def company(company_slug_to_id, **kwargs):
-    company = kwargs['company']
+    company_id = kwargs['company_id']
 
+    id_employee_of_current_user = \
+        EmployeeAccess(company_id=company_id).id_employee_of_current_user()
+
+    # Groups client places
     groups_client_places = GroupClientPlacesAccess(
         company_id=company_slug_to_id).groups_client_places_by_company_id()
 
+    groups_client_places_with_current_user = []
+    groups_client_places_without = []
+
+    for group_client_places in groups_client_places:
+        if EmployeeAccess(id=id_employee_of_current_user,
+                          group_client_places_id=group_client_places.id). \
+                is_relationship_employee_to_group_client_places():
+
+            groups_client_places_with_current_user.append(group_client_places)
+
+        else:
+            groups_client_places_without.append(group_client_places)
+
+    # Client places
     client_places = ClientPlaceAccess(
-        company_id=company_slug_to_id).client_places_by_company_id()
+        company_id=company_id).client_places_by_company_id()
 
     employees = EmployeeAccess(
-        company_id=company_slug_to_id).employees_by_company_id() \
+        company_id=company_id).employees_by_company_id() \
         if kwargs['valid_role_id'] else None
 
-    return render_template('company.html', company=company,
-                           groups_client_places=groups_client_places,
-                           client_places=client_places, employees=employees)
+    return render_template(
+        'company.html', company=kwargs['company'],
+        groups_client_places=groups_client_places,
+        client_places=client_places, employees=employees,
+        id_employee_of_current_user=id_employee_of_current_user,
+        groups_client_places_with_current_user=
+        groups_client_places_with_current_user,
+        groups_client_places_without=groups_client_places_without)
 
 
 # todo cancel
@@ -522,9 +544,9 @@ def edit_company(company_slug_to_id, **kwargs):
     company = kwargs['company']
     form = EditCompanyForm(company.name, company.corporation_id)
     if request.method == 'POST' and form.validate_on_submit():
-        CompanyAccess(name=form.name.data.strip(),
-                      about=form.about.data.strip(),
-                      _obj=company).edit_model_object()
+        CompanyAccess(_obj=company).edit_model_object(
+            name=form.name.data.strip(),
+            about=form.about.data.strip())
         flash('Your changes have been saved.')
         return redirect(url_for('company',
                                 company_slug_to_id=company.slug))
@@ -568,18 +590,31 @@ def create_group_client_places_view(company_slug_to_id, **kwargs):
 
 
 # TODO check compliance conditions
-# Create by yourself relationship to group client places
-@app.route('/_yourself_to_group_client_places/<group_client_places_slug>',
+# Create by myself relationship to group client places
+@app.route('/_myself_to_group_client_places/<group_client_places_slug_to_id>',
+           endpoint='create_by_myself_relationship_to_group_client_places',
            methods=['GET', 'POST'])
-def create_by_yourself_relationship_to_group_client_places(
-        group_client_places_slug):
+@login_required
+@role_validation_object_return_transform_slug_to_id(role_id=800)
+def create_by_myself_relationship_to_group_client_places(
+        group_client_places_slug_to_id, **kwargs):
+
+    next_page = request.args.get('next')
+    # todo END !!!!!!!!!!!!!!!!!!!!!!
+    group_client_places = kwargs['group_client_places']
+    print(group_client_places)
+    print(group_client_places.id)
+
     result = EmployeeAccess(
-        group_client_places_slug=group_client_places_slug). \
+        group_client_places_id=group_client_places.id). \
         create_relationship_group_client_places_to_employee()
 
     flash(result[1])
+    if next_page:
+        return redirect(next_page)
 
-    return render_template('index.html', title='Home')
+    return url_for('group_client_places',
+                   group_client_places_slug_to_id=group_client_places.slug)
 
 
 @app.route('/group_client_places/<group_client_places_slug_to_id>',
@@ -615,11 +650,10 @@ def edit_group_client_places(group_client_places_slug_to_id, **kwargs):
                                      group_client_places.about)
     if request.method == 'POST':
         if form.submit.data and form.validate_on_submit():
-            GroupClientPlacesAccess(
+            GroupClientPlacesAccess(_obj=group_client_places). \
+                edit_model_object(
                 name=form.name.data.strip(),
-                about=form.about.data.strip(),
-                _obj=group_client_places). \
-                edit_model_object()
+                about=form.about.data.strip())
         flash('Your changes have been saved.')
         return redirect(url_for(
             'group_client_places',
@@ -635,10 +669,9 @@ def edit_group_client_places(group_client_places_slug_to_id, **kwargs):
 
 
 # Create client place view
-@app.route(
-    '/create_client_place/<company_slug_to_id>',
-    endpoint='create_client_place_view',
-    methods=['GET', 'POST'])
+@app.route('/create_client_place/<company_slug_to_id>',
+           endpoint='create_client_place_view',
+           methods=['GET', 'POST'])
 @login_required
 @role_validation_object_return_transform_slug_to_id(role_id=600)
 def create_client_place_view(company_slug_to_id, **kwargs):
@@ -677,10 +710,10 @@ def create_client_place_view(company_slug_to_id, **kwargs):
 
 
 # TODO check compliance conditions
-# Create by yourself relationship to client lace
-@app.route('/_yourself_to_client_place/<client_place_slug>',
+# Create by myself relationship to client lace
+@app.route('/_myself_to_client_place/<client_place_slug>',
            methods=['GET', 'POST'])
-def create_by_yourself_relationship_to_client_place(client_place_slug):
+def create_by_myself_relationship_to_client_place(client_place_slug):
     result = EmployeeAccess(client_place_slug=client_place_slug). \
         create_relationship_client_place_to_employee()
 
@@ -728,11 +761,9 @@ def edit_client_place(client_place_slug_to_id, **kwargs):
         group_client_places=client_place.group_client_places_id)
     if request.method == 'POST':
         if form.submit.data and form.validate_on_submit():
-            ClientPlaceAccess(
+            ClientPlaceAccess(_obj=client_place).edit_model_object(
                 name=form.name.data.strip(),
-                group_client_places_id=form.group_client_places.data.strip(),
-                _obj=client_place). \
-                edit_model_object()
+                group_client_places_id=form.group_client_places.data.strip())
             flash('Your changes have been saved.')
             return redirect(url_for('client_place',
                                     client_place_slug_to_id=client_place.slug))
@@ -744,9 +775,10 @@ def edit_client_place(client_place_slug_to_id, **kwargs):
                            form=form)
 
 
-@app.route('/test', methods=['GET', 'POST'])
+@app.route('/test_', methods=['GET', 'POST'])
 # @login_required
 def test():
     print(' --- TEST --- ')
-    print(current_user.__setattr__('admins'))
+    # print(current_user.__setattr__('admins'))
+
     return render_template('index.html', title='Home')

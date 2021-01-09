@@ -506,8 +506,10 @@ def company(company_slug_to_id, **kwargs):
     groups_client_places_without = []
 
     for group_client_places in groups_client_places:
-        if EmployeeAccess(id=id_employee_of_current_user,
-                          group_client_places_id=group_client_places.id). \
+        if id_employee_of_current_user is None \
+                or EmployeeAccess(
+            id=id_employee_of_current_user,
+            group_client_places_id=group_client_places.id). \
                 is_relationship_employee_to_group_client_places():
 
             groups_client_places_with_current_user.append(group_client_places)
@@ -598,12 +600,10 @@ def create_group_client_places_view(company_slug_to_id, **kwargs):
 @role_validation_object_return_transform_slug_to_id(role_id=800)
 def create_by_myself_relationship_to_group_client_places(
         group_client_places_slug_to_id, **kwargs):
-
+    # todo next None ?
     next_page = request.args.get('next')
-    # todo END !!!!!!!!!!!!!!!!!!!!!!
+
     group_client_places = kwargs['group_client_places']
-    print(group_client_places)
-    print(group_client_places.id)
 
     result = EmployeeAccess(
         group_client_places_id=group_client_places.id). \
@@ -613,8 +613,9 @@ def create_by_myself_relationship_to_group_client_places(
     if next_page:
         return redirect(next_page)
 
-    return url_for('group_client_places',
-                   group_client_places_slug_to_id=group_client_places.slug)
+    return redirect(
+        url_for('group_client_places',
+                group_client_places_slug_to_id=group_client_places.slug))
 
 
 @app.route('/group_client_places/<group_client_places_slug_to_id>',
@@ -780,5 +781,6 @@ def edit_client_place(client_place_slug_to_id, **kwargs):
 def test():
     print(' --- TEST --- ')
     # print(current_user.__setattr__('admins'))
+
 
     return render_template('index.html', title='Home')

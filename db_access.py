@@ -228,10 +228,8 @@ class EmployeeAccess(BaseAccess):
         return is_relationship
 
     def create_relationship_group_client_places_to_employee(self):
-        print(self.group_client_places_id)
         group_client_places = GroupClientPlacesAccess(
             id=self.group_client_places_id).object_by_id()
-        print(group_client_places)
 
         if self.id is None:
             employee = current_user.employees.filter_by(
@@ -242,11 +240,12 @@ class EmployeeAccess(BaseAccess):
                 id=self.id, company_id=group_client_places.company_id). \
                 first_or_404()
 
-        if self.id is None:
+        if employee is None:
             return None, 'employee not selected'
 
-        is_relationship = self.is_relationship_employee_to_group_client_places(
-            employee.id, group_client_places.id)
+        self.id = employee.id
+
+        is_relationship = self.is_relationship_employee_to_group_client_places()
 
         if is_relationship is False:
             employee.groups_client_places.append(group_client_places)

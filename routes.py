@@ -600,7 +600,7 @@ def create_group_client_places_view(company_slug_to_id, **kwargs):
 @role_validation_object_return_transform_slug_to_id(role_id=800)
 def create_by_myself_relationship_to_group_client_places(
         group_client_places_slug_to_id, **kwargs):
-    # todo next None ?
+
     next_page = request.args.get('next')
 
     group_client_places = kwargs['group_client_places']

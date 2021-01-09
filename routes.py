@@ -504,16 +504,22 @@ def company(company_slug_to_id, **kwargs):
 
     groups_client_places_with_current_user = []
     groups_client_places_without = []
+    groups_client_places_for_admin = []
+
 
     for group_client_places in groups_client_places:
-        if id_employee_of_current_user is None \
-                or EmployeeAccess(
+        # for admin
+        if id_employee_of_current_user is None:
+            groups_client_places_for_admin.append(group_client_places)
+
+        # for employee with relationship
+        elif  EmployeeAccess(
             id=id_employee_of_current_user,
             group_client_places_id=group_client_places.id). \
                 is_relationship_employee_to_group_client_places():
 
             groups_client_places_with_current_user.append(group_client_places)
-
+        # for employee without relationship
         else:
             groups_client_places_without.append(group_client_places)
 
@@ -529,7 +535,7 @@ def company(company_slug_to_id, **kwargs):
         'company.html', company=kwargs['company'],
         groups_client_places=groups_client_places,
         client_places=client_places, employees=employees,
-        id_employee_of_current_user=id_employee_of_current_user,
+        groups_client_places_for_admin=groups_client_places_for_admin,
         groups_client_places_with_current_user=
         groups_client_places_with_current_user,
         groups_client_places_without=groups_client_places_without)

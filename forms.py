@@ -393,6 +393,12 @@ class EditClientPlaceForm(FlaskForm):
                 raise ValidationError('Please use a different place name.')
 
 
+# Form editor Employee
+class SubmitCancelForm(FlaskForm):
+    submit = SubmitField('Submit')
+    cancel = SubmitField('Cancel')
+
+
 class MultiCheckboxField(SelectMultipleField):
     widget = widgets.ListWidget(prefix_label=False)
     option_widget = widgets.CheckboxInput()

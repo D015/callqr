@@ -1,31 +1,43 @@
-{% if groups_client_places_with_current_user %}
-    {% for group_client_places_with in groups_client_places_with_current_user %}
-    <p>
-        <a href="{{ url_for('group_client_places', group_client_places_slug_to_id=group_client_places_with.slug) }}">
-            {{ group_client_places_with.id }}</a> {{ group_client_places_with.name }}, {{ group_client_places_with.slug }}
-    </p>
-    {% endfor %}
-{% endif %}
+{% if (groups_client_places_with_current_user or
+        groups_client_places_without or
+        groups_client_places_for_admin) %}
 
-{% if groups_client_places_without %}
-    {% for group_client_places_without in groups_client_places_without %}
-        <p>
-            <a href="{{ url_for('group_client_places', group_client_places_slug_to_id=group_client_places_without.slug) }}">
-                {{ group_client_places_without.id }}</a>
-            {{ group_client_places_without.name }}, {{ group_client_places_without.slug }}
+    {% if groups_client_places_with_current_user %}
+        {% for group_client_places_with in groups_client_places_with_current_user %}
+            <p>
+                <a href="{{ url_for('group_client_places', group_client_places_slug_to_id=group_client_places_with.slug) }}">
+                    {{ group_client_places_with.id }}</a> {{ group_client_places_with.name }}, {{ group_client_places_with.slug }}
+            </p>
+        {% endfor %}
+    {% endif %}
 
-            -
+    {% if groups_client_places_without %}
+        {% for group_client_places_without in groups_client_places_without %}
+            <p>
+                <a href="{{ url_for('group_client_places', group_client_places_slug_to_id=group_client_places_without.slug) }}">
+                    {{ group_client_places_without.id }}</a>
+                {{ group_client_places_without.name }}, {{ group_client_places_without.slug }}
 
-            <a href="{{ url_for('create_by_myself_relationship_to_group_client_places',
-            group_client_places_slug_to_id=group_client_places_without.slug, next=request.path) }}">Connect with me</a>
+                -
+
+                <a href="{{ url_for('create_by_myself_relationship_to_group_client_places',
+                group_client_places_slug_to_id=group_client_places_without.slug, next=request.path) }}">Connect with me</a>
 
 
-        </p>
-    {% endfor %}
-{% endif %}
+            </p>
+        {% endfor %}
+    {% endif %}
 
-{% if  (groups_client_places_with_current_user or
-        groups_client_places_without)  %}
-{% else %}
+    {% if groups_client_places_for_admin %}
+        {% for group_client_places_admin in groups_client_places_for_admin %}
+            <p>
+                <a href="{{ url_for('group_client_places', group_client_places_slug_to_id=group_client_places_admin.slug) }}">
+                    {{ group_client_places_admin.id }}</a> {{ group_client_places_admin.name }}, {{ group_client_places_admin.slug }}
+            </p>
+        {% endfor %}
+    {% endif %}
+
+
+{%  else %}
     <span> <i>is not group client places</i> </span>
 {% endif %}

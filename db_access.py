@@ -294,8 +294,8 @@ class EmployeeAccess(BaseAccess):
 
 
     def create_relationship_client_place_to_employee(self):
-        client_place = ClientPlaceAccess(slug=self.client_place_slug). \
-            object_by_slug()
+        client_place = ClientPlaceAccess(id=self.client_place_id). \
+            object_by_id()
 
         if self.id is None:
             employee = current_user.employees.filter_by(
@@ -306,11 +306,12 @@ class EmployeeAccess(BaseAccess):
                 id=self.id, company_id=client_place.company_id). \
                 first_or_404()
 
-        if self.id is None:
+        if employee is None:
             return None, 'employee not selected'
 
-        is_relationship = self.is_relationship_employee_to_client_place(
-            employee.id, client_place.id)
+        self.id = employee.id
+
+        is_relationship = self.is_relationship_employee_to_client_place()
 
         if is_relationship is False:
             employee.client_places.append(client_place)
@@ -320,6 +321,38 @@ class EmployeeAccess(BaseAccess):
 
         elif is_relationship:
             return False, 'The relationship with the place already existed'
+
+        else:
+            return None, 'error'
+
+    def remove_relationship_client_place_to_employee(self):
+        client_place = ClientPlaceAccess(
+            id=self.client_place_id).object_by_id()
+
+        if self.id is None:
+            employee = current_user.employees.filter_by(
+                company_id=client_place.company_id).first_or_404()
+
+        elif self.id:
+            employee = Employee.query.filter_by(
+                id=self.id, company_id=client_place.company_id). \
+                first_or_404()
+
+        if employee is None:
+            return None, 'Employee not selected'
+
+        self.id = employee.id
+
+        is_relationship = self.is_relationship_employee_to_client_place()
+
+        if is_relationship:
+            employee.client_places.remove(client_place)
+
+            add_commit(employee)
+            return True, 'The relationship with the place successfully removed'
+
+        elif is_relationship:
+            return False, 'There was no relationship with the place before'
 
         else:
             return None, 'error'

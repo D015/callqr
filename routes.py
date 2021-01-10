@@ -526,7 +526,27 @@ def company(company_slug_to_id, **kwargs):
     # Client places
     client_places = ClientPlaceAccess(
         company_id=company_id).client_places_by_company_id()
+    client_places_with_current_user = []
+    client_places_without = []
+    client_places_for_admin = []
 
+    for client_place in client_places:
+        # for admin
+        if id_employee_of_current_user is None:
+            client_places_for_admin.append(client_place)
+
+        # for employee with relationship
+        elif EmployeeAccess(
+                id=id_employee_of_current_user,
+                client_place_id=client_place.id). \
+                is_relationship_employee_to_client_place():
+
+            client_places_with_current_user.append(client_place)
+        # for employee without relationship
+        else:
+            client_places_without.append(client_place)
+    print(client_places_for_admin)
+    # Employee
     employees = EmployeeAccess(
         company_id=company_id).employees_by_company_id() \
         if kwargs['valid_role_id'] else None
@@ -538,7 +558,10 @@ def company(company_slug_to_id, **kwargs):
         groups_client_places_for_admin=groups_client_places_for_admin,
         groups_client_places_with_current_user=
         groups_client_places_with_current_user,
-        groups_client_places_without=groups_client_places_without)
+        groups_client_places_without=groups_client_places_without,
+        client_places_with_current_user=client_places_with_current_user,
+        client_places_without=client_places_without,
+        client_places_for_admin=client_places_for_admin)
 
 
 # todo cancel
@@ -747,15 +770,56 @@ def create_client_place_view(company_slug_to_id, **kwargs):
 
 # TODO check compliance conditions
 # Create by myself relationship to client lace
-@app.route('/_myself_to_client_place/<client_place_slug>',
+@app.route('/_create_myself_to_client_place/<client_place_slug_to_id>',
+           endpoint='create_by_myself_relationship_to_client_place',
            methods=['GET', 'POST'])
-def create_by_myself_relationship_to_client_place(client_place_slug):
-    result = EmployeeAccess(client_place_slug=client_place_slug). \
+@login_required
+@role_validation_object_return_transform_slug_to_id(role_id=800)
+def create_by_myself_relationship_to_client_place(
+        client_place_slug_to_id, **kwargs):
+
+    next_page = request.args.get('next')
+
+    client_place = kwargs['client_place']
+
+    result = EmployeeAccess(client_place_id=client_place.id). \
         create_relationship_client_place_to_employee()
 
     flash(result[1])
+    if next_page:
+        return redirect(next_page)
 
-    return render_template('index.html', title='Home')
+    return redirect(
+        url_for('client_place',
+                client_place_slug_to_id=client_place.slug))
+
+
+# TODO check compliance conditions
+# Remove by myself relationship to client place
+@app.route(
+    '/_remove_myself_to_client_place/<client_place_slug_to_id>',
+           endpoint='remove_by_myself_relationship_to_client_place',
+           methods=['GET', 'POST'])
+@login_required
+@role_validation_object_return_transform_slug_to_id(role_id=800)
+def remove_by_myself_relationship_to_client_place(
+        client_place_slug_to_id, **kwargs):
+
+    next_page = request.args.get('next')
+
+    client_place = kwargs['client_place']
+
+    result = EmployeeAccess(
+        client_place_id=client_place.id). \
+        remove_relationship_client_place_to_employee()
+
+    flash(result[1])
+    if next_page:
+        return redirect(next_page)
+
+    return redirect(
+        url_for('client_place',
+                client_place_slug_to_id=client_place.slug))
 
 
 @app.route('/client_place/<client_place_slug_to_id>',

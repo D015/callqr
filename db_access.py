@@ -259,6 +259,40 @@ class EmployeeAccess(BaseAccess):
         else:
             return None, 'error'
 
+    def remove_relationship_group_client_places_to_employee(self):
+        group_client_places = GroupClientPlacesAccess(
+            id=self.group_client_places_id).object_by_id()
+
+        if self.id is None:
+            employee = current_user.employees.filter_by(
+                company_id=group_client_places.company_id).first_or_404()
+
+        elif self.id:
+            employee = Employee.query.filter_by(
+                id=self.id, company_id=group_client_places.company_id). \
+                first_or_404()
+
+        if employee is None:
+            return None, 'Employee not selected'
+
+        self.id = employee.id
+
+        is_relationship = self.is_relationship_employee_to_group_client_places()
+
+        if is_relationship:
+            employee.groups_client_places.remove(group_client_places)
+
+            add_commit(employee)
+            return True, 'The relationship with the group successfully removed'
+
+        elif is_relationship:
+            return False, 'There was no relationship with the group before'
+
+        else:
+            return None, 'error'
+
+
+
     def create_relationship_client_place_to_employee(self):
         client_place = ClientPlaceAccess(slug=self.client_place_slug). \
             object_by_slug()

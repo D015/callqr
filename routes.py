@@ -513,7 +513,7 @@ def company(company_slug_to_id, **kwargs):
             groups_client_places_for_admin.append(group_client_places)
 
         # for employee with relationship
-        elif  EmployeeAccess(
+        elif EmployeeAccess(
             id=id_employee_of_current_user,
             group_client_places_id=group_client_places.id). \
                 is_relationship_employee_to_group_client_places():
@@ -599,7 +599,8 @@ def create_group_client_places_view(company_slug_to_id, **kwargs):
 
 # TODO check compliance conditions
 # Create by myself relationship to group client places
-@app.route('/_myself_to_group_client_places/<group_client_places_slug_to_id>',
+@app.route(
+    '/_create_myself_to_group_client_places/<group_client_places_slug_to_id>',
            endpoint='create_by_myself_relationship_to_group_client_places',
            methods=['GET', 'POST'])
 @login_required
@@ -614,6 +615,34 @@ def create_by_myself_relationship_to_group_client_places(
     result = EmployeeAccess(
         group_client_places_id=group_client_places.id). \
         create_relationship_group_client_places_to_employee()
+
+    flash(result[1])
+    if next_page:
+        return redirect(next_page)
+
+    return redirect(
+        url_for('group_client_places',
+                group_client_places_slug_to_id=group_client_places.slug))
+
+
+# TODO check compliance conditions
+# Create by myself relationship to group client places
+@app.route(
+    '/_remove_myself_to_group_client_places/<group_client_places_slug_to_id>',
+           endpoint='remove_by_myself_relationship_to_group_client_places',
+           methods=['GET', 'POST'])
+@login_required
+@role_validation_object_return_transform_slug_to_id(role_id=800)
+def remove_by_myself_relationship_to_group_client_places(
+        group_client_places_slug_to_id, **kwargs):
+
+    next_page = request.args.get('next')
+
+    group_client_places = kwargs['group_client_places']
+
+    result = EmployeeAccess(
+        group_client_places_id=group_client_places.id). \
+        remove_relationship_group_client_places_to_employee()
 
     flash(result[1])
     if next_page:

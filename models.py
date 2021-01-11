@@ -159,13 +159,13 @@ class Corporation(BaseModel, db.Model):
     about = db.Column(db.String(140))
 
     admins = db.relationship(
-        'Admin', backref='corporation', lazy='dynamic')
+        'Admin', cascade='all,delete', backref='corporation', lazy='dynamic')
     employees = db.relationship(
-        'Employee', backref='corporation', lazy='dynamic')
+        'Employee', cascade='all,delete', backref='corporation', lazy='dynamic')
     clients = db.relationship(
         'Client', backref='corporation', lazy='dynamic')
     companies = db.relationship(
-        'Company', backref='corporation', lazy='dynamic')
+        'Company', cascade='all,delete', backref='corporation', lazy='dynamic')
 
     def __repr__(self):
         return '<Corporation {} {}>'.format(self.id, self.name)
@@ -180,9 +180,10 @@ class Company(BaseModel, db.Model):
     employees = db.relationship(
         'Employee', backref='company', lazy='dynamic')
     client_places = db.relationship(
-        'ClientPlace', backref='company', lazy='dynamic')
+        'ClientPlace', cascade='all,delete', backref='company', lazy='dynamic')
     groups_client_places = db.relationship(
-        'GroupClientPlaces', backref='company', lazy='dynamic')
+        'GroupClientPlaces',  cascade='all,delete', backref='company',
+        lazy='dynamic')
 
     def __repr__(self):
         return '<Company {}>'.format(self.name)

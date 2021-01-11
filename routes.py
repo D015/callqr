@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 
+from aiogram.utils.deep_linking import get_start_link, decode_payload
 from flask import render_template, \
     flash, \
     redirect, \
@@ -10,6 +11,8 @@ from flask import render_template, \
 from flask_login import current_user, \
     login_user, \
     logout_user, login_required
+from flask_sqlalchemy import Model
+from sqlalchemy import or_
 
 from werkzeug.urls import url_parse
 
@@ -24,6 +27,7 @@ from db_access import \
     ClientPlaceAccess, \
     ClientAccess, \
     role_validation_object_return_transform_slug_to_id
+from email_my import send_call_qr_email
 
 from forms import ClientPlaceForm, \
     RegistrationForm, \
@@ -41,7 +45,7 @@ from forms import ClientPlaceForm, \
 
 from app import app, db
 
-from models import User
+from models import User, Admin, Employee, Company
 
 
 # Last time visits for user
@@ -879,7 +883,16 @@ def edit_client_place(client_place_slug_to_id, **kwargs):
 # @login_required
 def test():
     print(' --- TEST --- ')
+    # l1 = ['7281015@gmail.com', '7281015@mail.ru']
+    # send_call_qr_email('518', l1)
+    # ______________________________________
     # print(current_user.__setattr__('admins'))
-
+    # ____________________________________________
+    # obj1 = CompanyAccess(id=4).object_by_id()
+    # print(obj1)
+    # CompanyAccess(_obj=obj1).remove_object()
+    # ______________________________________________
+    obj1 = CompanyAccess(id=4).object_by_id()
+    print(obj1.__class__.__name__)
 
     return render_template('index.html', title='Home')

@@ -18,6 +18,10 @@ class BaseAccess:
         self._obj = _obj
         self.model = model
 
+    def remove_object(self):
+        db.session.delete(self._obj)
+        db.session.commit()
+
     def edit_model_object(self, **kwargs):
         for key, value in kwargs.items():
             setattr(self._obj, key, value)

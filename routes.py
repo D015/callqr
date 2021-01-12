@@ -42,7 +42,7 @@ from forms import ClientPlaceForm, \
     EmployeeForm, \
     CorporationForm, \
     AdminForm, EditCorporationForm, EditAdminForm, EditEmployeeForm, \
-    SubmitCancelForm
+    RemoveObjectForm
 
 from app import app, db
 
@@ -157,7 +157,7 @@ def edit_user():
 @login_required
 def remove_user():
     user = UserAccess().the_current_user_of_model()
-    form = SubmitCancelForm(user)
+    form = RemoveObjectForm(user)
     next_page = request.args.get('next')
     if request.method == 'POST':
         if form.submit.data and form.validate_on_submit():
@@ -917,12 +917,13 @@ def test():
     # print(obj1.__class__.__name__)
     # _____________________________________________
 
-    obj1 = UserAccess().the_current_user_of_model()
-    print(obj1)
-    print(obj1.__class__)
-    print(obj1.__class__.__name__)
-    is_exist = BaseAccess(_obj=obj1).object_is_exist()
-    print(is_exist)
-    obj2 = db.session.get(User, {'id': 10})
-    print(obj2)
+    # obj1 = UserAccess().the_current_user_of_model()
+    # print(obj1)
+    # print(obj1.__class__)
+    # print(obj1.__class__.__name__)
+    # is_exist = BaseAccess(_obj=obj1).object_is_exist()
+    # print(is_exist)
+    # obj2 = User.query.get({'slug': 10})
+    # print(obj2)
+    # ____________________________________
     return render_template('index.html', title='Home')

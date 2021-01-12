@@ -6,6 +6,10 @@
     <form action="" method="post">
         {{ form.hidden_tag() }}
 
+        {% for error in form.submit.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+
         <p>{{ form.submit() }}</p>
 
         <p>{{ form.cancel() }}</p>

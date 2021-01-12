@@ -26,7 +26,7 @@ from db_access import \
     GroupClientPlacesAccess, \
     ClientPlaceAccess, \
     ClientAccess, \
-    role_validation_object_return_transform_slug_to_id
+    role_validation_object_return_transform_slug_to_id, BaseAccess
 from email_my import send_call_qr_email
 
 from forms import ClientPlaceForm, \
@@ -41,7 +41,8 @@ from forms import ClientPlaceForm, \
     EditGroupClientPlacesForm, \
     EmployeeForm, \
     CorporationForm, \
-    AdminForm, EditCorporationForm, EditAdminForm, EditEmployeeForm
+    AdminForm, EditCorporationForm, EditAdminForm, EditEmployeeForm, \
+    SubmitCancelForm
 
 from app import app, db
 
@@ -155,19 +156,19 @@ def edit_user():
 @app.route('/remove_user', methods=['GET', 'POST'])
 @login_required
 def remove_user():
-    user = UserAccess().the_current_user()
-    form = EditUserForm(user)
-    if request.method == 'POST' and form.validate_on_submit():
-        UserAccess(_obj=user).edit_model_object(
-            username=form.username.data.strip(),
-            about=form.about.data.strip())
-        flash('Your changes have been saved.')
-        return redirect(url_for('profile'))
-    elif request.method == 'GET':
-        form.username.data = user.username
-        form.email.data = user.email
-        form.about.data = user.about
-    return render_template('edit_user.html', title='Edit User',
+    user = UserAccess().the_current_user_of_model()
+    form = SubmitCancelForm(user)
+    next_page = request.args.get('next')
+    if request.method == 'POST':
+        if form.submit.data and form.validate_on_submit():
+            UserAccess(_obj=user).remove_object()
+            flash('Your changes have been saved.')
+            return redirect(url_for('index'))
+        elif form.cancel.data:
+            if next_page:
+                return redirect(next_page)
+
+    return render_template('remove_user.html', user=user, title='Remove User',
                            form=form)
 
 # Create admin view
@@ -912,7 +913,16 @@ def test():
     # print(obj1)
     # CompanyAccess(_obj=obj1).remove_object()
     # ______________________________________________
-    obj1 = CompanyAccess(id=4).object_by_id()
-    print(obj1.__class__.__name__)
+    # obj1 = CompanyAccess(id=4).object_by_id()
+    # print(obj1.__class__.__name__)
+    # _____________________________________________
 
+    obj1 = UserAccess().the_current_user_of_model()
+    print(obj1)
+    print(obj1.__class__)
+    print(obj1.__class__.__name__)
+    is_exist = BaseAccess(_obj=obj1).object_is_exist()
+    print(is_exist)
+    obj2 = db.session.get(User, {'id': 10})
+    print(obj2)
     return render_template('index.html', title='Home')

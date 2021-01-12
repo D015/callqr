@@ -12,11 +12,14 @@ from utils_add import add_commit, sort_dict_value
 class BaseAccess:
 
     def __init__(self, id=None, slug=None, _obj=None, model=None):
-
         self.id = id
         self.slug = slug
         self._obj = _obj
         self.model = model
+
+    def object_is_exist(self):
+        is_exist = self._obj.__class__.query.get(self._obj.id)
+        return True if is_exist else False
 
     def remove_object(self):
         db.session.delete(self._obj)
@@ -37,7 +40,7 @@ class BaseAccess:
         return obj
 
     def object_by_id(self):
-        obj = self.model.query.filter_by(id=self.id).first()
+        obj = self.model.query.get(self.id)
         return obj
 
     def object_by_id_or_404(self):
@@ -63,6 +66,10 @@ class UserAccess(BaseAccess):
 
     def the_current_user(self):
         return current_user
+
+    def the_current_user_of_model(self):
+        user = User.query.filter_by(id=current_user.id).first_or_404()
+        return user
 
     def users_by_email(self):
         users = User.query.filter(User.email.ilike(self.email)).first()
@@ -294,8 +301,6 @@ class EmployeeAccess(BaseAccess):
 
         else:
             return None, 'error'
-
-
 
     def create_relationship_client_place_to_employee(self):
         client_place = ClientPlaceAccess(id=self.client_place_id). \
@@ -696,7 +701,6 @@ def role_validation_object_return_transform_slug_to_id(myself=None,
                     return func(**kwargs)
                 else:
                     kwargs.update({'valid_' + arg_decor_key: False})
-
 
             return render_template('404.html')
 

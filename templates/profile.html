@@ -15,6 +15,9 @@
             <td>
                 <a href="{{  url_for('edit_user') }}">Edit</a>
             </td>
+            <td>
+                <a href="{{  url_for('remove_user', next=request.path) }}">Delete</a>
+            </td>
         </tr>
     </table>
 

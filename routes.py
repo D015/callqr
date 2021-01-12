@@ -70,7 +70,8 @@ def login():
         return redirect(url_for('index'))
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()
+        user = User.query.filter(or_(User.username == form.username.data,
+                                     User.email == form.username.data)).first()
         if user is None or not user.check_password(form.password.data):
             flash('Invalid username or password')
             return redirect(url_for('login'))
@@ -130,7 +131,7 @@ def profile():
                            employees_pending=employees_pending)
 
 
-# Profile editor view
+# User editor view
 @app.route('/edit_user', methods=['GET', 'POST'])
 @login_required
 def edit_user():
@@ -149,6 +150,25 @@ def edit_user():
     return render_template('edit_user.html', title='Edit User',
                            form=form)
 
+
+# User deleter view
+@app.route('/remove_user', methods=['GET', 'POST'])
+@login_required
+def remove_user():
+    user = UserAccess().the_current_user()
+    form = EditUserForm(user)
+    if request.method == 'POST' and form.validate_on_submit():
+        UserAccess(_obj=user).edit_model_object(
+            username=form.username.data.strip(),
+            about=form.about.data.strip())
+        flash('Your changes have been saved.')
+        return redirect(url_for('profile'))
+    elif request.method == 'GET':
+        form.username.data = user.username
+        form.email.data = user.email
+        form.about.data = user.about
+    return render_template('edit_user.html', title='Edit User',
+                           form=form)
 
 # Create admin view
 @app.route('/create_admin/<corporation_slug_to_id>',

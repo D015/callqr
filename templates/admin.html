@@ -14,6 +14,9 @@
             <td>
                 <a href="{{ url_for('edit_admin', admin_slug_to_id=admin.slug) }}">Edit</a>
             </td>
+            <td>
+                <a href="{{  url_for('remove_admin', admin_slug_to_id=admin.slug, next=request.path) }}">Delete</a>
+            </td>
         </tr>
     </table>
 

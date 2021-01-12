@@ -156,19 +156,19 @@ def edit_user():
 @app.route('/remove_user', methods=['GET', 'POST'])
 @login_required
 def remove_user():
-    user = UserAccess().the_current_user_of_model()
-    form = RemoveObjectForm(user)
+    obj = UserAccess().the_current_user_of_model()
+    form = RemoveObjectForm(obj)
     next_page = request.args.get('next')
     if request.method == 'POST':
         if form.submit.data and form.validate_on_submit():
-            UserAccess(_obj=user).remove_object()
+            BaseAccess(_obj=obj).remove_object()
             flash('Your changes have been saved.')
             return redirect(url_for('index'))
         elif form.cancel.data:
             if next_page:
                 return redirect(next_page)
 
-    return render_template('remove_user.html', user=user, title='Remove User',
+    return render_template('remove_object.html', obj=obj, title='Remove User',
                            form=form)
 
 # Create admin view
@@ -281,6 +281,34 @@ def edit_admin(admin_slug_to_id, **kwargs):
     return render_template('edit_admin.html',
                            title='Edit admin {}'.format(admin.id),
                            form=form, valid_myself=kwargs.get('valid_myself'))
+
+
+# Admin deleter view
+@app.route('/remove_admin/<admin_slug_to_id>',
+           endpoint='remove_admin',
+           methods=['GET', 'POST'])
+@login_required
+@role_validation_object_return_transform_slug_to_id(myself=True, id_diff=-100,
+                                                    another_id_limit=600)
+def remove_admin(admin_slug_to_id, **kwargs):
+    obj = kwargs['admin']
+    form = RemoveObjectForm(obj)
+    next_page = request.args.get('next')
+    if request.method == 'POST':
+        if form.submit.data and form.validate_on_submit():
+            BaseAccess(_obj=obj).remove_object()
+            flash('Your changes have been saved.')
+            return redirect(url_for('index'))
+            if next_page:
+                return redirect(next_page)
+        elif form.cancel.data:
+            if next_page:
+                return redirect(next_page)
+        else:
+            redirect(url_for('profile'))
+
+    return render_template('remove_object.html', obj=obj, title='Remove Object',
+                           form=form)
 
 
 # Create employee view

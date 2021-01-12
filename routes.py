@@ -288,12 +288,12 @@ def edit_admin(admin_slug_to_id, **kwargs):
            endpoint='remove_admin',
            methods=['GET', 'POST'])
 @login_required
-@role_validation_object_return_transform_slug_to_id(myself=True, id_diff=-100,
+@role_validation_object_return_transform_slug_to_id(myself=False, id_diff=-100,
                                                     another_id_limit=600)
 def remove_admin(admin_slug_to_id, **kwargs):
     obj = kwargs['admin']
-    form = RemoveObjectForm(obj)
     next_page = request.args.get('next')
+    form = RemoveObjectForm(obj)
     if request.method == 'POST':
         if form.submit.data and form.validate_on_submit():
             BaseAccess(_obj=obj).remove_object()
@@ -954,4 +954,16 @@ def test():
     # obj2 = User.query.get({'slug': 10})
     # print(obj2)
     # ____________________________________
+    # m = db.Model
+    # print(m.metadata)
+    # print(m._decl_class_registry.values())
+    for model_i in db.Model._decl_class_registry.values():
+        if hasattr(model_i, 'slug'):
+            obj_i = model_i.query.filter_by(slug='68e16fffd7f24e71b153177e412f1376').first()
+            if obj_i:
+                print(obj_i)
+                break
+    # for i in m.query_class:
+    #     print('---', i)
+
     return render_template('index.html', title='Home')

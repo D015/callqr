@@ -22,8 +22,12 @@ class BaseAccess:
         return True if is_exist else False
 
     def remove_object(self):
-        db.session.delete(self._obj)
-        db.session.commit()
+        if self._obj:
+            obj_id = self._obj.id
+            db.session.delete(self._obj)
+            db.session.commit()
+            return obj_id
+        return None
 
     def edit_model_object(self, **kwargs):
         for key, value in kwargs.items():
@@ -47,12 +51,17 @@ class BaseAccess:
         obj = self.model.query.filter_by(id=self.id).first_or_404()
         return obj
 
+    def slug_by_id(self):
+        slug = self.model.query.get(self.id).slug
+        return slug
+
     def object_from_entire_db_by_slug(self):
         for model_i in db.Model._decl_class_registry.values():
             if hasattr(model_i, 'slug'):
                 obj_i = model_i.query.filter_by(slug=self.slug).first()
                 if obj_i:
                     return obj_i
+
 
 class UserAccess(BaseAccess):
     def __init__(self, id=None, slug=None, _obj=None, username=None, email=None,
@@ -582,30 +591,46 @@ def role_validation_object_return_transform_slug_to_id(myself=None,
         def check_role(**kwargs):
 
             slug_arg_name = None
-            obj_slug = None
+            obj = None
+            obj_name = None
+            cls_name = None
 
             # Getting the name of the argument and its value
             for arg_key, arg_value in kwargs.items():
+                # if the name of the argument
+                # contains the name of the object class
                 if '_slug_to_id' in arg_key:
                     slug_arg_name = arg_key
                     obj_slug = arg_value
+
+                    # Converting argument name to class-model
+                    # and class-access name
+                    obj_name = slug_arg_name[:slug_arg_name.find('_slug')]
+                    obj_name_underscore_replaced_by_spaces = obj_name.replace(
+                        '_', ' ')
+                    cls_name_with_spaces = \
+                        obj_name_underscore_replaced_by_spaces.title()
+                    cls_name = cls_name_with_spaces.replace(' ', '')
+                    cls_name_access = cls_name + 'Access'
+
+                    # Assigning the class-access to the variable
+                    cls = globals().get(cls_name_access)
+                    # class-model object creation by class-access
+                    obj = cls(slug=obj_slug).object_by_slug_or_404()
+                    break
+                # if there is no object class name
+                # in the argument name
+                elif 'slug' in arg_key:
+                    slug_arg_name = arg_key
+                    obj = BaseAccess(
+                        slug=arg_value).object_from_entire_db_by_slug()
+                    cls_name = obj.__class__.__name__
+                    obj_name = cls_name.lower()
                     break
 
-            if slug_arg_name is None:
-                return render_template('404.html')
-
-            # Converting argument name to class-access name
-            obj_name = slug_arg_name[:slug_arg_name.find('_slug')]
-            obj_name_underscore_replaced_by_spaces = obj_name.replace('_', ' ')
-            cls_name_with_spaces = \
-                obj_name_underscore_replaced_by_spaces.title()
-            cls_name = cls_name_with_spaces.replace(' ', '')
-            cls_name_access = cls_name + 'Access'
-
-            # Assigning the class-access to the variable
-            cls = globals().get(cls_name_access)
-            # class-access object creation
-            obj = cls(slug=obj_slug).object_by_slug_or_404()
+                # if the name of the argument does not have 'slug'
+                else:
+                    return render_template('404.html')
 
             obj_id = obj.id
 
@@ -620,7 +645,7 @@ def role_validation_object_return_transform_slug_to_id(myself=None,
 
             # Getting company_id and corporation_id
             # depending on the object class
-            if cls.__name__ == 'ClientAccess':
+            if cls_name == 'Client':
                 corporation_id = obj.corporation_id
                 if myself and current_user.clients.filter(
                         Client.id == obj_id,
@@ -629,7 +654,7 @@ def role_validation_object_return_transform_slug_to_id(myself=None,
                     kwargs.update({'valid_myself': True})
                     return func(**kwargs)
 
-            elif cls.__name__ == 'EmployeeAccess':
+            elif cls_name == 'Employee':
                 company_id = obj.company_id
                 corporation_id = obj.corporation_id
                 if myself and current_user.employees.filter(
@@ -639,7 +664,7 @@ def role_validation_object_return_transform_slug_to_id(myself=None,
                     kwargs.update({'valid_myself': True})
                     return func(**kwargs)
 
-            elif cls.__name__ == 'AdminAccess':
+            elif cls_name == 'Admin':
                 corporation_id = obj.corporation_id
                 if myself and current_user.admins.filter(
                         Admin.id == obj_id,
@@ -648,15 +673,15 @@ def role_validation_object_return_transform_slug_to_id(myself=None,
                     kwargs.update({'valid_myself': True})
                     return func(**kwargs)
 
-            elif cls.__name__ == 'CorporationAccess':
+            elif cls_name == 'Corporation':
                 corporation_id = obj_id
 
-            elif cls.__name__ == 'CompanyAccess':
+            elif cls_name == 'Company':
                 company_id = obj_id
                 corporation_id = obj.corporation_id
 
-            elif cls.__name__ == 'GroupClientPlacesAccess' \
-                    or cls.__name__ == 'ClientPlaceAccess':
+            elif cls_name == 'GroupClientPlaces' \
+                    or cls_name == 'ClientPlace':
                 company_id = obj.company_id
                 corporation_id = CompanyAccess(
                     id=company_id).object_by_id().corporation_id
@@ -673,9 +698,9 @@ def role_validation_object_return_transform_slug_to_id(myself=None,
                 current_user_role = admin.role_id
 
             else:
-                if cls.__name__ == 'ClientAccess' \
-                        or cls.__name__ == 'CorporationAccess' \
-                        or cls.__name__ == 'AdminAccess':
+                if cls_name == 'Client' \
+                        or cls_name == 'Corporation' \
+                        or cls_name == 'Admin':
                     employee = current_user.employees.filter(
                         Employee.corporation_id == corporation_id,
                         Employee.active == True,

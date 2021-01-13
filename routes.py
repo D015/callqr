@@ -46,7 +46,28 @@ from forms import ClientPlaceForm, \
 
 from app import app, db
 
-from models import User, Admin, Employee, Company
+from models import User
+
+
+def remove_object(obj=None, path_for_url='index', kwargs_for_url={}):
+    next_page = request.args.get('next')
+    form = RemoveObjectForm(obj)
+    if request.method == 'POST':
+        if form.submit.data and form.validate_on_submit():
+            remote_obj_id = BaseAccess(_obj=obj).remove_object()
+            if remote_obj_id:
+                flash('Your changes have been saved.')
+            else:
+                flash('Something went wrong!')
+            return redirect(url_for(path_for_url, **kwargs_for_url))
+        elif form.cancel.data:
+            if next_page:
+                return redirect(next_page)
+        else:
+            redirect(url_for('profile'))
+
+    return render_template('remove_object.html', obj=obj, title='Remove Object',
+                           form=form)
 
 
 # Last time visits for user
@@ -71,6 +92,7 @@ def login():
         return redirect(url_for('index'))
     form = LoginForm()
     if form.validate_on_submit():
+        # todo change query by UserAccess
         user = User.query.filter(or_(User.username == form.username.data,
                                      User.email == form.username.data)).first()
         if user is None or not user.check_password(form.password.data):
@@ -157,19 +179,9 @@ def edit_user():
 @login_required
 def remove_user():
     obj = UserAccess().the_current_user_of_model()
-    form = RemoveObjectForm(obj)
-    next_page = request.args.get('next')
-    if request.method == 'POST':
-        if form.submit.data and form.validate_on_submit():
-            BaseAccess(_obj=obj).remove_object()
-            flash('Your changes have been saved.')
-            return redirect(url_for('index'))
-        elif form.cancel.data:
-            if next_page:
-                return redirect(next_page)
 
-    return render_template('remove_object.html', obj=obj, title='Remove User',
-                           form=form)
+    return remove_object(obj=obj)
+
 
 # Create admin view
 @app.route('/create_admin/<corporation_slug_to_id>',
@@ -291,24 +303,14 @@ def edit_admin(admin_slug_to_id, **kwargs):
 @role_validation_object_return_transform_slug_to_id(myself=False, id_diff=-100,
                                                     another_id_limit=600)
 def remove_admin(admin_slug_to_id, **kwargs):
-    obj = kwargs['admin']
-    next_page = request.args.get('next')
-    form = RemoveObjectForm(obj)
-    if request.method == 'POST':
-        if form.submit.data and form.validate_on_submit():
-            BaseAccess(_obj=obj).remove_object()
-            flash('Your changes have been saved.')
-            return redirect(url_for('index'))
-            if next_page:
-                return redirect(next_page)
-        elif form.cancel.data:
-            if next_page:
-                return redirect(next_page)
-        else:
-            redirect(url_for('profile'))
 
-    return render_template('remove_object.html', obj=obj, title='Remove Object',
-                           form=form)
+    corporation_slug = CorporationAccess(
+        id=kwargs['corporation_id']).slug_by_id()
+
+    return remove_object(obj=kwargs['admin'],
+                         path_for_url='corporation',
+                         kwargs_for_url={
+                             'corporation_slug_to_id': corporation_slug})
 
 
 # Create employee view
@@ -559,7 +561,6 @@ def company(company_slug_to_id, **kwargs):
     groups_client_places_without = []
     groups_client_places_for_admin = []
 
-
     for group_client_places in groups_client_places:
         # for admin
         if id_employee_of_current_user is None:
@@ -567,8 +568,8 @@ def company(company_slug_to_id, **kwargs):
 
         # for employee with relationship
         elif EmployeeAccess(
-            id=id_employee_of_current_user,
-            group_client_places_id=group_client_places.id). \
+                id=id_employee_of_current_user,
+                group_client_places_id=group_client_places.id). \
                 is_relationship_employee_to_group_client_places():
 
             groups_client_places_with_current_user.append(group_client_places)
@@ -677,13 +678,12 @@ def create_group_client_places_view(company_slug_to_id, **kwargs):
 # Create by myself relationship to group client places
 @app.route(
     '/_create_myself_to_group_client_places/<group_client_places_slug_to_id>',
-           endpoint='create_by_myself_relationship_to_group_client_places',
-           methods=['GET', 'POST'])
+    endpoint='create_by_myself_relationship_to_group_client_places',
+    methods=['GET', 'POST'])
 @login_required
 @role_validation_object_return_transform_slug_to_id(role_id=800)
 def create_by_myself_relationship_to_group_client_places(
         group_client_places_slug_to_id, **kwargs):
-
     next_page = request.args.get('next')
 
     group_client_places = kwargs['group_client_places']
@@ -705,13 +705,12 @@ def create_by_myself_relationship_to_group_client_places(
 # Create by myself relationship to group client places
 @app.route(
     '/_remove_myself_to_group_client_places/<group_client_places_slug_to_id>',
-           endpoint='remove_by_myself_relationship_to_group_client_places',
-           methods=['GET', 'POST'])
+    endpoint='remove_by_myself_relationship_to_group_client_places',
+    methods=['GET', 'POST'])
 @login_required
 @role_validation_object_return_transform_slug_to_id(role_id=800)
 def remove_by_myself_relationship_to_group_client_places(
         group_client_places_slug_to_id, **kwargs):
-
     next_page = request.args.get('next')
 
     group_client_places = kwargs['group_client_places']
@@ -830,7 +829,6 @@ def create_client_place_view(company_slug_to_id, **kwargs):
 @role_validation_object_return_transform_slug_to_id(role_id=800)
 def create_by_myself_relationship_to_client_place(
         client_place_slug_to_id, **kwargs):
-
     next_page = request.args.get('next')
 
     client_place = kwargs['client_place']
@@ -851,13 +849,12 @@ def create_by_myself_relationship_to_client_place(
 # Remove by myself relationship to client place
 @app.route(
     '/_remove_myself_to_client_place/<client_place_slug_to_id>',
-           endpoint='remove_by_myself_relationship_to_client_place',
-           methods=['GET', 'POST'])
+    endpoint='remove_by_myself_relationship_to_client_place',
+    methods=['GET', 'POST'])
 @login_required
 @role_validation_object_return_transform_slug_to_id(role_id=800)
 def remove_by_myself_relationship_to_client_place(
         client_place_slug_to_id, **kwargs):
-
     next_page = request.args.get('next')
 
     client_place = kwargs['client_place']
@@ -969,6 +966,7 @@ def test():
     # for i in m.query_class:
     #     print('---', i)
     # ________________________________________________________
-    obj = BaseAccess(slug='68e16fffd7f24e71b153177e412f1376').object_from_entire_db_by_slug()
+    obj = BaseAccess(
+        slug='68e16fffd7f24e71b153177e412f1376').object_from_entire_db_by_slug()
     print(obj)
     return render_template('index.html', title='Home')

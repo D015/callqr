@@ -955,15 +955,20 @@ def test():
     # print(obj2)
     # ____________________________________
     # m = db.Model
-    # print(m.metadata)
+    # print(m.__dict__)
     # print(m._decl_class_registry.values())
-    for model_i in db.Model._decl_class_registry.values():
-        if hasattr(model_i, 'slug'):
-            obj_i = model_i.query.filter_by(slug='68e16fffd7f24e71b153177e412f1376').first()
-            if obj_i:
-                print(obj_i)
-                break
+    # for model_i in db.Model._decl_class_registry.values():
+    #     if hasattr(model_i, 'slug'):
+    #         obj_i = model_i.query.filter_by(slug='68e16fffd7f24e71b153177e412f1376').first()
+    #         if obj_i:
+    #             print(obj_i)
+    #             print(obj_i.__class__.__name__)
+    #
+    #             break
+    # _____________________________________________
     # for i in m.query_class:
     #     print('---', i)
-
+    # ________________________________________________________
+    obj = BaseAccess(slug='68e16fffd7f24e71b153177e412f1376').object_from_entire_db_by_slug()
+    print(obj)
     return render_template('index.html', title='Home')

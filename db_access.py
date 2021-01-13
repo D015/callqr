@@ -47,6 +47,12 @@ class BaseAccess:
         obj = self.model.query.filter_by(id=self.id).first_or_404()
         return obj
 
+    def object_from_entire_db_by_slug(self):
+        for model_i in db.Model._decl_class_registry.values():
+            if hasattr(model_i, 'slug'):
+                obj_i = model_i.query.filter_by(slug=self.slug).first()
+                if obj_i:
+                    return obj_i
 
 class UserAccess(BaseAccess):
     def __init__(self, id=None, slug=None, _obj=None, username=None, email=None,

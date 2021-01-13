@@ -164,7 +164,7 @@ class Corporation(BaseModel, db.Model):
     employees = db.relationship(
         'Employee', cascade='all,delete', backref='corporation', lazy='dynamic')
     clients = db.relationship(
-        'Client', backref='corporation', lazy='dynamic')
+        'Client', cascade='all,delete', backref='corporation', lazy='dynamic')
     companies = db.relationship(
         'Company', cascade='all,delete', backref='corporation', lazy='dynamic')
 

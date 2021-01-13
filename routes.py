@@ -49,7 +49,8 @@ from app import app, db
 from models import User
 
 
-def remove_object(obj=None, path_for_url='index', kwargs_for_url={}):
+def remove_object(obj=None, func_name_for_redirected_url='index',
+                  kwargs_for_redirected_url={}):
     next_page = request.args.get('next')
     form = RemoveObjectForm(obj)
     if request.method == 'POST':
@@ -59,7 +60,8 @@ def remove_object(obj=None, path_for_url='index', kwargs_for_url={}):
                 flash('Your changes have been saved.')
             else:
                 flash('Something went wrong!')
-            return redirect(url_for(path_for_url, **kwargs_for_url))
+            return redirect(url_for(func_name_for_redirected_url,
+                                    **kwargs_for_redirected_url))
         elif form.cancel.data:
             if next_page:
                 return redirect(next_page)
@@ -308,8 +310,8 @@ def remove_admin(admin_slug_to_id, **kwargs):
         id=kwargs['corporation_id']).slug_by_id()
 
     return remove_object(obj=kwargs['admin'],
-                         path_for_url='corporation',
-                         kwargs_for_url={
+                         func_name_for_redirected_url='corporation',
+                         kwargs_for_redirected_url={
                              'corporation_slug_to_id': corporation_slug})
 
 
@@ -444,6 +446,24 @@ def edit_employee(employee_slug_to_id, **kwargs):
                            form=form, valid_myself=kwargs.get('valid_myself'))
 
 
+# Employee deleter view
+@app.route('/remove_employee/<employee_slug_to_id>',
+           endpoint='remove_employee',
+           methods=['GET', 'POST'])
+@login_required
+@role_validation_object_return_transform_slug_to_id(myself=False, id_diff=-100,
+                                                    another_id_limit=600)
+def remove_employee(employee_slug_to_id, **kwargs):
+
+    company_slug = CompanyAccess(
+        id=kwargs['company_id']).slug_by_id()
+
+    return remove_object(obj=kwargs['employee'],
+                         func_name_for_redirected_url='company',
+                         kwargs_for_redirected_url={
+                             'company_slug_to_id': company_slug})
+
+
 # Create corporation view
 @app.route('/create_corporation', methods=['GET', 'POST'])
 @login_required
@@ -510,6 +530,18 @@ def edit_corporation(corporation_slug_to_id, **kwargs):
         form.about.data = corporation.about
     return render_template('edit_corporation.html', title='Edit Corporation',
                            form=form)
+
+
+# Corporation deleter view
+@app.route('/remove_corporation/<corporation_slug_to_id>',
+           endpoint='remove_corporation',
+           methods=['GET', 'POST'])
+@login_required
+@role_validation_object_return_transform_slug_to_id(role_id=100)
+def remove_corporation(corporation_slug_to_id, **kwargs):
+
+    return remove_object(obj=kwargs['corporation'],
+                         func_name_for_redirected_url='profile')
 
 
 # Create company view
@@ -642,6 +674,22 @@ def edit_company(company_slug_to_id, **kwargs):
                            title='Edit company{}'.format(company.name),
                            form=form)
 
+
+# Company deleter view
+@app.route('/remove_company/<company_slug_to_id>',
+           endpoint='remove_company',
+           methods=['GET', 'POST'])
+@login_required
+@role_validation_object_return_transform_slug_to_id(role_id=200)
+def remove_company(company_slug_to_id, **kwargs):
+
+    corporation_slug = CorporationAccess(
+        id=kwargs['corporation_id']).slug_by_id()
+
+    return remove_object(obj=kwargs['company'],
+                         func_name_for_redirected_url='corporation',
+                         kwargs_for_redirected_url={
+                             'corporation_slug_to_id': corporation_slug})
 
 # Create group client places view
 @app.route(
@@ -778,6 +826,22 @@ def edit_group_client_places(group_client_places_slug_to_id, **kwargs):
                                group_client_places.name),
                            form=form)
 
+
+# Group client places deleter view
+@app.route('/remove_group_client_places/<group_client_places_slug_to_id>',
+           endpoint='remove_group_client_places',
+           methods=['GET', 'POST'])
+@login_required
+@role_validation_object_return_transform_slug_to_id(role_id=600)
+def remove_group_client_places(group_client_places_slug_to_id, **kwargs):
+
+    company_slug = CompanyAccess(
+        id=kwargs['company_id']).slug_by_id()
+
+    return remove_object(obj=kwargs['group_client_places'],
+                         func_name_for_redirected_url='company',
+                         kwargs_for_redirected_url={
+                             'company_slug_to_id': company_slug})
 
 # Create client place view
 @app.route('/create_client_place/<company_slug_to_id>',
@@ -923,6 +987,23 @@ def edit_client_place(client_place_slug_to_id, **kwargs):
                            title='Edit client place {}'.format(
                                client_place.name),
                            form=form)
+
+
+# Client place deleter view
+@app.route('/remove_client_place/<client_place_slug_to_id>',
+           endpoint='remove_client_place',
+           methods=['GET', 'POST'])
+@login_required
+@role_validation_object_return_transform_slug_to_id(role_id=600)
+def remove_client_place(client_place_slug_to_id, **kwargs):
+
+    company_slug = CompanyAccess(
+        id=kwargs['company_id']).slug_by_id()
+
+    return remove_object(obj=kwargs['client_place'],
+                         func_name_for_redirected_url='company',
+                         kwargs_for_redirected_url={
+                             'company_slug_to_id': company_slug})
 
 
 @app.route('/test_', methods=['GET', 'POST'])

@@ -13,6 +13,9 @@
             <td>
                 <a href="{{  url_for('edit_client_place', client_place_slug_to_id=client_place.slug) }}">Edit</a>
             </td>
+            <td>
+                <a href="{{  url_for('remove_client_place', client_place_slug_to_id=client_place.slug, next=request.path) }}">Delete</a>
+            </td>
         </tr>
     </table>
 

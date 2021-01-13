@@ -14,6 +14,9 @@
                 <a href="{{  url_for('edit_group_client_places',
                 group_client_places_slug_to_id=group_client_places.slug) }}">Edit</a>
             </td>
+            <td>
+                <a href="{{  url_for('remove_group_client_places', group_client_places_slug_to_id=group_client_places.slug, next=request.path) }}">Delete</a>
+            </td>
         </tr>
     </table>
 

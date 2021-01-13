@@ -14,6 +14,7 @@ from wtforms.validators import DataRequired, \
     Email, \
     Length, InputRequired
 from flask_login import current_user
+from wtforms.widgets import CheckboxInput
 
 from models import User, \
     Company, \
@@ -29,6 +30,15 @@ from db_access import \
     CompanyAccess, \
     GroupClientPlacesAccess, \
     ClientPlaceAccess, UserAccess, BaseAccess
+
+
+class ActiveArchivedForm(object):
+    active = BooleanField('Active')
+    archived = BooleanField('Archived')
+
+    def validate_active(self, active):
+        if active.data == self.archived.data:
+            raise ValidationError('Please ... (')
 
 
 class LoginForm(FlaskForm):
@@ -172,9 +182,10 @@ class EmployeeForm(FlaskForm):
         if employees is not None:
             raise ValidationError('Please use a different Email.')
 
+
 # todo make the same size for all about fields
 # Form editor Employee
-class EditEmployeeForm(FlaskForm):
+class EditEmployeeForm(ActiveArchivedForm, FlaskForm):
     first_name = StringField('First name', validators=[DataRequired()])
     last_name = StringField('Last name')
     about = TextAreaField('About group',
@@ -215,9 +226,6 @@ class EditEmployeeForm(FlaskForm):
 
             if employees is not None:
                 raise ValidationError('Please use a different Phone.')
-
-
-
 
         # if phone.data is not None and phone.data.strip() != '' \
         #         and phone.data.strip().isdigit() is not True:
@@ -395,7 +403,6 @@ class EditClientPlaceForm(FlaskForm):
 
 # Form editor Employee
 class RemoveObjectForm(FlaskForm):
-
     submit = SubmitField('Submit')
     cancel = SubmitField('Cancel')
 

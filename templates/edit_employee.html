@@ -49,6 +49,21 @@
             </p>
         {% endif %}
 
+        <p>
+            {{ form.active.label }}<br>
+            {{ form.active }}<br>
+            {% for error in form.active.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.archived.label }}<br>
+            {{ form.archived }}<br>
+            {% for error in form.archived.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+
         <p>{{ form.submit() }}</p>
     </form>
 {% endblock %}

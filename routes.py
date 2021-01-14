@@ -46,7 +46,7 @@ from forms import ClientPlaceForm, \
 
 from app import app, db
 
-from models import User
+from models import User, Employee, GroupClientPlaces
 
 
 def remove_object(obj=None, func_name_for_redirected_url='index',
@@ -631,7 +631,7 @@ def company(company_slug_to_id, **kwargs):
         # for employee without relationship
         else:
             client_places_without.append(client_place)
-    print(client_places_for_admin)
+
     # Employee
     employees = EmployeeAccess(
         company_id=company_id).employees_by_company_id() \
@@ -1047,7 +1047,19 @@ def test():
     # for i in m.query_class:
     #     print('---', i)
     # ________________________________________________________
-    obj = BaseAccess(
-        slug='68e16fffd7f24e71b153177e412f1376').object_from_entire_db_by_slug()
-    print(obj)
+    # obj = BaseAccess(
+    #     slug='68e16fffd7f24e71b153177e412f1376').object_from_entire_db_by_slug()
+    # print(obj)
+    # ______________________________________________________
+    em = EmployeeAccess().employees_of_current_user().\
+        filter(Employee.company_id == 15).first()
+
+    gs = EmployeeAccess(_obj=em).groups_client_places_without_relationship_this_employee()
+
+    print(em)
+    print(gs)
+    # gcp = GroupClientPlaces.query.filter_by(id=21).first()
+    # print(gcp)
+    # print(gcp.employees.count())
+
     return render_template('index.html', title='Home')

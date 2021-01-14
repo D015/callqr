@@ -208,8 +208,8 @@ class EmployeeAccess(BaseAccess):
             email=current_user.email).first()
 
         if employee and current_user.archived is False and current_user.active:
-            current_user_employee_corporation = current_user.admins.filter_by(
-                corporation_id=employee.corporation_id).first()
+            current_user_employee_corporation = current_user.employees. \
+                filter_by(corporation_id=employee.corporation_id).first()
 
             if current_user_employee_corporation is None:
                 employee.user_id = current_user.id
@@ -385,9 +385,9 @@ class EmployeeAccess(BaseAccess):
         return current_user.employees.filter_by(active=True, archived=False)
 
     def employees_by_company_id(self):
-        empoyees = Employee.query.filter_by(
+        employees = Employee.query.filter_by(
             company_id=self.company_id).order_by(Employee.last_name.asc())
-        return empoyees
+        return employees
 
     def employees_pending_of_current_user(self):
         employees_pending = Employee.query.filter_by(email=current_user.email,
@@ -395,6 +395,17 @@ class EmployeeAccess(BaseAccess):
                                                      archived=False,
                                                      user_id=None)
         return employees_pending
+
+    def groups_client_places_without_relationship_this_employee(self):
+        groups_client_places = GroupClientPlaces.query.filter(
+            GroupClientPlaces.company_id == self._obj.company_id,
+            ~GroupClientPlaces.employees.any()).union(
+        GroupClientPlaces.query.filter(
+            GroupClientPlaces.company_id == self._obj.company_id).
+            join(employees_to_groups_client_places,
+                 (employees_to_groups_client_places.c.employee_id != \
+                  self._obj.id))).all()
+        return groups_client_places
 
 
 class ClientAccess(BaseAccess):

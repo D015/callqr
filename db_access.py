@@ -398,13 +398,8 @@ class EmployeeAccess(BaseAccess):
 
     def groups_client_places_without_relationship_this_employee(self):
         groups_client_places = GroupClientPlaces.query.filter(
-            GroupClientPlaces.company_id == self._obj.company_id,
-            ~GroupClientPlaces.employees.any()).union(
-        GroupClientPlaces.query.filter(
-            GroupClientPlaces.company_id == self._obj.company_id).
-            join(employees_to_groups_client_places,
-                 (employees_to_groups_client_places.c.employee_id != \
-                  self._obj.id))).all()
+                GroupClientPlaces.company_id == self._obj.company_id,
+                ~GroupClientPlaces.employees.contains(self._obj)).all()
         return groups_client_places
 
 

@@ -26,7 +26,8 @@ from db_access import \
     GroupClientPlacesAccess, \
     ClientPlaceAccess, \
     ClientAccess, \
-    role_validation_object_return_transform_slug_to_id, BaseAccess
+    role_validation_object_return_transform_slug_to_id, BaseAccess, \
+    BaseCompanyAccess
 from email_my import send_call_qr_email
 
 from forms import ClientPlaceForm, \
@@ -48,31 +49,11 @@ from app import app, db
 
 from models import User, Employee, GroupClientPlaces
 
-
-def remove_object(obj=None, func_name_for_redirected_url='index',
-                  kwargs_for_redirected_url={}):
-    next_page = request.args.get('next')
-    form = RemoveObjectForm(obj)
-    if request.method == 'POST':
-        if form.submit.data and form.validate_on_submit():
-            remote_obj_id = BaseAccess(_obj=obj).remove_object()
-            if remote_obj_id:
-                flash('Your changes have been saved.')
-            else:
-                flash('Something went wrong!')
-            return redirect(url_for(func_name_for_redirected_url,
-                                    **kwargs_for_redirected_url))
-        elif form.cancel.data:
-            if next_page:
-                return redirect(next_page)
-        else:
-            redirect(url_for('profile'))
-
-    return render_template('remove_object.html', obj=obj, title='Remove Object',
-                           form=form)
-
-
 # Last time visits for user
+from utils_routes import remove_object, groups_client_places_for_employee, \
+    client_places_for_employee
+
+
 @app.before_request
 def before_request():
     if current_user.is_authenticated:
@@ -305,7 +286,6 @@ def edit_admin(admin_slug_to_id, **kwargs):
 @role_validation_object_return_transform_slug_to_id(myself=False, id_diff=-100,
                                                     another_id_limit=600)
 def remove_admin(admin_slug_to_id, **kwargs):
-
     corporation_slug = CorporationAccess(
         id=kwargs['corporation_id']).slug_by_id()
 
@@ -390,14 +370,27 @@ def employee(employee_slug_to_id, **kwargs):
 
     company = CompanyAccess(id=employee.company_id).object_by_id()
 
-    groups_client_places = employee.groups_client_places
+    # Groups client places
+    gcp = groups_client_places_for_employee(kwargs['company_id'],
+                                            employee=employee)
 
-    client_places = employee.client_places
+    # Client places
+    cp = client_places_for_employee(kwargs['company_id'],
+                                    employee=employee)
 
     return render_template('employee.html', employee_id=employee_slug_to_id,
                            employee=employee, company=company,
-                           groups_client_places=groups_client_places,
-                           client_places=client_places)
+                           groups_client_places_for_admin=gcp[
+                               'groups_client_places_for_admin'],
+                           groups_client_places_with_current_user=
+                           gcp['groups_client_places_with_current_user'],
+                           groups_client_places_without=gcp[
+                               'groups_client_places_without'],
+                           client_places_with_current_user=cp[
+                               'client_places_with_current_user'],
+                           client_places_without=cp['client_places_without'],
+                           client_places_for_admin=cp[
+                               'client_places_for_admin'])
 
 
 # todo cancel
@@ -454,7 +447,6 @@ def edit_employee(employee_slug_to_id, **kwargs):
 @role_validation_object_return_transform_slug_to_id(myself=False, id_diff=-100,
                                                     another_id_limit=600)
 def remove_employee(employee_slug_to_id, **kwargs):
-
     company_slug = CompanyAccess(
         id=kwargs['company_id']).slug_by_id()
 
@@ -539,7 +531,6 @@ def edit_corporation(corporation_slug_to_id, **kwargs):
 @login_required
 @role_validation_object_return_transform_slug_to_id(role_id=100)
 def remove_corporation(corporation_slug_to_id, **kwargs):
-
     return remove_object(obj=kwargs['corporation'],
                          func_name_for_redirected_url='profile')
 
@@ -585,43 +576,13 @@ def company(company_slug_to_id, **kwargs):
     employee_of_current_user = EmployeeAccess(
         company_id=company_id).employee_of_current_user_by_company_id()
 
-    # Groups client places:
-    # - for admin
-    groups_client_places_for_admin = GroupClientPlacesAccess(
-        company_id=company_slug_to_id).groups_client_places_by_company_id() \
-        if employee_of_current_user is None else []
+    # Groups client places
+    gcp = groups_client_places_for_employee(company_id,
+                                            employee=employee_of_current_user)
 
-    # - for employee
-    groups_client_places_with_current_user = []
-    groups_client_places_without = []
-    if employee_of_current_user:
-        # - for employee with relationship
-        groups_client_places_with_current_user = EmployeeAccess(
-            _obj=employee_of_current_user).\
-            groups_client_places_with_relationship_this_employee()
-        # for employee without relationship
-        groups_client_places_without = EmployeeAccess(
-            _obj=employee_of_current_user).\
-            groups_client_places_without_relationship_this_employee()
-
-        # Client places:
-        # - for admin
-    client_places_for_admin = ClientPlaceAccess(
-        company_id=company_slug_to_id).client_places_by_company_id() \
-        if employee_of_current_user is None else []
-
-    # - for employee
-    client_places_with_current_user = []
-    client_places_without = []
-    if employee_of_current_user:
-        # - for employee with relationship
-        client_places_with_current_user = EmployeeAccess(
-            _obj=employee_of_current_user). \
-            client_places_with_relationship_this_employee()
-        # for employee without relationship
-        client_places_without = EmployeeAccess(
-            _obj=employee_of_current_user). \
-            client_places_without_relationship_this_employee()
+    # Client places
+    cp = client_places_for_employee(company_id,
+                                    employee=employee_of_current_user)
 
     # Employee
     employees = EmployeeAccess(
@@ -629,14 +590,14 @@ def company(company_slug_to_id, **kwargs):
         if kwargs['valid_role_id'] else None
 
     return render_template(
-        'company.html', company=kwargs['company'],
-        groups_client_places_for_admin=groups_client_places_for_admin,
+        'company.html', company=kwargs['company'], employees=employees,
+        groups_client_places_for_admin=gcp['groups_client_places_for_admin'],
         groups_client_places_with_current_user=
-        groups_client_places_with_current_user,
-        groups_client_places_without=groups_client_places_without,
-        client_places_with_current_user=client_places_with_current_user,
-        client_places_without=client_places_without,
-        client_places_for_admin=client_places_for_admin)
+        gcp['groups_client_places_with_current_user'],
+        groups_client_places_without=gcp['groups_client_places_without'],
+        client_places_with_current_user=cp['client_places_with_current_user'],
+        client_places_without=cp['client_places_without'],
+        client_places_for_admin=cp['client_places_for_admin'])
 
 
 # todo cancel
@@ -671,7 +632,6 @@ def edit_company(company_slug_to_id, **kwargs):
 @login_required
 @role_validation_object_return_transform_slug_to_id(role_id=200)
 def remove_company(company_slug_to_id, **kwargs):
-
     corporation_slug = CorporationAccess(
         id=kwargs['corporation_id']).slug_by_id()
 
@@ -679,6 +639,7 @@ def remove_company(company_slug_to_id, **kwargs):
                          func_name_for_redirected_url='corporation',
                          kwargs_for_redirected_url={
                              'corporation_slug_to_id': corporation_slug})
+
 
 # Create group client places view
 @app.route(
@@ -714,20 +675,25 @@ def create_group_client_places_view(company_slug_to_id, **kwargs):
 # TODO check compliance conditions
 # Create by myself relationship to group client places
 @app.route(
-    '/_create_myself_to_group_client_places/<group_client_places_slug_to_id>',
-    endpoint='create_by_myself_relationship_to_group_client_places',
+    '/create_relationship_emp_to_grp_cln_plcs/<group_client_places_slug_to_id>',
+    endpoint='create_relationship_emp_to_grp_cln_plcs',
     methods=['GET', 'POST'])
 @login_required
 @role_validation_object_return_transform_slug_to_id(role_id=800)
-def create_by_myself_relationship_to_group_client_places(
+def create_relationship_emp_to_grp_cln_plcs(
         group_client_places_slug_to_id, **kwargs):
     next_page = request.args.get('next')
 
-    group_client_places = kwargs['group_client_places']
+    employee_slug = request.args.get('employee_slug_to_id')
+    if employee_slug:
+        employee = EmployeeAccess(slug=employee_slug).object_id_by_slug()
+    else:
+        employee = EmployeeAccess(company_id=kwargs['company_id']).\
+            employee_of_current_user_by_company_id()
 
-    result = EmployeeAccess(
-        group_client_places_id=group_client_places.id). \
-        create_relationship_group_client_places_to_employee()
+    result = BaseCompanyAccess(one_or_many1_obj=kwargs['group_client_places'],
+                               many2_obj=employee). \
+        create_relationship_in_company_one_to_many()
 
     flash(result[1])
     if next_page:
@@ -754,7 +720,7 @@ def remove_by_myself_relationship_to_group_client_places(
 
     result = EmployeeAccess(
         group_client_places_id=group_client_places.id). \
-        remove_relationship_group_client_places_to_employee()
+        remove_relationship_one_or_many_to_many()
 
     flash(result[1])
     if next_page:
@@ -823,7 +789,6 @@ def edit_group_client_places(group_client_places_slug_to_id, **kwargs):
 @login_required
 @role_validation_object_return_transform_slug_to_id(role_id=600)
 def remove_group_client_places(group_client_places_slug_to_id, **kwargs):
-
     company_slug = CompanyAccess(
         id=kwargs['company_id']).slug_by_id()
 
@@ -831,6 +796,7 @@ def remove_group_client_places(group_client_places_slug_to_id, **kwargs):
                          func_name_for_redirected_url='company',
                          kwargs_for_redirected_url={
                              'company_slug_to_id': company_slug})
+
 
 # Create client place view
 @app.route('/create_client_place/<company_slug_to_id>',
@@ -985,7 +951,6 @@ def edit_client_place(client_place_slug_to_id, **kwargs):
 @login_required
 @role_validation_object_return_transform_slug_to_id(role_id=600)
 def remove_client_place(client_place_slug_to_id, **kwargs):
-
     company_slug = CompanyAccess(
         id=kwargs['company_id']).slug_by_id()
 
@@ -1040,15 +1005,25 @@ def test():
     #     slug='68e16fffd7f24e71b153177e412f1376').object_from_entire_db_by_slug()
     # print(obj)
     # ______________________________________________________
-    em = EmployeeAccess().employees_of_current_user().\
-        filter(Employee.company_id == 15).first()
-
-    gs = EmployeeAccess(_obj=em).groups_client_places_without_relationship_this_employee()
-
-    print(em)
-    print(gs)
+    # em = EmployeeAccess().employees_of_current_user(). \
+    #     filter(Employee.company_id == 15).first()
+    #
+    # gs = EmployeeAccess(
+    #     _obj=em).groups_client_places_without_relationship_this_employee()
+    #
+    # print(em)
+    # print(gs)
+    # _________________________________________________
     # gcp = GroupClientPlaces.query.filter_by(id=21).first()
     # print(gcp)
     # print(gcp.employees.count())
+    # __________________________________________________________
+    em = EmployeeAccess().employees_of_current_user(). \
+            filter(Employee.company_id == 15).first()
+
+    gs = getattr(em, 'groups_client_places').all()
+
+    print(em)
+    print(gs)
 
     return render_template('index.html', title='Home')

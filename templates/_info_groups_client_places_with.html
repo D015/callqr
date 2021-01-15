@@ -11,7 +11,7 @@
                 -
 
                 <a href="{{ url_for('remove_by_myself_relationship_to_group_client_places',
-                group_client_places_slug_to_id=group_client_places_with.slug, next=request.path) }}">Disconnect me</a>
+                group_client_places_slug_to_id=group_client_places_with.slug, next=request.path) }}">Disconnect</a>
             </p>
         {% endfor %}
     {% endif %}
@@ -25,8 +25,8 @@
 
                 -
 
-            <a href="{{ url_for('create_by_myself_relationship_to_group_client_places',
-                group_client_places_slug_to_id=group_client_places_without.slug, next=request.path) }}">Connect with me</a>
+            <a href="{{ url_for('create_relationship_emp_to_grp_cln_plcs',
+                group_client_places_slug_to_id=group_client_places_without.slug, next=request.path) }}">Connect</a>
             </p>
         {% endfor %}
     {% endif %}

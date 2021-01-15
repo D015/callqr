@@ -582,55 +582,46 @@ def create_company_view(corporation_slug_to_id, **kwargs):
 def company(company_slug_to_id, **kwargs):
     company_id = kwargs['company_id']
 
-    id_employee_of_current_user = \
-        EmployeeAccess(company_id=company_id).id_employee_of_current_user()
+    employee_of_current_user = EmployeeAccess(
+        company_id=company_id).employee_of_current_user_by_company_id()
 
-    # Groups client places
-    groups_client_places = GroupClientPlacesAccess(
-        company_id=company_slug_to_id).groups_client_places_by_company_id()
+    # Groups client places:
+    # - for admin
+    groups_client_places_for_admin = GroupClientPlacesAccess(
+        company_id=company_slug_to_id).groups_client_places_by_company_id() \
+        if employee_of_current_user is None else []
 
+    # - for employee
     groups_client_places_with_current_user = []
     groups_client_places_without = []
-    groups_client_places_for_admin = []
-
-    for group_client_places in groups_client_places:
-        # for admin
-        if id_employee_of_current_user is None:
-            groups_client_places_for_admin.append(group_client_places)
-
-        # for employee with relationship
-        elif EmployeeAccess(
-                id=id_employee_of_current_user,
-                group_client_places_id=group_client_places.id). \
-                is_relationship_employee_to_group_client_places():
-
-            groups_client_places_with_current_user.append(group_client_places)
+    if employee_of_current_user:
+        # - for employee with relationship
+        groups_client_places_with_current_user = EmployeeAccess(
+            _obj=employee_of_current_user).\
+            groups_client_places_with_relationship_this_employee()
         # for employee without relationship
-        else:
-            groups_client_places_without.append(group_client_places)
+        groups_client_places_without = EmployeeAccess(
+            _obj=employee_of_current_user).\
+            groups_client_places_without_relationship_this_employee()
 
-    # Client places
-    client_places = ClientPlaceAccess(
-        company_id=company_id).client_places_by_company_id()
+        # Client places:
+        # - for admin
+    client_places_for_admin = ClientPlaceAccess(
+        company_id=company_slug_to_id).client_places_by_company_id() \
+        if employee_of_current_user is None else []
+
+    # - for employee
     client_places_with_current_user = []
     client_places_without = []
-    client_places_for_admin = []
-
-    for client_place in client_places:
-        # for admin
-        if id_employee_of_current_user is None:
-            client_places_for_admin.append(client_place)
-
-        # for employee with relationship
-        elif EmployeeAccess(
-                id=id_employee_of_current_user,
-                client_place_id=client_place.id). \
-                is_relationship_employee_to_client_place():
-
-            client_places_with_current_user.append(client_place)
+    if employee_of_current_user:
+        # - for employee with relationship
+        client_places_with_current_user = EmployeeAccess(
+            _obj=employee_of_current_user). \
+            client_places_with_relationship_this_employee()
         # for employee without relationship
-        else:
-            client_places_without.append(client_place)
+        client_places_without = EmployeeAccess(
+            _obj=employee_of_current_user). \
+            client_places_without_relationship_this_employee()
 
     # Employee
     employees = EmployeeAccess(
@@ -639,8 +630,6 @@ def company(company_slug_to_id, **kwargs):
 
     return render_template(
         'company.html', company=kwargs['company'],
-        groups_client_places=groups_client_places,
-        client_places=client_places, employees=employees,
         groups_client_places_for_admin=groups_client_places_for_admin,
         groups_client_places_with_current_user=
         groups_client_places_with_current_user,

@@ -218,10 +218,15 @@ class EmployeeAccess(BaseAccess):
                 return employee
         return None
 
-    def id_employee_of_current_user(self):
+    def id_employee_of_current_user_by_company_id(self):
         employee = current_user.employees.filter_by(
             company_id=self.company_id).first()
         return employee.id if employee else None
+
+    def employee_of_current_user_by_company_id(self):
+        employee = current_user.employees.filter_by(
+            company_id=self.company_id).first()
+        return employee
 
     def employees_in_corporation_by_email(self):
         employees = Employee.query.filter(
@@ -401,6 +406,26 @@ class EmployeeAccess(BaseAccess):
                 GroupClientPlaces.company_id == self._obj.company_id,
                 ~GroupClientPlaces.employees.contains(self._obj)).all()
         return groups_client_places
+
+    def groups_client_places_with_relationship_this_employee(self):
+        groups_client_places = self._obj.groups_client_places.all()
+        return groups_client_places
+
+    def client_places_without_relationship_this_employee(self):
+        client_places = ClientPlace.query.filter(
+                ClientPlace.company_id == self._obj.company_id,
+                ~ClientPlace.employees.contains(self._obj)).all()
+        return client_places
+
+    def client_places_with_relationship_this_employee(self):
+        client_places = self._obj.client_places.all()
+        return client_places
+
+    def client_place_without_relationship_this_employee(self):
+        client_place = ClientPlace.query.filter(
+                ClientPlace.company_id == self._obj.company_id,
+                ~ClientPlace.employees.contains(self._obj)).all()
+        return client_place
 
 
 class ClientAccess(BaseAccess):

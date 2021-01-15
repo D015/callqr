@@ -21,6 +21,12 @@
 
     <hr>
 
+    <h3> Groups client places </h3>
+    {% include '_info_groups_client_places_with.html' %}
+
+     <h3> Client places </h3>
+    {% include '_info_client_places_with.html' %}
+
     <h3> ID </h3>
     {{ employee_id }}
 
@@ -36,11 +42,6 @@
     <h3> Phone </h3>
     {% if employee.phone %}<p>{{ employee.phone }}</p>{% else %}<p> - </p>{% endif %}
 
-    <h3> Group client places </h3>
-    {% include '_info_groups_client_places.html' %}
-
-    <h3> Client places </h3>
-    {% include '_info_client_places.html' %}
 
     <h3> Username </h3>
     {{ employee.user.username }}

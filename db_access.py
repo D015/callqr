@@ -43,6 +43,9 @@ class BaseAccess:
         obj = self.model.query.filter_by(slug=self.slug).first_or_404()
         return obj
 
+    def object_id_by_slug(self):
+        return self.object_by_slug().id
+
     def object_by_id(self):
         obj = self.model.query.get(self.id)
         return obj
@@ -61,6 +64,91 @@ class BaseAccess:
                 obj_i = model_i.query.filter_by(slug=self.slug).first()
                 if obj_i:
                     return obj_i
+
+
+class BaseCompanyAccess(BaseAccess):
+    def __init__(self, one_or_many2_obj=None, many1_obj=None):
+        self.one_or_many2_obj = one_or_many2_obj
+        self.many1_obj = many1_obj
+
+    def is_relationship_one_or_many_to_many(self):
+
+        if self.many1_obj is None or self.one_or_many2_obj is None:
+            return render_template('404.html')
+
+        is_relationship = employee.groups_client_places.filter(
+            employees_to_groups_client_places.c.group_client_places_id == \
+            self.group_client_places_id).count() > 0
+
+        return is_relationship
+    def create_relationship_in_company_one_to_many(self):
+        group_client_places = GroupClientPlacesAccess(
+            id=self.group_client_places_id).object_by_id()
+
+        if self.id is None:
+            employee = current_user.employees.filter_by(
+                company_id=group_client_places.company_id).first_or_404()
+
+        elif self.id:
+            employee = Employee.query.filter_by(
+                id=self.id, company_id=group_client_places.company_id). \
+                first_or_404()
+
+        if employee is None:
+            return None, 'employee not selected'
+
+        self.id = employee.id
+
+        if employee.company_id != group_client_places.company_id:
+            return render_template('404.html')
+
+        is_relationship = self.is_relationship_employee_to_group_client_places()
+
+        if is_relationship is False:
+            employee.groups_client_places.append(group_client_places)
+
+            add_commit(employee)
+            return True, 'The relationship with the group successfully created'
+
+        elif is_relationship:
+            return False, 'The relationship with the group already existed'
+
+        else:
+            return None, 'error'
+
+    def remove_relationship_one_or_many_to_many(self):
+        group_client_places = GroupClientPlacesAccess(
+            id=self.group_client_places_id).object_by_id()
+
+        if self.id is None:
+            employee = current_user.employees.filter_by(
+                company_id=group_client_places.company_id).first_or_404()
+
+        elif self.id:
+            employee = Employee.query.filter_by(
+                id=self.id, company_id=group_client_places.company_id). \
+                first_or_404()
+
+        if employee is None:
+            return None, 'Employee not selected'
+
+        self.id = employee.id
+
+        is_relationship = self.is_relationship_employee_to_group_client_places()
+
+        if is_relationship:
+            employee.groups_client_places.remove(group_client_places)
+
+            add_commit(employee)
+            return True, 'The relationship with the group successfully removed'
+
+        elif is_relationship:
+            return False, 'There was no relationship with the group before'
+
+        else:
+            return None, 'error'
+
+
 
 
 class UserAccess(BaseAccess):
@@ -240,14 +328,7 @@ class EmployeeAccess(BaseAccess):
             Employee.phone == self.phone).first()
         return employees
 
-    def is_relationship_employee_to_group_client_places(self):
-        employee = Employee.query.filter_by(id=self.id).first_or_404()
 
-        is_relationship = employee.groups_client_places.filter(
-            employees_to_groups_client_places.c.group_client_places_id == \
-            self.group_client_places_id).count() > 0
-
-        return is_relationship
 
     def is_relationship_employee_to_client_place(self):
         employee = Employee.query.filter_by(id=self.id).first()
@@ -258,69 +339,7 @@ class EmployeeAccess(BaseAccess):
 
         return is_relationship
 
-    def create_relationship_group_client_places_to_employee(self):
-        group_client_places = GroupClientPlacesAccess(
-            id=self.group_client_places_id).object_by_id()
 
-        if self.id is None:
-            employee = current_user.employees.filter_by(
-                company_id=group_client_places.company_id).first_or_404()
-
-        elif self.id:
-            employee = Employee.query.filter_by(
-                id=self.id, company_id=group_client_places.company_id). \
-                first_or_404()
-
-        if employee is None:
-            return None, 'employee not selected'
-
-        self.id = employee.id
-
-        is_relationship = self.is_relationship_employee_to_group_client_places()
-
-        if is_relationship is False:
-            employee.groups_client_places.append(group_client_places)
-
-            add_commit(employee)
-            return True, 'The relationship with the group successfully created'
-
-        elif is_relationship:
-            return False, 'The relationship with the group already existed'
-
-        else:
-            return None, 'error'
-
-    def remove_relationship_group_client_places_to_employee(self):
-        group_client_places = GroupClientPlacesAccess(
-            id=self.group_client_places_id).object_by_id()
-
-        if self.id is None:
-            employee = current_user.employees.filter_by(
-                company_id=group_client_places.company_id).first_or_404()
-
-        elif self.id:
-            employee = Employee.query.filter_by(
-                id=self.id, company_id=group_client_places.company_id). \
-                first_or_404()
-
-        if employee is None:
-            return None, 'Employee not selected'
-
-        self.id = employee.id
-
-        is_relationship = self.is_relationship_employee_to_group_client_places()
-
-        if is_relationship:
-            employee.groups_client_places.remove(group_client_places)
-
-            add_commit(employee)
-            return True, 'The relationship with the group successfully removed'
-
-        elif is_relationship:
-            return False, 'There was no relationship with the group before'
-
-        else:
-            return None, 'error'
 
     def create_relationship_client_place_to_employee(self):
         client_place = ClientPlaceAccess(id=self.client_place_id). \

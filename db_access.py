@@ -81,16 +81,16 @@ class BaseCompanyAccess(BaseAccess):
         if self.one_or_many1_obj is None or self.many2_obj is None:
             return render_template('404.html')
         is_relationship = \
-            getattr(self.one_or_many1_obj,
-                    self.relationship_name[self.many2_obj.__class__.__name__]).\
-                contains(self.many2_obj)
+            self.many2_obj in getattr(self.one_or_many1_obj,
+                                      self.relationship_name[
+                                          self.many2_obj.__class__.__name__])
         return is_relationship
 
     def create_relationship_in_company_one_to_many(self):
         is_relationship = self.is_relationship_one_or_many_to_many()
         if is_relationship is False:
             getattr(self.one_or_many1_obj,
-                    self.relationship_name[self.many2_obj.__class__.__name__]).\
+                    self.relationship_name[self.many2_obj.__class__.__name__]). \
                 append(self.many2_obj)
             add_commit(self.one_or_many1_obj)
             return True, 'The relationship successfully created'
@@ -104,7 +104,7 @@ class BaseCompanyAccess(BaseAccess):
         if is_relationship:
             getattr(self.one_or_many1_obj,
                     self.relationship_name[self.many2_obj.__class__.__name__]). \
-                append(self.many2_obj)
+                remove(self.many2_obj)
             add_commit(self.one_or_many1_obj)
             return True, 'The relationship successfully removed'
         elif is_relationship:

@@ -51,7 +51,7 @@ from models import User, Employee, GroupClientPlaces
 
 # Last time visits for user
 from utils_routes import remove_object, groups_client_places_for_employee, \
-    client_places_for_employee
+    client_places_for_employee, employee_or_current_employee
 
 
 @app.before_request
@@ -366,28 +366,30 @@ def create_relationship_employee_to_user_view(employee_pending_slug):
 @role_validation_object_return_transform_slug_to_id(myself=True, id_diff=-100,
                                                     another_id_limit=700)
 def employee(employee_slug_to_id, **kwargs):
+
+    company_id = kwargs['company_id']
+
     employee = kwargs['employee']
 
-    company = CompanyAccess(id=employee.company_id).object_by_id()
+    company = CompanyAccess(id=company_id).object_by_id()
 
     # Groups client places
-    gcp = groups_client_places_for_employee(kwargs['company_id'],
-                                            employee=employee)
+    gcp = groups_client_places_for_employee(company_id, employee=employee)
 
     # Client places
-    cp = client_places_for_employee(kwargs['company_id'],
-                                    employee=employee)
+    cp = client_places_for_employee(company_id, employee=employee)
 
-    return render_template('employee.html', employee_id=employee_slug_to_id,
-                           employee=employee, company=company,
+    return render_template('employee.html', the_employee_id=employee_slug_to_id,
+                           the_employee_slug=employee.slug,
+                           the_employee=employee, company=company,
                            groups_client_places_for_admin=gcp[
                                'groups_client_places_for_admin'],
-                           groups_client_places_with_current_user=
-                           gcp['groups_client_places_with_current_user'],
+                           groups_client_places_with_this_employee=
+                           gcp['groups_client_places_with_this_employee'],
                            groups_client_places_without=gcp[
                                'groups_client_places_without'],
-                           client_places_with_current_user=cp[
-                               'client_places_with_current_user'],
+                           client_places_with_this_employee=cp[
+                               'client_places_with_this_employee'],
                            client_places_without=cp['client_places_without'],
                            client_places_for_admin=cp[
                                'client_places_for_admin'])
@@ -592,10 +594,10 @@ def company(company_slug_to_id, **kwargs):
     return render_template(
         'company.html', company=kwargs['company'], employees=employees,
         groups_client_places_for_admin=gcp['groups_client_places_for_admin'],
-        groups_client_places_with_current_user=
-        gcp['groups_client_places_with_current_user'],
+        groups_client_places_with_this_employee=
+        gcp['groups_client_places_with_this_employee'],
         groups_client_places_without=gcp['groups_client_places_without'],
-        client_places_with_current_user=cp['client_places_with_current_user'],
+        client_places_with_this_employee=cp['client_places_with_this_employee'],
         client_places_without=cp['client_places_without'],
         client_places_for_admin=cp['client_places_for_admin'])
 
@@ -684,12 +686,7 @@ def create_relationship_emp_to_grp_cln_plcs(
         group_client_places_slug_to_id, **kwargs):
     next_page = request.args.get('next')
 
-    employee_slug = request.args.get('employee_slug_to_id')
-    if employee_slug:
-        employee = EmployeeAccess(slug=employee_slug).object_id_by_slug()
-    else:
-        employee = EmployeeAccess(company_id=kwargs['company_id']).\
-            employee_of_current_user_by_company_id()
+    employee = employee_or_current_employee(kwargs['company_id'])
 
     group_client_places = kwargs['group_client_places']
 
@@ -717,12 +714,7 @@ def remove_relationship_emp_to_grp_cln_plcs(
         group_client_places_slug_to_id, **kwargs):
     next_page = request.args.get('next')
 
-    employee_slug = request.args.get('employee_slug_to_id')
-    if employee_slug:
-        employee = EmployeeAccess(slug=employee_slug).object_id_by_slug()
-    else:
-        employee = EmployeeAccess(company_id=kwargs['company_id']). \
-            employee_of_current_user_by_company_id()
+    employee = employee_or_current_employee(kwargs['company_id'])
 
     group_client_places = kwargs['group_client_places']
 
@@ -849,19 +841,22 @@ def create_client_place_view(company_slug_to_id, **kwargs):
 
 # TODO check compliance conditions
 # Create by myself relationship to client lace
-@app.route('/_create_myself_to_client_place/<client_place_slug_to_id>',
-           endpoint='create_by_myself_relationship_to_client_place',
+@app.route('/create_relationship_emp_to_cln_plc/<client_place_slug_to_id>',
+           endpoint='create_relationship_emp_to_cln_plc',
            methods=['GET', 'POST'])
 @login_required
 @role_validation_object_return_transform_slug_to_id(role_id=800)
-def create_by_myself_relationship_to_client_place(
-        client_place_slug_to_id, **kwargs):
+def create_relationship_emp_to_cln_plc(client_place_slug_to_id,
+                                       **kwargs):
     next_page = request.args.get('next')
+
+    employee = employee_or_current_employee(kwargs['company_id'])
 
     client_place = kwargs['client_place']
 
-    result = EmployeeAccess(client_place_id=client_place.id). \
-        create_relationship_client_place_to_employee()
+    result = BaseCompanyAccess(
+        one_or_many1_obj=client_place, many2_obj=employee). \
+        create_relationship_in_company_one_to_many()
 
     flash(result[1])
     if next_page:
@@ -875,20 +870,22 @@ def create_by_myself_relationship_to_client_place(
 # TODO check compliance conditions
 # Remove by myself relationship to client place
 @app.route(
-    '/_remove_myself_to_client_place/<client_place_slug_to_id>',
-    endpoint='remove_by_myself_relationship_to_client_place',
+    '/remove_relationship_emp_to_cln_plc/<client_place_slug_to_id>',
+    endpoint='remove_relationship_emp_to_cln_plc',
     methods=['GET', 'POST'])
 @login_required
 @role_validation_object_return_transform_slug_to_id(role_id=800)
-def remove_by_myself_relationship_to_client_place(
+def remove_relationship_emp_to_cln_plc(
         client_place_slug_to_id, **kwargs):
     next_page = request.args.get('next')
 
+    employee = employee_or_current_employee(kwargs['company_id'])
+
     client_place = kwargs['client_place']
 
-    result = EmployeeAccess(
-        client_place_id=client_place.id). \
-        remove_relationship_client_place_to_employee()
+    result = BaseCompanyAccess(
+        one_or_many1_obj=client_place, many2_obj=employee). \
+        remove_relationship_one_or_many_to_many()
 
     flash(result[1])
     if next_page:

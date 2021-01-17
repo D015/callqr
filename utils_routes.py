@@ -35,11 +35,11 @@ def groups_client_places_for_employee(company_id, employee=None):
         if employee is None else []
 
     # - for employee
-    groups_client_places_with_current_user = []
+    groups_client_places_with_this_employee = []
     groups_client_places_without = []
     if employee:
         # - for employee with relationship
-        groups_client_places_with_current_user = EmployeeAccess(
+        groups_client_places_with_this_employee = EmployeeAccess(
             _obj=employee). \
             groups_client_places_with_relationship_this_employee()
         # for employee without relationship
@@ -49,8 +49,8 @@ def groups_client_places_for_employee(company_id, employee=None):
 
     gcp = {
         'groups_client_places_for_admin': groups_client_places_for_admin,
-        'groups_client_places_with_current_user':
-            groups_client_places_with_current_user,
+        'groups_client_places_with_this_employee':
+            groups_client_places_with_this_employee,
         'groups_client_places_without': groups_client_places_without
     }
     return gcp
@@ -63,11 +63,11 @@ def client_places_for_employee(company_id, employee=None):
         if employee is None else []
 
     # - for employee
-    client_places_with_current_user = []
+    client_places_with_this_employee = []
     client_places_without = []
     if employee:
         # - for employee with relationship
-        client_places_with_current_user = EmployeeAccess(
+        client_places_with_this_employee = EmployeeAccess(
             _obj=employee). \
             client_places_with_relationship_this_employee()
         # for employee without relationship
@@ -77,8 +77,18 @@ def client_places_for_employee(company_id, employee=None):
 
     cp = {
         'client_places_for_admin': client_places_for_admin,
-        'client_places_with_current_user':
-            client_places_with_current_user,
+        'client_places_with_this_employee':
+            client_places_with_this_employee,
         'client_places_without': client_places_without
     }
     return cp
+
+
+def employee_or_current_employee(company_id):
+    employee_slug = request.args.get('employee_slug_to_id')
+    if employee_slug:
+        employee = EmployeeAccess(slug=employee_slug).object_by_slug()
+    else:
+        employee = EmployeeAccess(company_id=company_id). \
+            employee_of_current_user_by_company_id()
+    return employee

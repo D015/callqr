@@ -5,16 +5,16 @@
         <tr valign="top">
             <td><img src="{{ url_for('static', filename='qr_codes/0a8edb8db75642f994af67380b0e3d13.png') }}"/></td>
             <td>
-                <h1>{{ employee.role.name }} of {{ company.name }}</h1>
-                {% if employee.about %}<p>{{ employee.about }}</p>{% endif %}
+                <h1>{{ the_employee.role.name }} of {{ company.name }}</h1>
+                {% if the_employee.about %}<p>{{ the_employee.about }}</p>{% endif %}
             </td>
         </tr>
         <tr>
             <td>
-                <a href="{{ url_for('edit_employee', employee_slug_to_id=employee.slug) }}">Edit</a>
+                <a href="{{ url_for('edit_employee', employee_slug_to_id=the_employee.slug) }}">Edit</a>
             </td>
             <td>
-                <a href="{{  url_for('remove_employee', employee_slug_to_id=employee.slug, next=request.path) }}">Delete</a>
+                <a href="{{  url_for('remove_employee', employee_slug_to_id=the_employee.slug, next=request.path) }}">Delete</a>
             </td>
         </tr>
     </table>
@@ -28,25 +28,25 @@
     {% include '_info_client_places_with.html' %}
 
     <h3> ID </h3>
-    {{ employee_id }}
+    {{ the_employee_id }}
 
     <h3> First name </h3>
-    {{ employee.first_name }}
+    {{ the_employee.first_name }}
 
     <h3> Last name </h3>
-    {{ employee.last_name }}
+    {{ the_employee.last_name }}
 
     <h3> Email </h3>
-    {% if employee.email %}<p>{{ employee.email }}</p>{% else %}<p> - </p>{% endif %}
+    {% if the_employee.email %}<p>{{ the_employee.email }}</p>{% else %}<p> - </p>{% endif %}
 
     <h3> Phone </h3>
-    {% if employee.phone %}<p>{{ employee.phone }}</p>{% else %}<p> - </p>{% endif %}
+    {% if the_employee.phone %}<p>{{ the_employee.phone }}</p>{% else %}<p> - </p>{% endif %}
 
 
     <h3> Username </h3>
-    {{ employee.user.username }}
+    {{ the_employee.user.username }}
 
     <h3> User ID </h3>
-    {{ employee.user_id }}
+    {{ the_employee.user_id }}
 
 {% endblock %}

@@ -1,17 +1,18 @@
-{% if (client_places_with_current_user or
+{% if (client_places_with_this_employee or
         client_places_without or
         client_places_for_admin) %}
 
-    {% if client_places_with_current_user %}
-        {% for client_place_with in client_places_with_current_user %}
+    {% if client_places_with_this_employee %}
+        {% for client_place_with in client_places_with_this_employee %}
             <p>
                 <a href="{{ url_for('client_place', client_place_slug_to_id=client_place_with.slug) }}">
                     {{ client_place_with.id }}</a> {{ client_place_with.name }}
 
                 -
 
-                <a href="{{ url_for('remove_by_myself_relationship_to_client_place',
-                client_place_slug_to_id=client_place_with.slug, next=request.path) }}">Disconnect</a>
+                <a href="{{ url_for('remove_relationship_emp_to_cln_plc',
+                client_place_slug_to_id=client_place_with.slug, next=request.path,
+                employee_slug_to_id=the_employee_slug) }}">Disconnect</a>
             </p>
         {% endfor %}
     {% endif %}
@@ -25,8 +26,9 @@
 
                 -
 
-            <a href="{{ url_for('create_by_myself_relationship_to_client_place',
-                client_place_slug_to_id=client_place_without.slug, next=request.path) }}">Connect</a>
+            <a href="{{ url_for('create_relationship_emp_to_cln_plc',
+                client_place_slug_to_id=client_place_without.slug, next=request.path,
+                employee_slug_to_id=the_employee_slug) }}">Connect</a>
             </p>
         {% endfor %}
     {% endif %}

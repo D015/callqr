@@ -80,6 +80,7 @@ class BaseCompanyAccess(BaseAccess):
     def is_relationship_one_or_many_to_many(self):
         if self.one_or_many1_obj is None or self.many2_obj is None:
             return render_template('404.html')
+
         is_relationship = \
             self.many2_obj in getattr(self.one_or_many1_obj,
                                       self.relationship_name[
@@ -659,7 +660,9 @@ def role_validation_object_return_transform_slug_to_id(myself=None,
                         Client.id == obj_id,
                         Client.active == True,
                         Client.archived == False).first():
-                    kwargs.update({'valid_myself': True})
+                    kwargs.update({'valid_myself': True,
+                                   'company_id': company_id,
+                                   'corporation_id': corporation_id})
                     return func(**kwargs)
 
             elif cls_name == 'Employee':
@@ -669,7 +672,9 @@ def role_validation_object_return_transform_slug_to_id(myself=None,
                         Employee.id == obj_id,
                         Employee.active == True,
                         Employee.archived == False).first():
-                    kwargs.update({'valid_myself': True})
+                    kwargs.update({'valid_myself': True,
+                                   'company_id': company_id,
+                                   'corporation_id': corporation_id})
                     return func(**kwargs)
 
             elif cls_name == 'Admin':
@@ -678,7 +683,9 @@ def role_validation_object_return_transform_slug_to_id(myself=None,
                         Admin.id == obj_id,
                         Admin.active == True,
                         Admin.archived == False).first():
-                    kwargs.update({'valid_myself': True})
+                    kwargs.update({'valid_myself': True,
+                                   'company_id': company_id,
+                                   'corporation_id': corporation_id})
                     return func(**kwargs)
 
             elif cls_name == 'Corporation':

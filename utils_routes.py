@@ -41,11 +41,11 @@ def groups_client_places_for_employee(company_id, employee=None):
         # - for employee with relationship
         groups_client_places_with_this_employee = EmployeeAccess(
             _obj=employee). \
-            groups_client_places_with_relationship_this_employee()
+            groups_client_places_with_relationship_the_employee()
         # for employee without relationship
         groups_client_places_without = EmployeeAccess(
             _obj=employee). \
-            groups_client_places_without_relationship_this_employee()
+            groups_client_places_without_relationship_the_employee()
 
     gcp = {
         'groups_client_places_for_admin': groups_client_places_for_admin,
@@ -69,11 +69,11 @@ def client_places_for_employee(company_id, employee=None):
         # - for employee with relationship
         client_places_with_this_employee = EmployeeAccess(
             _obj=employee). \
-            client_places_with_relationship_this_employee()
+            client_places_with_relationship_the_employee()
         # for employee without relationship
         client_places_without = EmployeeAccess(
             _obj=employee). \
-            client_places_without_relationship_this_employee()
+            client_places_without_relationship_the_employee()
 
     cp = {
         'client_places_for_admin': client_places_for_admin,

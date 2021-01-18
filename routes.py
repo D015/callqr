@@ -674,63 +674,6 @@ def create_group_client_places_view(company_slug_to_id, **kwargs):
                            form_group_client_places=form)
 
 
-# TODO check compliance conditions
-# Create by myself relationship to group client places
-@app.route(
-    '/create_relationship_emp_to_grp_cln_plcs/<group_client_places_slug_to_id>',
-    endpoint='create_relationship_emp_to_grp_cln_plcs',
-    methods=['GET', 'POST'])
-@login_required
-@role_validation_object_return_transform_slug_to_id(role_id=800)
-def create_relationship_emp_to_grp_cln_plcs(
-        group_client_places_slug_to_id, **kwargs):
-    next_page = request.args.get('next')
-
-    employee = employee_or_current_employee(kwargs['company_id'])
-
-    group_client_places = kwargs['group_client_places']
-
-    result = BaseCompanyAccess(
-        obj_1=group_client_places, obj_2=employee).\
-        create_relationship_in_company_obj_1_to_obj_2()
-
-    flash(result[1])
-    if next_page:
-        return redirect(next_page)
-
-    return redirect(
-        url_for('group_client_places',
-                group_client_places_slug_to_id=group_client_places.slug))
-
-
-# TODO check compliance conditions
-@app.route(
-    '/remove_relationship_emp_to_grp_cln_plcs/<group_client_places_slug_to_id>',
-    endpoint='remove_relationship_emp_to_grp_cln_plcs',
-    methods=['GET', 'POST'])
-@login_required
-@role_validation_object_return_transform_slug_to_id(role_id=800)
-def remove_relationship_emp_to_grp_cln_plcs(
-        group_client_places_slug_to_id, **kwargs):
-    next_page = request.args.get('next')
-
-    employee = employee_or_current_employee(kwargs['company_id'])
-
-    group_client_places = kwargs['group_client_places']
-
-    result = BaseCompanyAccess(
-        obj_1=group_client_places, obj_2=employee). \
-        remove_relationship_obj_1_to_obj_2()
-
-    flash(result[1])
-    if next_page:
-        return redirect(next_page)
-
-    return redirect(
-        url_for('group_client_places',
-                group_client_places_slug_to_id=group_client_places.slug))
-
-
 @app.route('/group_client_places/<group_client_places_slug_to_id>',
            endpoint='group_client_places',
            methods=['GET', 'POST'])
@@ -839,63 +782,6 @@ def create_client_place_view(company_slug_to_id, **kwargs):
                            form_client_place=form)
 
 
-# TODO check compliance conditions
-# Create by myself relationship to client lace
-@app.route('/create_relationship_emp_to_cln_plc/<client_place_slug_to_id>',
-           endpoint='create_relationship_emp_to_cln_plc',
-           methods=['GET', 'POST'])
-@login_required
-@role_validation_object_return_transform_slug_to_id(role_id=800)
-def create_relationship_emp_to_cln_plc(client_place_slug_to_id,
-                                       **kwargs):
-    next_page = request.args.get('next')
-
-    employee = employee_or_current_employee(kwargs['company_id'])
-
-    client_place = kwargs['client_place']
-
-    result = BaseCompanyAccess(
-        obj_1=client_place, obj_2=employee). \
-        create_relationship_in_company_obj_1_to_obj_2()
-
-    flash(result[1])
-    if next_page:
-        return redirect(next_page)
-
-    return redirect(
-        url_for('client_place',
-                client_place_slug_to_id=client_place.slug))
-
-
-# TODO check compliance conditions
-# Remove by myself relationship to client place
-@app.route(
-    '/remove_relationship_emp_to_cln_plc/<client_place_slug_to_id>',
-    endpoint='remove_relationship_emp_to_cln_plc',
-    methods=['GET', 'POST'])
-@login_required
-@role_validation_object_return_transform_slug_to_id(role_id=800)
-def remove_relationship_emp_to_cln_plc(
-        client_place_slug_to_id, **kwargs):
-    next_page = request.args.get('next')
-
-    employee = employee_or_current_employee(kwargs['company_id'])
-
-    client_place = kwargs['client_place']
-
-    result = BaseCompanyAccess(
-        obj_1=client_place, obj_2=employee). \
-        remove_relationship_obj_1_to_obj_2()
-
-    flash(result[1])
-    if next_page:
-        return redirect(next_page)
-
-    return redirect(
-        url_for('client_place',
-                client_place_slug_to_id=client_place.slug))
-
-
 @app.route('/client_place/<client_place_slug_to_id>',
            endpoint='client_place',
            methods=['GET', 'POST'])
@@ -963,6 +849,149 @@ def remove_client_place(client_place_slug_to_id, **kwargs):
                          func_name_for_redirected_url='company',
                          kwargs_for_redirected_url={
                              'company_slug_to_id': company_slug})
+
+
+# TODO check compliance conditions
+# Create relationship employee to group client places
+@app.route(
+    '/create_relationship_emp_to_grp_cln_plcs/<group_client_places_slug_to_id>',
+    endpoint='create_relationship_emp_to_grp_cln_plcs',
+    methods=['GET', 'POST'])
+@login_required
+@role_validation_object_return_transform_slug_to_id(role_id=800)
+def create_relationship_emp_to_grp_cln_plcs(
+        group_client_places_slug_to_id, **kwargs):
+    next_page = request.args.get('next')
+
+    employee = employee_or_current_employee(kwargs['company_id'])
+
+    group_client_places = kwargs['group_client_places']
+
+    result = BaseCompanyAccess(
+        obj_1=group_client_places, obj_2=employee).\
+        create_relationship_in_company_obj_1_to_obj_2()
+
+    flash(result[1])
+    if next_page:
+        return redirect(next_page)
+
+    return redirect(
+        url_for('group_client_places',
+                group_client_places_slug_to_id=group_client_places.slug))
+
+
+# TODO check compliance conditions
+@app.route(
+    '/remove_relationship_emp_to_grp_cln_plcs/<group_client_places_slug_to_id>',
+    endpoint='remove_relationship_emp_to_grp_cln_plcs',
+    methods=['GET', 'POST'])
+@login_required
+@role_validation_object_return_transform_slug_to_id(role_id=800)
+def remove_relationship_emp_to_grp_cln_plcs(
+        group_client_places_slug_to_id, **kwargs):
+    next_page = request.args.get('next')
+
+    employee = employee_or_current_employee(kwargs['company_id'])
+
+    group_client_places = kwargs['group_client_places']
+
+    result = BaseCompanyAccess(
+        obj_1=group_client_places, obj_2=employee). \
+        remove_relationship_obj_1_to_obj_2()
+
+    flash(result[1])
+    if next_page:
+        return redirect(next_page)
+
+    return redirect(
+        url_for('group_client_places',
+                group_client_places_slug_to_id=group_client_places.slug))
+
+
+# TODO check compliance conditions
+# Create relationship employee to client lace
+@app.route('/create_relationship_emp_to_cln_plc/<client_place_slug_to_id>',
+           endpoint='create_relationship_emp_to_cln_plc',
+           methods=['GET', 'POST'])
+@login_required
+@role_validation_object_return_transform_slug_to_id(role_id=800)
+def create_relationship_emp_to_cln_plc(client_place_slug_to_id,
+                                       **kwargs):
+    next_page = request.args.get('next')
+
+    employee = employee_or_current_employee(kwargs['company_id'])
+
+    client_place = kwargs['client_place']
+
+    result = BaseCompanyAccess(
+        obj_1=client_place, obj_2=employee). \
+        create_relationship_in_company_obj_1_to_obj_2()
+
+    flash(result[1])
+    if next_page:
+        return redirect(next_page)
+
+    return redirect(
+        url_for('client_place',
+                client_place_slug_to_id=client_place.slug))
+
+
+# TODO check compliance conditions
+# Remove relationship employee to client place
+@app.route(
+    '/remove_relationship_emp_to_cln_plc/<client_place_slug_to_id>',
+    endpoint='remove_relationship_emp_to_cln_plc',
+    methods=['GET', 'POST'])
+@login_required
+@role_validation_object_return_transform_slug_to_id(role_id=800)
+def remove_relationship_emp_to_cln_plc(
+        client_place_slug_to_id, **kwargs):
+    next_page = request.args.get('next')
+
+    employee = employee_or_current_employee(kwargs['company_id'])
+
+    client_place = kwargs['client_place']
+
+    result = BaseCompanyAccess(
+        obj_1=client_place, obj_2=employee). \
+        remove_relationship_obj_1_to_obj_2()
+
+    flash(result[1])
+    if next_page:
+        return redirect(next_page)
+
+    return redirect(
+        url_for('client_place',
+                client_place_slug_to_id=client_place.slug))
+
+# # TODO check compliance conditions
+# # Create relationship employee to client lace
+# @app.route('/create_relationship_emp_to_cln_plc/<client_place_slug_to_id>',
+#            endpoint='create_relationship_emp_to_cln_plc',
+#            methods=['GET', 'POST'])
+# @login_required
+# @role_validation_object_return_transform_slug_to_id(role_id=800)
+# def create_relationship_emp_to_cln_plc(client_place_slug_to_id,
+#                                        **kwargs):
+#     next_page = request.args.get('next')
+#
+#     employee = employee_or_current_employee(kwargs['company_id'])
+#
+#     client_place = kwargs['client_place']
+#
+#     result = BaseCompanyAccess(
+#         obj_1=client_place, obj_2=employee). \
+#         create_relationship_in_company_obj_1_to_obj_2()
+#
+#     flash(result[1])
+#     if next_page:
+#         return redirect(next_page)
+#
+#     return redirect(
+#         url_for('client_place',
+#                 client_place_slug_to_id=client_place.slug))
+
+
 
 
 @app.route('/test_', methods=['GET', 'POST'])

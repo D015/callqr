@@ -330,31 +330,25 @@ class EmployeeAccess(BaseAccess):
                                                      user_id=None)
         return employees_pending
 
-    def groups_client_places_without_relationship_this_employee(self):
+    def groups_client_places_without_relationship_the_employee(self):
         groups_client_places = GroupClientPlaces.query.filter(
             GroupClientPlaces.company_id == self._obj.company_id,
             ~GroupClientPlaces.employees.contains(self._obj)).all()
         return groups_client_places
 
-    def groups_client_places_with_relationship_this_employee(self):
+    def groups_client_places_with_relationship_the_employee(self):
         groups_client_places = self._obj.groups_client_places.all()
         return groups_client_places
 
-    def client_places_without_relationship_this_employee(self):
+    def client_places_without_relationship_the_employee(self):
         client_places = ClientPlace.query.filter(
             ClientPlace.company_id == self._obj.company_id,
             ~ClientPlace.employees.contains(self._obj)).all()
         return client_places
 
-    def client_places_with_relationship_this_employee(self):
+    def client_places_with_relationship_the_employee(self):
         client_places = self._obj.client_places.all()
         return client_places
-
-    def client_place_without_relationship_this_employee(self):
-        client_place = ClientPlace.query.filter(
-            ClientPlace.company_id == self._obj.company_id,
-            ~ClientPlace.employees.contains(self._obj)).all()
-        return client_place
 
 
 class ClientAccess(BaseAccess):

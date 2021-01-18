@@ -22,7 +22,17 @@
     <hr>
 
     <h3> Groups client places </h3>
-    {% include '_info_groups_client_places_with.html' %}
+{#    {% include '_info_groups_client_places_with.html' %}#}
+
+    {% with obj_s_1_with_obj_2=groups_client_places_with_this_employee,
+    obj_s_1_without_obj_2=groups_client_places_without,
+    obj_s_1_for_another_obj=groups_client_places_for_admin,
+    obj_1_route='group_client_places',
+    remove_route='remove_relationship_emp_to_grp_cln_plcs',
+    create_route='create_relationship_emp_to_grp_cln_plcs' %}
+        {% include '_objs_1_with_relationship_to_obj_2.html' %}
+    {% endwith %}
+
     <p>
         <a href="{{ url_for('create_group_client_places_view',
         company_slug_to_id=company.slug,

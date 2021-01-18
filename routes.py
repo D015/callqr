@@ -691,8 +691,8 @@ def create_relationship_emp_to_grp_cln_plcs(
     group_client_places = kwargs['group_client_places']
 
     result = BaseCompanyAccess(
-        one_or_many1_obj=group_client_places, many2_obj=employee).\
-        create_relationship_in_company_one_to_many()
+        obj_1=group_client_places, obj_2=employee).\
+        create_relationship_in_company_obj_1_to_obj_2()
 
     flash(result[1])
     if next_page:
@@ -719,8 +719,8 @@ def remove_relationship_emp_to_grp_cln_plcs(
     group_client_places = kwargs['group_client_places']
 
     result = BaseCompanyAccess(
-        one_or_many1_obj=group_client_places, many2_obj=employee). \
-        remove_relationship_one_or_many_to_many()
+        obj_1=group_client_places, obj_2=employee). \
+        remove_relationship_obj_1_to_obj_2()
 
     flash(result[1])
     if next_page:
@@ -855,8 +855,8 @@ def create_relationship_emp_to_cln_plc(client_place_slug_to_id,
     client_place = kwargs['client_place']
 
     result = BaseCompanyAccess(
-        one_or_many1_obj=client_place, many2_obj=employee). \
-        create_relationship_in_company_one_to_many()
+        obj_1=client_place, obj_2=employee). \
+        create_relationship_in_company_obj_1_to_obj_2()
 
     flash(result[1])
     if next_page:
@@ -884,8 +884,8 @@ def remove_relationship_emp_to_cln_plc(
     client_place = kwargs['client_place']
 
     result = BaseCompanyAccess(
-        one_or_many1_obj=client_place, many2_obj=employee). \
-        remove_relationship_one_or_many_to_many()
+        obj_1=client_place, obj_2=employee). \
+        remove_relationship_obj_1_to_obj_2()
 
     flash(result[1])
     if next_page:
@@ -988,8 +988,8 @@ def test():
     # print(obj1.__class__.__name__)
     # is_exist = BaseAccess(_obj=obj1).object_is_exist()
     # print(is_exist)
-    # obj2 = User.query.get({'slug': 10})
-    # print(obj2)
+    # obj_2 = User.query.get({'slug': 10})
+    # print(obj_2)
     # ____________________________________
     # m = db.Model
     # print(m.__dict__)
@@ -1023,12 +1023,22 @@ def test():
     # print(gcp)
     # print(gcp.employees.count())
     # __________________________________________________________
-    em = EmployeeAccess().employees_of_current_user(). \
-            filter(Employee.company_id == 15).first()
-
-    gs = getattr(em, 'groups_client_places').all()
-
-    print(em)
-    print(gs)
+    # em = EmployeeAccess().employees_of_current_user(). \
+    #         filter(Employee.company_id == 15).first()
+    #
+    # gs = getattr(em, 'groups_client_places').all()
+    #
+    # print(em)
+    # print(gs)
+    # ________________________________
+    cp = BaseAccess(slug='3c5f8bd836ce452586058f706e730946').object_from_entire_db_by_slug()
+    cp_gscp = cp.group_client_places
+    print(cp)
+    print(cp_gscp)
+    gcp_g4_24 = BaseAccess(slug='9836d8aa91ce4dbfb9e234ed871ea68e').object_from_entire_db_by_slug()
+    print(cp_gscp.client_places.all())
+    print(gcp_g4_24 is cp_gscp)
+    print(hasattr(cp_gscp.client_places, '__iter__'))
+    print(hasattr(cp_gscp, '__iter__'))
 
     return render_template('index.html', title='Home')

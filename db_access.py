@@ -67,46 +67,67 @@ class BaseAccess:
 
 
 class BaseCompanyAccess(BaseAccess):
-    def __init__(self, one_or_many1_obj=None, many2_obj=None):
+    def __init__(self, obj_1=None, obj_2=None):
 
-        self.one_or_many1_obj = one_or_many1_obj
-        self.many2_obj = many2_obj
+        self.obj_1 = obj_1
+        self.obj_2 = obj_2
         self.relationship_name = {
             'Employee': 'employees',
             'GroupClientPlaces': 'groups_client_places',
             'ClientPlace': 'client_places'
         }
 
-    def is_relationship_one_or_many_to_many(self):
-        if self.one_or_many1_obj is None or self.many2_obj is None:
+    def is_relationship_obj_1_to_obj_2(self):
+        if self.obj_1 is None or self.obj_2 is None:
             return render_template('404.html')
 
-        is_relationship = \
-            self.many2_obj in getattr(self.one_or_many1_obj,
-                                      self.relationship_name[
-                                          self.many2_obj.__class__.__name__])
-        return is_relationship
+        obj1_obj2 = getattr(self.obj_1,
+                            self.relationship_name[
+                                self.obj_2.__class__.__name__])
+        is_iter = hasattr(obj1_obj2, '__iter__')
+        if is_iter:
+            is_relationship = self.obj_2 in obj1_obj2
+        else:
+            is_relationship = self.obj_2 is obj1_obj2
 
-    def create_relationship_in_company_one_to_many(self):
-        is_relationship = self.is_relationship_one_or_many_to_many()
+        return is_relationship, is_iter
+
+    def create_relationship_in_company_obj_1_to_obj_2(self):
+        is_relationship = self.is_relationship_obj_1_to_obj_2()[0]
+        is_iter = self.is_relationship_obj_1_to_obj_2()[1]
+
         if is_relationship is False:
-            getattr(self.one_or_many1_obj,
-                    self.relationship_name[self.many2_obj.__class__.__name__]). \
-                append(self.many2_obj)
-            add_commit(self.one_or_many1_obj)
+            if is_iter:
+                getattr(self.obj_1,
+                        self.relationship_name[
+                            self.obj_2.__class__.__name__]).\
+                    append(self.obj_2)
+            else:
+                setattr(self.obj_1,
+                        self.relationship_name[
+                            self.obj_2.__class__.__name__], self.obj_2)
+            add_commit(self.obj_1)
             return True, 'The relationship successfully created'
         elif is_relationship:
             return False, 'The relationship already existed'
         else:
             return None, 'error'
 
-    def remove_relationship_one_or_many_to_many(self):
-        is_relationship = self.is_relationship_one_or_many_to_many()
+    def remove_relationship_obj_1_to_obj_2(self):
+        is_relationship = self.is_relationship_obj_1_to_obj_2()[0]
+        is_iter = self.is_relationship_obj_1_to_obj_2()[1]
+
         if is_relationship:
-            getattr(self.one_or_many1_obj,
-                    self.relationship_name[self.many2_obj.__class__.__name__]). \
-                remove(self.many2_obj)
-            add_commit(self.one_or_many1_obj)
+            if is_iter:
+                getattr(self.obj_1,
+                        self.relationship_name[
+                            self.obj_2.__class__.__name__]).\
+                    remove(self.obj_2)
+            else:
+                delattr(self.obj_1,
+                        self.relationship_name[
+                            self.obj_2.__class__.__name__])
+            add_commit(self.obj_1)
             return True, 'The relationship successfully removed'
         elif is_relationship:
             return False, 'There was no relationship before'

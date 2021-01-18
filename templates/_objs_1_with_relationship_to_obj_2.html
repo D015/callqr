@@ -4,8 +4,9 @@
 
     {% if obj_s_1_with_obj_2 %}
         {% for obj_1_with_obj_2 in obj_s_1_with_obj_2 %}
+            {% set obj_1_route_arg_1 = {obj_1_route_arg_1_key: obj_1_with_obj_2.slug} %}
             <p>
-                <a href="{{ url_for(obj_1_route, group_client_places_slug_to_id=obj_1_with_obj_2.slug) }}">
+                <a href="{{ url_for(obj_1_route, **obj_1_route_arg_1) }}">
                     {{ obj_1_with_obj_2.id }}</a> {{ obj_1_with_obj_2.name }}
 
                 -

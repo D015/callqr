@@ -1060,14 +1060,14 @@ def test():
     # print(em)
     # print(gs)
     # ________________________________
-    cp = BaseAccess(slug='3c5f8bd836ce452586058f706e730946').object_from_entire_db_by_slug()
-    cp_gscp = cp.group_client_places
-    print(cp)
-    print(cp_gscp)
-    gcp_g4_24 = BaseAccess(slug='9836d8aa91ce4dbfb9e234ed871ea68e').object_from_entire_db_by_slug()
-    print(cp_gscp.client_places.all())
-    print(gcp_g4_24 is cp_gscp)
-    print(hasattr(cp_gscp.client_places, '__iter__'))
-    print(hasattr(cp_gscp, '__iter__'))
+    # cp = BaseAccess(slug='3c5f8bd836ce452586058f706e730946').object_from_entire_db_by_slug()
+    # cp_gscp = cp.group_client_places
+    # print(cp)
+    # print(cp_gscp)
+    # gcp_g4_24 = BaseAccess(slug='9836d8aa91ce4dbfb9e234ed871ea68e').object_from_entire_db_by_slug()
+    # print(cp_gscp.client_places.all())
+    # print(gcp_g4_24 is cp_gscp)
+    # print(hasattr(cp_gscp.client_places, '__iter__'))
+    # print(hasattr(cp_gscp, '__iter__'))
 
-    return render_template('index.html', title='Home')
+    return render_template('test.html', test1='test1', test2='test2')

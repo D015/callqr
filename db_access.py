@@ -31,7 +31,10 @@ class BaseAccess:
 
     def edit_model_object(self, **kwargs):
         for key, value in kwargs.items():
-            setattr(self._obj, key, value)
+            if value:
+                setattr(self._obj, key, value)
+            else:
+                setattr(self._obj, key, None)
         add_commit(self._obj)
         return self._obj
 
@@ -124,9 +127,9 @@ class BaseCompanyAccess(BaseAccess):
                             self.obj_2.__class__.__name__]).\
                     remove(self.obj_2)
             else:
-                delattr(self.obj_1,
+                setattr(self.obj_1,
                         self.relationship_name[
-                            self.obj_2.__class__.__name__])
+                            self.obj_2.__class__.__name__], None)
             add_commit(self.obj_1)
             return True, 'The relationship successfully removed'
         elif is_relationship:
@@ -311,79 +314,6 @@ class EmployeeAccess(BaseAccess):
             Employee.corporation_id == self.corporation_id,
             Employee.phone == self.phone).first()
         return employees
-
-    def is_relationship_employee_to_client_place(self):
-        employee = Employee.query.filter_by(id=self.id).first()
-
-        is_relationship = employee.client_places.filter(
-            employees_to_client_places.c.client_place_id == \
-            self.client_place_id).count() > 0
-
-        return is_relationship
-
-    def create_relationship_client_place_to_employee(self):
-        client_place = ClientPlaceAccess(id=self.client_place_id). \
-            object_by_id()
-
-        if self.id is None:
-            employee = current_user.employees.filter_by(
-                company_id=client_place.company_id).first_or_404()
-
-        elif self.id:
-            employee = Employee.query.filter_by(
-                id=self.id, company_id=client_place.company_id). \
-                first_or_404()
-
-        if employee is None:
-            return None, 'employee not selected'
-
-        self.id = employee.id
-
-        is_relationship = self.is_relationship_employee_to_client_place()
-
-        if is_relationship is False:
-            employee.client_places.append(client_place)
-
-            add_commit(employee)
-            return True, 'The relationship with the place successfully created'
-
-        elif is_relationship:
-            return False, 'The relationship with the place already existed'
-
-        else:
-            return None, 'error'
-
-    def remove_relationship_client_place_to_employee(self):
-        client_place = ClientPlaceAccess(
-            id=self.client_place_id).object_by_id()
-
-        if self.id is None:
-            employee = current_user.employees.filter_by(
-                company_id=client_place.company_id).first_or_404()
-
-        elif self.id:
-            employee = Employee.query.filter_by(
-                id=self.id, company_id=client_place.company_id). \
-                first_or_404()
-
-        if employee is None:
-            return None, 'Employee not selected'
-
-        self.id = employee.id
-
-        is_relationship = self.is_relationship_employee_to_client_place()
-
-        if is_relationship:
-            employee.client_places.remove(client_place)
-
-            add_commit(employee)
-            return True, 'The relationship with the place successfully removed'
-
-        elif is_relationship:
-            return False, 'There was no relationship with the place before'
-
-        else:
-            return None, 'error'
 
     def employees_of_current_user(self):
         return current_user.employees.filter_by(active=True, archived=False)

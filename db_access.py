@@ -491,7 +491,7 @@ class GroupClientPlacesAccess(BaseAccess):
     def groups_client_places_by_company_id(self):
         groups_client_places = GroupClientPlaces.query. \
             filter(GroupClientPlaces.company_id == self.company_id). \
-            order_by(GroupClientPlaces.name.asc())
+            order_by(GroupClientPlaces.name.asc()).all()
         return groups_client_places
 
 
@@ -528,7 +528,7 @@ class ClientPlaceAccess(BaseAccess):
 
     def client_places_by_company_id(self):
         client_places = ClientPlace.query.filter_by(
-            company_id=self.company_id).order_by(ClientPlace.name.asc())
+            company_id=self.company_id).order_by(ClientPlace.name.asc()).all()
         return client_places
 
 

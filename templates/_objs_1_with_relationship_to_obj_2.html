@@ -1,55 +1,33 @@
 {% from "macros.html" import objs_1_to_obj_2 %}
-{% if (obj_s_1_with_obj_2 or
+{% if obj_s_1_with_obj_2 or
         obj_s_1_without_obj_2 or
-        obj_s_1_for_another_obj) %}
+        obj_s_1_for_another_obj %}
 
     {% if obj_s_1_with_obj_2 %}
-{#        {% for obj_1_with_obj_2 in obj_s_1_with_obj_2 %}#}
-{#            {% set obj_1_route_arg_1 = {obj_1_route_arg_1_key: obj_1_with_obj_2.slug} %}#}
-{#            <p>#}
-{#                <a href="{{ url_for(obj_1_route, **obj_1_route_arg_1) }}">#}
-{#                    {{ obj_1_with_obj_2.id }}</a> {{ obj_1_with_obj_2.name }}#}
-{##}
-{#                -#}
-{##}
-{#                <a href="{{ url_for(remove_route,#}
-{#                group_client_places_slug_to_id=obj_1_with_obj_2.slug, next=request.path,#}
-{#                employee_slug_to_id=the_employee_slug) }}">Disconnect</a>#}
-{#            </p>#}
-{#        {% endfor %}#}
-        {{ objs_1_to_obj_2 (obj_s_1_with_obj_2, the_employee_slug, obj_1_route, remove_route,
+        {{ objs_1_to_obj_2 (obj_s_1_with_obj_2, obj_1_route,
                             obj_1_route_arg_1_key=obj_1_route_arg_1_key,
-                            obj_1_route_arg_2_key=obj_1_route_arg_2_key,
-                            anchor_action_links='Disconnect', sep_space=True) }}
-
+                            action_route=remove_route,
+                            obj_2_slag=the_employee_slug,
+                            obj_2_action_route_arg_2_key=obj_2_action_route_arg_2_key,
+                            anchor_action_links='Disconnect',
+                            add_anchor_action_links=add_anchor_action_links) }}
     {% endif %}
 
     {% if obj_s_1_without_obj_2 %}
-        {% for obj_1_without_obj_2 in obj_s_1_without_obj_2 %}
-            <p>
-                <a href="{{ url_for(obj_1_route, group_client_places_slug_to_id=obj_1_without_obj_2.slug) }}">
-                    {{ obj_1_without_obj_2.id }}</a>
-                {{ obj_1_without_obj_2.name }}
-
-                -
-
-            <a href="{{ url_for(create_route,
-                group_client_places_slug_to_id=obj_1_without_obj_2.slug, next=request.path,
-                employee_slug_to_id=the_employee_slug) }}">Connect</a>
-            </p>
-        {% endfor %}
+        {{ objs_1_to_obj_2 (obj_s_1_without_obj_2, obj_1_route,
+                            obj_1_route_arg_1_key=obj_1_route_arg_1_key,
+                            action_route=create_route,
+                            obj_2_slag=the_employee_slug,
+                            obj_2_action_route_arg_2_key=obj_2_action_route_arg_2_key,
+                            anchor_action_links='Connect',
+                            add_anchor_action_links=add_anchor_action_links) }}
     {% endif %}
 
     {% if obj_s_1_for_another_obj %}
-        {% for obj_1_for_another_obj in obj_s_1_for_another_obj %}
-            <p>
-                <a href="{{ url_for(obj_1_route, group_client_places_slug_to_id=obj_1_for_another_obj.slug) }}">
-                    {{ obj_1_for_another_obj.id }}</a> {{ obj_1_for_another_obj.name }}
-            </p>
-        {% endfor %}
+        {{ objs_1_to_obj_2 (obj_s_1_for_another_obj, obj_1_route,
+                            obj_1_route_arg_1_key=obj_1_route_arg_1_key) }}
     {% endif %}
 
-
 {% else %}
-    <span> <i>is not group client places</i> </span>
+    <span> <i>is not {{ obj_1_name }}</i> </span>
 {% endif %}

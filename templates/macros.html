@@ -1,4 +1,5 @@
 {% macro objs_1_to_obj_2(objs_1, obj_1_route,
+                         obj_1_description_attr_name=None,
                          obj_1_route_arg_1_key=None,
                          action_route=None,
                          obj_2_slag=None,
@@ -23,7 +24,7 @@
                                                     'next': next_path} %}
                 <p>
                     <a href="{{ url_for(obj_1_route, **obj_1_route_kwargs) }}">
-                        {{ obj_1.id }}</a> {{ obj_1.name }}
+                        {{ obj_1.id }}</a> {{ obj_1[obj_1_description_attr_name] }}
 
                     {% if action_route %}
                         -

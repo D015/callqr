@@ -1,5 +1,6 @@
 {% macro objs_1_to_obj_2(objs_1, obj_1_route,
                          obj_1_description_attr_name=None,
+                         obj_1_description_attr_name1_name=None,
                          obj_1_route_arg_1_key=None,
                          action_route=None,
                          obj_2_slag=None,
@@ -15,27 +16,33 @@
     {% endif %}
 
     <div>
-            {% for obj_1 in objs_1 %}
+        {% for obj_1 in objs_1 %}
 
-                {% set obj_1_route_kwargs = {obj_1_route_arg_1_key: obj_1.slug} %}
+            {% set obj_1_route_kwargs = {obj_1_route_arg_1_key: obj_1.slug} %}
 
-                {% set obj_1_action_route_kwargs = {obj_1_route_arg_1_key: obj_1.slug,
+            {% set obj_1_action_route_kwargs = {obj_1_route_arg_1_key: obj_1.slug,
                                                     obj_2_action_route_arg_2_key: obj_2_slug,
                                                     'next': next_path} %}
-                <p>
-                    <a href="{{ url_for(obj_1_route, **obj_1_route_kwargs) }}">
-                        {{ obj_1.id }}</a> {{ obj_1[obj_1_description_attr_name] }}
+            <p>
+                <a href="{{ url_for(obj_1_route, **obj_1_route_kwargs) }}">
+                    {{ obj_1.id }}</a>
+                {% if obj_1_description_attr_name1_name != None %}
+                    {{ obj_1[obj_1_description_attr_name]|attr(obj_1_description_attr_name1_name) }}
+                {% else %}
+                    {{ obj_1[obj_1_description_attr_name] }}
+                {% endif %}
 
-                    {% if action_route %}
-                        -
+                {% if action_route %}
+                    -
 
-                        <a href="{{ url_for(action_route, **obj_1_action_route_kwargs) }}">
-                            {{ anchor_action_links }}</a>
-                    {% endif %}
+                    <a href="{{ url_for(action_route, **obj_1_action_route_kwargs) }}">
+                        {{ anchor_action_links }}</a>
+                {% endif %}
 
-                </p>
-            {% endfor %}
+            </p>
+        {% endfor %}
         {% if sep_space %}<br>{% endif %}
-        {% if sep_line %}<hr>{% endif %}
+        {% if sep_line %}
+            <hr>{% endif %}
     </div>
 {% endmacro %}

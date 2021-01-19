@@ -3,7 +3,7 @@
 {% block content %}
     <table>
         <tr valign="top">
-            <td><img src="{{ url_for('static', filename='qr_codes/0a8edb8db75642f994af67380b0e3d13.png') }}" /></td>
+            <td><img src="{{ url_for('static', filename='qr_codes/0a8edb8db75642f994af67380b0e3d13.png') }}"/></td>
             <td>
                 <h1>Company: {{ company.name }}</h1>
                 {% if company.about %}<p>{{ company.about }}</p>{% endif %}
@@ -11,10 +11,10 @@
         </tr>
         <tr>
             <td>
-                <a href="{{  url_for('edit_company', company_slug_to_id=company.slug) }}">Edit</a>
+                <a href="{{ url_for('edit_company', company_slug_to_id=company.slug) }}">Edit</a>
             </td>
             <td>
-                <a href="{{  url_for('remove_company', company_slug_to_id=company.slug, next=request.path) }}">Delete</a>
+                <a href="{{ url_for('remove_company', company_slug_to_id=company.slug, next=request.path) }}">Delete</a>
             </td>
         </tr>
     </table>
@@ -27,13 +27,14 @@
             obj_s_1_without_obj_2=groups_client_places_without,
             obj_s_1_for_another_obj=groups_client_places_for_admin,
             obj_1_route='group_client_places',
+            obj_1_description_attr_name='name',
+            obj_1_description_attr_name1_name=None,
             obj_1_route_arg_1_key='group_client_places_slug_to_id',
             obj_2_action_route_arg_2_key='employee_slug_to_id',
             remove_route='remove_relationship_emp_to_grp_cln_plcs',
             create_route='create_relationship_emp_to_grp_cln_plcs',
             obj_1_name='group client places',
-            add_anchor_action_links='me',
-            obj_1_description_attr_name='name' %}
+            add_anchor_action_links='me' %}
 
         {% include '_objs_1_with_relationship_to_obj_2.html' %}
 
@@ -47,17 +48,18 @@
 
     <h3> Client places </h3>
 
-        {% with obj_s_1_with_obj_2=client_places_with_this_employee,
+    {% with obj_s_1_with_obj_2=client_places_with_this_employee,
             obj_s_1_without_obj_2=client_places_without,
             obj_s_1_for_another_obj=client_places_for_admin,
             obj_1_route='client_place',
+            obj_1_description_attr_name='name',
+            obj_1_description_attr_name1_name=None,
             obj_1_route_arg_1_key='client_place_slug_to_id',
             obj_2_action_route_arg_2_key='employee_slug_to_id',
             remove_route='remove_relationship_emp_to_cln_plc',
             create_route='create_relationship_emp_to_cln_plc',
             obj_1_name='client place',
-            add_anchor_action_links='me',
-            obj_1_description_attr_name='name' %}
+            add_anchor_action_links='me' %}
 
         {% include '_objs_1_with_relationship_to_obj_2.html' %}
 
@@ -70,7 +72,17 @@
     </p>
 
     <h3> Employees </h3>
-    {% include '_info_employees.html' %}
+{#    {% include '_info_employees.html' %}#}
+    {% with obj_s_1_for_another_obj=employees,
+            obj_1_route='employee',
+            obj_1_description_attr_name='role',
+            obj_1_description_attr_name1_name='name',
+            obj_1_route_arg_1_key='employee_slug_to_id',
+            obj_1_name='employee'%}
+
+        {% include '_objs_1_with_relationship_to_obj_2.html' %}
+
+    {% endwith %}
     <p>
         <a href="{{ url_for('create_employee_view',
         company_slug_to_id=company.slug,

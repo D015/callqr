@@ -11,7 +11,8 @@
                             obj_2_action_route_arg_2_key=obj_2_action_route_arg_2_key,
                             anchor_action_links='Disconnect',
                             add_anchor_action_links=add_anchor_action_links,
-                            obj_1_description_attr_name=obj_1_description_attr_name) }}
+                            obj_1_description_attr_name=obj_1_description_attr_name,
+                            obj_1_description_attr_name1_name=obj_1_description_attr_name1_name) }}
     {% endif %}
 
     {% if obj_s_1_without_obj_2 %}
@@ -22,13 +23,15 @@
                             obj_2_action_route_arg_2_key=obj_2_action_route_arg_2_key,
                             anchor_action_links='Connect',
                             add_anchor_action_links=add_anchor_action_links,
-                            obj_1_description_attr_name=obj_1_description_attr_name) }}
+                            obj_1_description_attr_name=obj_1_description_attr_name,
+                            obj_1_description_attr_name1_name=obj_1_description_attr_name1_name) }}
     {% endif %}
 
     {% if obj_s_1_for_another_obj %}
         {{ objs_1_to_obj_2 (obj_s_1_for_another_obj, obj_1_route,
                             obj_1_route_arg_1_key=obj_1_route_arg_1_key,
-                            obj_1_description_attr_name=obj_1_description_attr_name) }}
+                            obj_1_description_attr_name=obj_1_description_attr_name,
+                            obj_1_description_attr_name1_name=obj_1_description_attr_name1_name) }}
     {% endif %}
 
 {% else %}

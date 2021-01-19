@@ -1,0 +1,12 @@
+{% macro render_test(test_list, test1, test2=None, sep=False) %}
+    <div>
+        {% for test in test_list %}
+            <h2>{{ test }}</h2>
+{#            <article>#}
+{#                {{ test.html|safe }}#}
+{#            </article>#}
+        {% endfor %}
+        {% if sep %}<hr>{% endif %}
+    <p>{{ test1.title() }} {{ test2 }}</p>
+    </div>
+{% endmacro %}

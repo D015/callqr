@@ -1,8 +1,13 @@
+{% import "_test_macro.html" as  macros %}
 
-    {% with test=test1 %}
-        {% include '_test.html' %}
-    {% endwith %}
+{% with test=test1 %}
+    {% include '_test.html' %}
+{% endwith %}
 
-    {% with test=test2 %}
-        {% include '_test.html' %}
-    {% endwith %}
+{% with test=test2 %}
+    {% include '_test.html' %}
+{% endwith %}
+
+{{ macros.render_test(['how', 'it', 'works'], 'I do not ', test2='know that', sep=True) }}
+
+

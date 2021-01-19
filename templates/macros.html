@@ -1,0 +1,29 @@
+{% macro objs_1_to_obj_2(objs_1, obj_2_slag, obj_1_route, action_route,
+                         obj_1_route_arg_1_key='arg_1',
+                         obj_1_route_arg_2_key='arg_2',
+                         anchor_action_links='Action without name',
+                         next_path=request.path,
+                         sep_space=False,
+                         sep_line=False) %}
+    <div>
+            {% for obj_1 in objs_1 %}
+
+                {% set obj_1_route_kwargs = {obj_1_route_arg_1_key: obj_1.slug} %}
+
+                {% set obj_1_action_route_kwargs = {obj_1_route_arg_1_key: obj_1.slug,
+                                                    obj_1_route_arg_2_key: obj_2_slug,
+                                                    'next': next_path} %}
+                <p>
+                    <a href="{{ url_for(obj_1_route, **obj_1_route_kwargs) }}">
+                        {{ obj_1.id }}</a> {{ obj_1.name }}
+
+                    -
+
+                    <a href="{{ url_for(action_route, **obj_1_action_route_kwargs) }}">
+                        {{ anchor_action_links }}</a>
+                </p>
+            {% endfor %}
+        {% if sep_line %}<br>{% endif %}
+        {% if sep_line %}<hr>{% endif %}
+    </div>
+{% endmacro %}

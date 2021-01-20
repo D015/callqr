@@ -868,7 +868,7 @@ def create_relationship_emp_to_grp_cln_plcs(
     group_client_places = kwargs['group_client_places']
 
     result = BaseCompanyAccess(
-        obj_1=group_client_places, obj_2=employee).\
+        _obj=group_client_places, another_obj=employee).\
         create_relationship_in_company_obj_1_to_obj_2()
 
     flash(result[1])
@@ -896,7 +896,7 @@ def remove_relationship_emp_to_grp_cln_plcs(
     group_client_places = kwargs['group_client_places']
 
     result = BaseCompanyAccess(
-        obj_1=group_client_places, obj_2=employee). \
+        _obj=group_client_places, another_obj=employee). \
         remove_relationship_obj_1_to_obj_2()
 
     flash(result[1])
@@ -924,7 +924,7 @@ def create_relationship_emp_to_cln_plc(client_place_slug_to_id,
     client_place = kwargs['client_place']
 
     result = BaseCompanyAccess(
-        obj_1=client_place, obj_2=employee). \
+        _obj=client_place, another_obj=employee). \
         create_relationship_in_company_obj_1_to_obj_2()
 
     flash(result[1])
@@ -953,7 +953,7 @@ def remove_relationship_emp_to_cln_plc(
     client_place = kwargs['client_place']
 
     result = BaseCompanyAccess(
-        obj_1=client_place, obj_2=employee). \
+        _obj=client_place, another_obj=employee). \
         remove_relationship_obj_1_to_obj_2()
 
     flash(result[1])
@@ -980,7 +980,7 @@ def remove_relationship_emp_to_cln_plc(
 #     client_place = kwargs['client_place']
 #
 #     result = BaseCompanyAccess(
-#         obj_1=client_place, obj_2=employee). \
+#         _obj=client_place, another_obj=employee). \
 #         create_relationship_in_company_obj_1_to_obj_2()
 #
 #     flash(result[1])
@@ -1017,8 +1017,8 @@ def test():
     # print(obj1.__class__.__name__)
     # is_exist = BaseAccess(_obj=obj1).object_is_exist()
     # print(is_exist)
-    # obj_2 = User.query.get({'slug': 10})
-    # print(obj_2)
+    # another_obj = User.query.get({'slug': 10})
+    # print(another_obj)
     # ____________________________________
     # m = db.Model
     # print(m.__dict__)
@@ -1069,5 +1069,8 @@ def test():
     # print(gcp_g4_24 is cp_gscp)
     # print(hasattr(cp_gscp.client_places, '__iter__'))
     # print(hasattr(cp_gscp, '__iter__'))
-
+    cp1 = BaseAccess(slug='940a298729414b40b80dcfb8f8298a7e').object_from_entire_db_by_slug()
+    print(cp1)
+    cp1_gcp = cp1.groups_client_places
+    print(cp1_gcp)
     return render_template('test.html', test1='test1', test2='test2')

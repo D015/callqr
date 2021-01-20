@@ -1,7 +1,7 @@
 from flask import request, redirect, url_for, render_template, flash
 
 from db_access import BaseAccess, GroupClientPlacesAccess, EmployeeAccess, \
-    ClientPlaceAccess
+    ClientPlaceAccess, BaseCompanyAccess
 from forms import RemoveObjectForm
 
 
@@ -82,6 +82,35 @@ def client_places_for_employee(company_id, employee=None):
         'client_places_without': client_places_without
     }
     return cp
+
+
+def another_objs_for_obj(company_id, obj=None, another_obj_class_name=None):
+    # - for object doesn't exist
+    other_objs_in_company = BaseCompanyAccess(
+        company_id=company_id).objs_of_class_name_by_company_id() \
+        if obj is None else []
+
+    # - for obj exists
+    other_objs_with_relationship_to_obj = []
+    other_objs_without_relationship_to_obj = []
+    if obj:
+
+        other_objs_with_relationship_to_obj = BaseCompanyAccess(
+            _obj=obj, another_obj_class_name=another_obj_class_name). \
+            other_objs_with_relationship_obj()
+
+        other_objs_without_relationship_to_obj = BaseCompanyAccess(
+            _obj=obj, another_obj_class_name=another_obj_class_name). \
+            other_objs_without_relationship_obj()
+
+    other_objs = {
+        'other_objs_in_company': other_objs_in_company,
+        'other_objs_with_relationship_to_obj':
+            other_objs_with_relationship_to_obj,
+        'other_objs_without_relationship_to_obj':
+            other_objs_without_relationship_to_obj}
+
+    return other_objs
 
 
 def employee_or_current_employee(company_id):

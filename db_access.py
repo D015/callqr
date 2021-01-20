@@ -70,28 +70,41 @@ class BaseAccess:
 
 
 class BaseCompanyAccess(BaseAccess):
-    def __init__(self, obj_1=None, obj_2=None):
+    def __init__(self, company_id=None, _obj=None, another_obj=None,
+                 _obj_class_name=None, another_obj_class_name=None):
 
-        self.obj_1 = obj_1
-        self.obj_2 = obj_2
+        self.company_id = company_id
+        self._obj = _obj
+        self._obj_class_name = _obj_class_name
+        self.another_obj = another_obj
+        self.another_obj_class_name = another_obj_class_name
+        # todo sqlalchemy how to get backref of relationship
+        #  between object and another model
+        #  or How to make a selection by object and the name of the related model
+        #  or sqlalchemy how to get backref of relationship  between model and another model
+        #  (association_proxy backref?)
         self.relationship_name = {
             'Employee': 'employees',
             'GroupClientPlaces': 'groups_client_places',
-            'ClientPlace': 'client_places'
-        }
+            'ClientPlace': 'client_places'}
+
+    def objs_of_class_name_by_company_id(self):
+        obj_class = globals()[self._obj_class_name]
+        objs = obj_class.query.filter_by(company_id=self.company_id).all()
+        return objs
 
     def is_relationship_obj_1_to_obj_2(self):
-        if self.obj_1 is None or self.obj_2 is None:
+        if self._obj is None or self.another_obj is None:
             return render_template('404.html')
 
-        obj1_obj2 = getattr(self.obj_1,
-                            self.relationship_name[
-                                self.obj_2.__class__.__name__])
-        is_iter = hasattr(obj1_obj2, '__iter__')
+        _obj_another_obj = getattr(self._obj,
+                                   self.relationship_name[
+                                       self.another_obj.__class__.__name__])
+        is_iter = hasattr(_obj_another_obj, '__iter__')
         if is_iter:
-            is_relationship = self.obj_2 in obj1_obj2
+            is_relationship = self.another_obj in _obj_another_obj
         else:
-            is_relationship = self.obj_2 is obj1_obj2
+            is_relationship = self.another_obj is _obj_another_obj
 
         return is_relationship, is_iter
 
@@ -101,15 +114,16 @@ class BaseCompanyAccess(BaseAccess):
 
         if is_relationship is False:
             if is_iter:
-                getattr(self.obj_1,
+                getattr(self._obj,
                         self.relationship_name[
-                            self.obj_2.__class__.__name__]).\
-                    append(self.obj_2)
+                            self.another_obj.__class__.__name__]). \
+                    append(self.another_obj)
             else:
-                setattr(self.obj_1,
+                setattr(self._obj,
                         self.relationship_name[
-                            self.obj_2.__class__.__name__], self.obj_2)
-            add_commit(self.obj_1)
+                            self.another_obj.__class__.__name__],
+                        self.another_obj)
+            add_commit(self._obj)
             return True, 'The relationship successfully created'
         elif is_relationship:
             return False, 'The relationship already existed'
@@ -122,20 +136,56 @@ class BaseCompanyAccess(BaseAccess):
 
         if is_relationship:
             if is_iter:
-                getattr(self.obj_1,
+                getattr(self._obj,
                         self.relationship_name[
-                            self.obj_2.__class__.__name__]).\
-                    remove(self.obj_2)
+                            self.another_obj.__class__.__name__]). \
+                    remove(self.another_obj)
             else:
-                setattr(self.obj_1,
+                setattr(self._obj,
                         self.relationship_name[
-                            self.obj_2.__class__.__name__], None)
-            add_commit(self.obj_1)
+                            self.another_obj.__class__.__name__], None)
+            add_commit(self._obj)
             return True, 'The relationship successfully removed'
         elif is_relationship:
             return False, 'There was no relationship before'
         else:
             return None, 'error'
+
+    def other_objs_without_relationship_obj(self):
+        another_obj_class = globals()[self.another_obj_class_name]
+
+        other_objs = another_obj_class.query.filter(
+            another_obj_class.company_id == self._obj.company_id,
+            or_(
+                (hasattr(getattr(another_obj_class,
+                                 self.relationship_name[
+                                     self._obj.__class__.__name__]),
+                         '__iter__'),
+                 ~(self._obj in getattr(another_obj_class,
+                                        self.relationship_name[
+                                            self._obj.__class__.__name__]))
+                 ),
+                (getattr(another_obj_class,
+                         self.relationship_name[
+                             self._obj.__class__.__name__]) != (self._obj)
+                 )
+            )
+        ).all()
+
+        return other_objs
+
+    def other_objs_with_relationship_obj(self):
+
+        _obj_other_objs = (getattr(
+            self._obj, self.relationship_name[self.another_obj_class_name]))
+
+        is_iter = hasattr(_obj_other_objs, '__iter__')
+        if is_iter:
+            other_objs = _obj_other_objs.all()
+        else:
+            other_objs = [_obj_other_objs]
+
+        return other_objs
 
 
 class UserAccess(BaseAccess):

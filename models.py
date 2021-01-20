@@ -201,7 +201,7 @@ class GroupClientPlaces(db.Model, BaseModel):
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
 
     client_places = db.relationship(
-        'ClientPlace', backref='group_client_places', lazy='dynamic')
+        'ClientPlace', backref='groups_client_places', lazy='dynamic')
 
     def __init__(self, *args, **kwargs):
         super(GroupClientPlaces, self).__init__(*args, **kwargs)

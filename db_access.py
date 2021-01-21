@@ -157,14 +157,6 @@ class BaseCompanyAccess(BaseAccess):
         another_obj_class_attr_obj_name = \
             self.relationship_name[self._obj.__class__.__name__]
 
-        is_many_to_many = '_from_obj' in getattr(
-            self._obj, self.relationship_name[self.another_obj_class_name]). \
-            __dict__
-
-        is_many_to_one = not (hasattr((getattr(
-            self._obj, self.relationship_name[self.another_obj_class_name])),
-            '__iter__'))
-
         # if is_many_to_one or is_many_to_many
         if not (hasattr((getattr(
                 self._obj,

@@ -13,6 +13,7 @@ from flask_login import current_user, \
     logout_user, login_required
 from flask_sqlalchemy import Model
 from sqlalchemy import or_, inspect
+from sqlalchemy.engine import Connectable
 
 from werkzeug.urls import url_parse
 
@@ -1021,83 +1022,12 @@ def remove_relationship_emp_to_cln_plc(
 # @login_required
 def test():
     print(' --- TEST --- ')
-    # l1 = ['7281015@gmail.com', '7281015@mail.ru']
-    # send_call_qr_email('518', l1)
-    # ______________________________________
-    # print(current_user.__setattr__('admins'))
-    # ____________________________________________
-    # obj1 = CompanyAccess(id=4).object_by_id()
-    # print(obj1)
-    # CompanyAccess(_obj=obj1).remove_object()
-    # ______________________________________________
-    # obj1 = CompanyAccess(id=4).object_by_id()
-    # print(obj1.__class__.__name__)
-    # _____________________________________________
 
-    # obj1 = UserAccess().the_current_user_of_model()
-    # print(obj1)
-    # print(obj1.__class__)
-    # print(obj1.__class__.__name__)
-    # is_exist = BaseAccess(_obj=obj1).object_is_exist()
-    # print(is_exist)
-    # another_obj = User.query.get({'slug': 10})
-    # print(another_obj)
-    # ____________________________________
-    # m = db.Model
-    # print(m.__dict__)
-    # print(m._decl_class_registry.values())
-    # for model_i in db.Model._decl_class_registry.values():
-    #     if hasattr(model_i, 'slug'):
-    #         obj_i = model_i.query.filter_by(slug='68e16fffd7f24e71b153177e412f1376').first()
-    #         if obj_i:
-    #             print(obj_i)
-    #             print(obj_i.__class__.__name__)
-    #
-    #             break
-    # _____________________________________________
-    # for i in m.query_class:
-    #     print('---', i)
-    # ________________________________________________________
-    # obj = BaseAccess(
-    #     slug='68e16fffd7f24e71b153177e412f1376').object_from_entire_db_by_slug()
-    # print(obj)
-    # ______________________________________________________
-    # em = EmployeeAccess().employees_of_current_user(). \
-    #     filter(Employee.company_id == 15).first()
-    #
-    # gs = EmployeeAccess(
-    #     _obj=em).groups_client_places_without_relationship_this_employee()
-    #
-    # print(em)
-    # print(gs)
-    # _________________________________________________
-    # gcp = GroupClientPlaces.query.filter_by(id=21).first()
-    # print(gcp)
-    # print(gcp.employees.count())
-    # __________________________________________________________
-    # em = EmployeeAccess().employees_of_current_user(). \
-    #         filter(Employee.company_id == 15).first()
-    #
-    # gs = getattr(em, 'groups_client_places').all()
-    #
-    # print(em)
-    # print(gs)
-    # ________________________________
-    # cp = BaseAccess(slug='3c5f8bd836ce452586058f706e730946').object_from_entire_db_by_slug()
-    # cp_gscp = cp.group_client_places
-    # print(cp)
-    # print(cp_gscp)
-    # gcp_g4_24 = BaseAccess(slug='9836d8aa91ce4dbfb9e234ed871ea68e').object_from_entire_db_by_slug()
-    # print(cp_gscp.client_places.all())
-    # print(gcp_g4_24 is cp_gscp)
-    # print(hasattr(cp_gscp.client_places, '__iter__'))
-    # print(hasattr(cp_gscp, '__iter__'))
-    # ______________________________
-    cp1 = BaseAccess(
-        slug='940a298729414b40b80dcfb8f8298a7e').object_from_entire_db_by_slug()
+    # cp1 = BaseAccess(
+    #     slug='940a298729414b40b80dcfb8f8298a7e').object_from_entire_db_by_slug()
     # print(cp1)
-    cp1_gcp = cp1.groups_client_places
-    print('_from_obj' in cp1_gcp.__dict__)
+    # cp1_gcp = cp1.groups_client_places
+    # print('_from_obj' in cp1_gcp.__dict__)
     # cp1_e = cp1.employees
     # print(type(cp1_gcp))
     # print(type(cp1_e))
@@ -1113,17 +1043,17 @@ def test():
     # for k, v in cp1_e.__dict__.items():
     #     print(k,' - ', v)
     # _____________________________
-    gcp1 = BaseAccess(
-        slug='ebd5349316574600b8963433679388dc').object_from_entire_db_by_slug()
+    # gcp1 = BaseAccess(
+        # slug='ebd5349316574600b8963433679388dc').object_from_entire_db_by_slug()
     # print(gcp1)
-    gcp1_cp = gcp1.client_places
-    gcp1_e = gcp1.employees
+    # gcp1_cp = gcp1.client_places
+    # gcp1_e = gcp1.employees
     # print(dir(cp1_gcp))
     # print(dir(cp1_e))
 
     # print(gcp1_cp.all())
     # print(gcp1_cp.__dict__)
-    print('_from_obj' in gcp1_cp.__dict__)
+    # print('_from_obj' in gcp1_cp.__dict__)
     # print('')
     # for k, v in gcp1_cp.__dict__.items():
     #     print(k, ' - ', v)
@@ -1132,14 +1062,43 @@ def test():
 
     # print(gcp1_e.all())
     # print(gcp1_e.__dict__)
-    print('_from_obj' in gcp1_e.__dict__)
+    # print('_from_obj' in gcp1_e.__dict__)
     # print('')
     # for k, v in gcp1_e.__dict__.items():
         # print(k,' - ', v)
 
 
     # ____________________
-    # cmp = inspect(ClientPlace)
+    model1_name = 'ClientPlace'
+    model2_name = 'GroupClientPlaces' 
+    model2_mapper = inspect(globals()[model2_name]).attrs
+
+    for model2_mapper_k, model2_mapper_v in model2_mapper.items():
+
+        if type(model2_mapper_v).__dict__['strategy_wildcard_key'] \
+                is 'relationship':
+
+            model2_mapper_v_dict = model2_mapper_v.__dict__ if '__dict__' in dir(model2_mapper_v) else None
+            # if # todo END !!!!!!!!!!!!!!!!!!!!!
+            print('entity', ' ----- ', str(model2_mapper_v_dict['entity']))
+            print('_dependency_processor', ' ----- ', str(model2_mapper_v_dict['_dependency_processor']))
+            print('--------------------------')
+
+            # if model2_mapper_v_dict:
+            #     for k_i, v_i in model2_mapper_v_dict.items():
+            #
+            #         print(k_i, ' - - - ', v_i)
+            #     print('--------------------------')
+
+
+
+
+
+        # if hasattr(i, '__dict__'):
+        #     print(i.__dict__)
+        # print(type(i))
+        # print(dir(i))
+        # print(' ')
     # print(dir(ClientPlace.groups_client_places.parent))
     # print(dir(ClientPlace.employees.parent))
 

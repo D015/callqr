@@ -1,6 +1,6 @@
 from flask import flash, redirect, url_for, render_template
 from flask_login import current_user
-from sqlalchemy import or_
+from sqlalchemy import or_, inspect
 
 from app import db
 from models import User, Admin, Employee, employees_to_groups_client_places, \
@@ -154,23 +154,38 @@ class BaseCompanyAccess(BaseAccess):
     def other_objs_without_relationship_obj(self):
         another_obj_class = globals()[self.another_obj_class_name]
 
-        other_objs = another_obj_class.query.filter(
-            another_obj_class.company_id == self._obj.company_id,
-            or_(
-                (hasattr(getattr(another_obj_class,
-                                 self.relationship_name[
-                                     self._obj.__class__.__name__]),
-                         '__iter__'),
-                 ~(self._obj in getattr(another_obj_class,
-                                        self.relationship_name[
-                                            self._obj.__class__.__name__]))
-                 ),
-                (getattr(another_obj_class,
-                         self.relationship_name[
-                             self._obj.__class__.__name__]) != (self._obj)
-                 )
-            )
-        ).all()
+        another_obj_class_attr_obj_name = \
+            self.relationship_name[self._obj.__class__.__name__]
+
+        is_many_to_many = '_from_obj' in getattr(
+            self._obj, self.relationship_name[self.another_obj_class_name]). \
+            __dict__
+
+        is_many_to_one = not (hasattr((getattr(
+            self._obj, self.relationship_name[self.another_obj_class_name])),
+            '__iter__'))
+
+        # if is_many_to_one or is_many_to_many
+        if not (hasattr((getattr(
+                self._obj,
+                self.relationship_name[self.another_obj_class_name])),
+                '__iter__')) \
+                or \
+                '_from_obj' in getattr(
+            self._obj, self.relationship_name[self.another_obj_class_name]). \
+                __dict__:
+
+            other_objs = another_obj_class.query.filter(
+                another_obj_class.company_id == self._obj.company_id,
+                ~getattr(another_obj_class,
+                         another_obj_class_attr_obj_name). \
+                contains(self._obj)).all()
+
+        else:
+            other_objs = another_obj_class.query.filter(
+                another_obj_class.company_id == self._obj.company_id,
+                getattr(another_obj_class,
+                        another_obj_class_attr_obj_name) != self._obj).all()
 
         return other_objs
 
@@ -179,8 +194,8 @@ class BaseCompanyAccess(BaseAccess):
         _obj_other_objs = (getattr(
             self._obj, self.relationship_name[self.another_obj_class_name]))
 
-        is_iter = hasattr(_obj_other_objs, '__iter__')
-        if is_iter:
+        # if is_iter
+        if hasattr(_obj_other_objs, '__iter__'):
             other_objs = _obj_other_objs.all()
         else:
             other_objs = [_obj_other_objs]

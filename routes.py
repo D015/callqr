@@ -12,7 +12,7 @@ from flask_login import current_user, \
     login_user, \
     logout_user, login_required
 from flask_sqlalchemy import Model
-from sqlalchemy import or_
+from sqlalchemy import or_, inspect
 
 from werkzeug.urls import url_parse
 
@@ -47,11 +47,12 @@ from forms import ClientPlaceForm, \
 
 from app import app, db
 
-from models import User, Employee, GroupClientPlaces
+from models import User, Employee, GroupClientPlaces, ClientPlace
 
 # Last time visits for user
 from utils_routes import remove_object, groups_client_places_for_employee, \
-    client_places_for_employee, employee_or_current_employee
+    client_places_for_employee, employee_or_current_employee, \
+    another_objs_for_obj
 
 
 @app.before_request
@@ -366,7 +367,6 @@ def create_relationship_employee_to_user_view(employee_pending_slug):
 @role_validation_object_return_transform_slug_to_id(myself=True, id_diff=-100,
                                                     another_id_limit=700)
 def employee(employee_slug_to_id, **kwargs):
-
     company_id = kwargs['company_id']
 
     employee = kwargs['employee']
@@ -374,25 +374,49 @@ def employee(employee_slug_to_id, **kwargs):
     company = CompanyAccess(id=company_id).object_by_id()
 
     # Groups client places
-    gcp = groups_client_places_for_employee(company_id, employee=employee)
+    gcp = another_objs_for_obj(company_id, obj=employee,
+                               another_obj_class_name='GroupClientPlaces')
 
     # Client places
-    cp = client_places_for_employee(company_id, employee=employee)
+    cp = another_objs_for_obj(company_id, obj=employee,
+                              another_obj_class_name='ClientPlace')
 
     return render_template('employee.html', the_employee_id=employee_slug_to_id,
                            the_employee_slug=employee.slug,
                            the_employee=employee, company=company,
                            groups_client_places_for_admin=gcp[
-                               'groups_client_places_for_admin'],
+                               'other_objs_in_company'],
                            groups_client_places_with_this_employee=
-                           gcp['groups_client_places_with_this_employee'],
+                           gcp['other_objs_with_relationship_to_obj'],
                            groups_client_places_without=gcp[
-                               'groups_client_places_without'],
+                               'other_objs_without_relationship_to_obj'],
                            client_places_with_this_employee=cp[
-                               'client_places_with_this_employee'],
-                           client_places_without=cp['client_places_without'],
+                               'other_objs_with_relationship_to_obj'],
+                           client_places_without=cp[
+                               'other_objs_without_relationship_to_obj'],
                            client_places_for_admin=cp[
-                               'client_places_for_admin'])
+                               'other_objs_in_company'])
+
+    # # Groups client places
+    # gcp = groups_client_places_for_employee(company_id, employee=employee)
+    #
+    # # Client places
+    # cp = client_places_for_employee(company_id, employee=employee)
+    #
+    # return render_template('employee.html', the_employee_id=employee_slug_to_id,
+    #                        the_employee_slug=employee.slug,
+    #                        the_employee=employee, company=company,
+    #                        groups_client_places_for_admin=gcp[
+    #                            'groups_client_places_for_admin'],
+    #                        groups_client_places_with_this_employee=
+    #                        gcp['groups_client_places_with_this_employee'],
+    #                        groups_client_places_without=gcp[
+    #                            'groups_client_places_without'],
+    #                        client_places_with_this_employee=cp[
+    #                            'client_places_with_this_employee'],
+    #                        client_places_without=cp['client_places_without'],
+    #                        client_places_for_admin=cp[
+    #                            'client_places_for_admin'])
 
 
 # todo cancel
@@ -790,7 +814,7 @@ def create_client_place_view(company_slug_to_id, **kwargs):
 def client_place(client_place_slug_to_id, **kwargs):
     client_place = kwargs['client_place']
 
-    group_client_places = client_place.group_client_places
+    group_client_places = client_place.groups_client_places
 
     employees = client_place.employees
 
@@ -868,7 +892,7 @@ def create_relationship_emp_to_grp_cln_plcs(
     group_client_places = kwargs['group_client_places']
 
     result = BaseCompanyAccess(
-        _obj=group_client_places, another_obj=employee).\
+        _obj=group_client_places, another_obj=employee). \
         create_relationship_in_company_obj_1_to_obj_2()
 
     flash(result[1])
@@ -964,6 +988,7 @@ def remove_relationship_emp_to_cln_plc(
         url_for('client_place',
                 client_place_slug_to_id=client_place.slug))
 
+
 # # TODO check compliance conditions
 # # Create relationship employee to client lace
 # @app.route('/create_relationship_emp_to_cln_plc/<client_place_slug_to_id>',
@@ -990,8 +1015,6 @@ def remove_relationship_emp_to_cln_plc(
 #     return redirect(
 #         url_for('client_place',
 #                 client_place_slug_to_id=client_place.slug))
-
-
 
 
 @app.route('/test_', methods=['GET', 'POST'])
@@ -1069,8 +1092,58 @@ def test():
     # print(gcp_g4_24 is cp_gscp)
     # print(hasattr(cp_gscp.client_places, '__iter__'))
     # print(hasattr(cp_gscp, '__iter__'))
-    cp1 = BaseAccess(slug='940a298729414b40b80dcfb8f8298a7e').object_from_entire_db_by_slug()
-    print(cp1)
+    # ______________________________
+    cp1 = BaseAccess(
+        slug='940a298729414b40b80dcfb8f8298a7e').object_from_entire_db_by_slug()
+    # print(cp1)
     cp1_gcp = cp1.groups_client_places
-    print(cp1_gcp)
+    print('_from_obj' in cp1_gcp.__dict__)
+    # cp1_e = cp1.employees
+    # print(type(cp1_gcp))
+    # print(type(cp1_e))
+    #
+    # print(cp1_gcp.__dict__)
+    # print('')
+    # for i in cp1_gcp.__dict__:
+    #     print(i)
+    # print('______________')
+    # print(cp1_e.__dict__)
+    # print('')
+    #
+    # for k, v in cp1_e.__dict__.items():
+    #     print(k,' - ', v)
+    # _____________________________
+    gcp1 = BaseAccess(
+        slug='ebd5349316574600b8963433679388dc').object_from_entire_db_by_slug()
+    # print(gcp1)
+    gcp1_cp = gcp1.client_places
+    gcp1_e = gcp1.employees
+    # print(dir(cp1_gcp))
+    # print(dir(cp1_e))
+
+    # print(gcp1_cp.all())
+    # print(gcp1_cp.__dict__)
+    print('_from_obj' in gcp1_cp.__dict__)
+    # print('')
+    # for k, v in gcp1_cp.__dict__.items():
+    #     print(k, ' - ', v)
+
+    # print('______________')
+
+    # print(gcp1_e.all())
+    # print(gcp1_e.__dict__)
+    print('_from_obj' in gcp1_e.__dict__)
+    # print('')
+    # for k, v in gcp1_e.__dict__.items():
+        # print(k,' - ', v)
+
+
+    # ____________________
+    # cmp = inspect(ClientPlace)
+    # print(dir(ClientPlace.groups_client_places.parent))
+    # print(dir(ClientPlace.employees.parent))
+
+    # print(dir(cmp.relationships.employees.__dict__))
+    # print(dir(cmp.relationships.groups_client_places.__dict__))
+
     return render_template('test.html', test1='test1', test2='test2')

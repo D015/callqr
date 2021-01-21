@@ -1081,6 +1081,7 @@ def test():
             model2_mapper_v_dict = model2_mapper_v.__dict__ if '__dict__' in dir(model2_mapper_v) else None
             # if # todo END !!!!!!!!!!!!!!!!!!!!!
             print('entity', ' ----- ', str(model2_mapper_v_dict['entity']))
+            print('back_populates', ' ----- ', str(model2_mapper_v_dict['back_populates']))
             print('_dependency_processor', ' ----- ', str(model2_mapper_v_dict['_dependency_processor']))
             print('--------------------------')
 

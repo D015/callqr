@@ -387,8 +387,8 @@ def employee(employee_slug_to_id, **kwargs):
                            the_employee=employee, company=company,
                            groups_client_places_for_admin=gcp[
                                'other_objs_in_company'],
-                           groups_client_places_with_this_employee=
-                           gcp['other_objs_with_relationship_to_obj'],
+                           groups_client_places_with_this_employee=gcp[
+                               'other_objs_with_relationship_to_obj'],
                            groups_client_places_without=gcp[
                                'other_objs_without_relationship_to_obj'],
                            client_places_with_this_employee=cp[
@@ -604,12 +604,12 @@ def company(company_slug_to_id, **kwargs):
         company_id=company_id).employee_of_current_user_by_company_id()
 
     # Groups client places
-    gcp = groups_client_places_for_employee(company_id,
-                                            employee=employee_of_current_user)
+    gcp = another_objs_for_obj(company_id, obj=employee_of_current_user,
+                               another_obj_class_name='GroupClientPlaces')
 
     # Client places
-    cp = client_places_for_employee(company_id,
-                                    employee=employee_of_current_user)
+    cp = another_objs_for_obj(company_id, obj=employee_of_current_user,
+                              another_obj_class_name='ClientPlace')
 
     # Employee
     employees = EmployeeAccess(
@@ -618,13 +618,15 @@ def company(company_slug_to_id, **kwargs):
 
     return render_template(
         'company.html', company=kwargs['company'], employees=employees,
-        groups_client_places_for_admin=gcp['groups_client_places_for_admin'],
-        groups_client_places_with_this_employee=
-        gcp['groups_client_places_with_this_employee'],
-        groups_client_places_without=gcp['groups_client_places_without'],
-        client_places_with_this_employee=cp['client_places_with_this_employee'],
-        client_places_without=cp['client_places_without'],
-        client_places_for_admin=cp['client_places_for_admin'])
+        groups_client_places_for_admin=gcp['other_objs_in_company'],
+        groups_client_places_with_this_employee=gcp[
+            'other_objs_with_relationship_to_obj'],
+        groups_client_places_without=gcp[
+            'other_objs_without_relationship_to_obj'],
+        client_places_with_this_employee=cp[
+            'other_objs_with_relationship_to_obj'],
+        client_places_without=cp['other_objs_without_relationship_to_obj'],
+        client_places_for_admin=cp['other_objs_in_company'])
 
 
 # todo cancel

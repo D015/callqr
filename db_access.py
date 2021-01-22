@@ -96,7 +96,7 @@ class BaseInspectAccess:
                     another_model_attr_model = \
                         model_mapper_v_dict['back_populates']
 
-                    model_attr_model_another = \
+                    model_attr_another_model = \
                         str(model_mapper_v_dict['_dependency_processor']). \
                             split('.')[1].replace(')', '')
 
@@ -106,7 +106,7 @@ class BaseInspectAccess:
 
                     relationship_model_to_another_model = {
                         'another_model_attr_model': another_model_attr_model,
-                        'model_attr_model_another': model_attr_model_another,
+                        'model_attr_another_model': model_attr_another_model,
                         'model_to_another_model_type': model_to_model_type
                     }
 
@@ -122,51 +122,58 @@ class BaseCompanyAccess(BaseAccess):
         self._obj_class_name = _obj_class_name
         self.another_obj = another_obj
         self.another_obj_class_name = another_obj_class_name
-        # todo sqlalchemy how to get backref of relationship
-        #  between object and another model
-        #  or How to make a selection by object and the name of the related model
-        #  or sqlalchemy how to get backref of relationship  between model and another model
-        #  (association_proxy backref?)
-        self.relationship_name = {
-            'Employee': 'employees',
-            'GroupClientPlaces': 'groups_client_places',
-            'ClientPlace': 'client_places'}
 
     def objs_of_class_name_by_company_id(self):
         obj_class = globals()[self._obj_class_name]
         objs = obj_class.query.filter_by(company_id=self.company_id).all()
         return objs
 
-    def is_relationship_obj_1_to_obj_2(self):
+    def is_relationship_obj_to_another_obj(self):
         if self._obj is None or self.another_obj is None:
             return render_template('404.html')
 
-        _obj_another_obj = getattr(self._obj,
-                                   self.relationship_name[
-                                       self.another_obj.__class__.__name__])
-        is_iter = hasattr(_obj_another_obj, '__iter__')
+        inspect_obj_to_another_obj = BaseInspectAccess(
+            model_name=self._obj.__class__.__name__,
+            another_model_name=self.another_obj.__class__.__name__).\
+            backrefs_and_type_of_model_to_model()
+
+        _obj_attr_another_obj = inspect_obj_to_another_obj[
+                                       'model_attr_another_model']
+
+        _obj_another_obj = getattr(self._obj, _obj_attr_another_obj)
+
+        is_iter = not(inspect_obj_to_another_obj[
+                                       'model_to_another_model_type'] == \
+                      'ManyToOne')
         if is_iter:
             is_relationship = self.another_obj in _obj_another_obj
         else:
             is_relationship = self.another_obj is _obj_another_obj
 
-        return is_relationship, is_iter
+        relationship_info = {'is_relationship': is_relationship,
+                             'is_iter': is_iter,
+                             '_obj_attr_another_obj': _obj_attr_another_obj
+        }
 
-    def create_relationship_in_company_obj_1_to_obj_2(self):
-        is_relationship = self.is_relationship_obj_1_to_obj_2()[0]
-        is_iter = self.is_relationship_obj_1_to_obj_2()[1]
+        return relationship_info
+
+    def create_relationship_in_company_obj_to_another_obj(self):
+
+        relationship_info = self.is_relationship_obj_to_another_obj()
+
+        is_relationship = relationship_info['is_relationship']
+
+        is_iter = relationship_info['is_iter']
+
+        _obj_attr_another_obj = relationship_info['_obj_attr_another_obj']
 
         if is_relationship is False:
             if is_iter:
-                getattr(self._obj,
-                        self.relationship_name[
-                            self.another_obj.__class__.__name__]). \
+                getattr(self._obj, _obj_attr_another_obj).\
                     append(self.another_obj)
             else:
-                setattr(self._obj,
-                        self.relationship_name[
-                            self.another_obj.__class__.__name__],
-                        self.another_obj)
+                setattr(self._obj, _obj_attr_another_obj, self.another_obj)
+
             add_commit(self._obj)
             return True, 'The relationship successfully created'
         elif is_relationship:
@@ -174,67 +181,69 @@ class BaseCompanyAccess(BaseAccess):
         else:
             return None, 'error'
 
-    def remove_relationship_obj_1_to_obj_2(self):
-        is_relationship = self.is_relationship_obj_1_to_obj_2()[0]
-        is_iter = self.is_relationship_obj_1_to_obj_2()[1]
+    def remove_relationship_obj_to_another_obj(self):
+        relationship_info = self.is_relationship_obj_to_another_obj()
+
+        is_relationship = relationship_info['is_relationship']
+
+        is_iter = relationship_info['is_iter']
+
+        _obj_attr_another_obj = relationship_info['_obj_attr_another_obj']
 
         if is_relationship:
             if is_iter:
-                getattr(self._obj,
-                        self.relationship_name[
-                            self.another_obj.__class__.__name__]). \
-                    remove(self.another_obj)
+                getattr(self._obj, _obj_attr_another_obj).remove(self.another_obj)
             else:
-                setattr(self._obj,
-                        self.relationship_name[
-                            self.another_obj.__class__.__name__], None)
+                setattr(self._obj, _obj_attr_another_obj, None)
+
             add_commit(self._obj)
             return True, 'The relationship successfully removed'
         elif is_relationship:
             return False, 'There was no relationship before'
         else:
             return None, 'error'
-
+    # todo combine 'with' and 'without'
+    #  to use another backrefs_and_type_of_model_to_model once
     def other_objs_without_relationship_obj(self):
         another_obj_class = globals()[self.another_obj_class_name]
 
+        relationship_info = BaseInspectAccess(
+            model_name=self._obj.__class__.__name__,
+            another_model_name=self.another_obj_class_name).\
+            backrefs_and_type_of_model_to_model()
+
         another_obj_class_attr_obj_name = \
-            self.relationship_name[self._obj.__class__.__name__]
+            relationship_info['another_model_attr_model']
 
-        # if is_many_to_one or is_many_to_many
-        if not (hasattr((getattr(
-                self._obj,
-                self.relationship_name[self.another_obj_class_name])),
-                '__iter__')) \
-                or \
-                '_from_obj' in getattr(
-            self._obj, self.relationship_name[self.another_obj_class_name]). \
-                __dict__:
-
+        if relationship_info['model_to_another_model_type'] == \
+                'OneToMany':
+            other_objs = another_obj_class.query.filter(
+                another_obj_class.company_id == self._obj.company_id,
+                getattr(another_obj_class,
+                        another_obj_class_attr_obj_name) != self._obj).all()
+        else:
             other_objs = another_obj_class.query.filter(
                 another_obj_class.company_id == self._obj.company_id,
                 ~getattr(another_obj_class,
                          another_obj_class_attr_obj_name). \
                 contains(self._obj)).all()
 
-        else:
-            other_objs = another_obj_class.query.filter(
-                another_obj_class.company_id == self._obj.company_id,
-                getattr(another_obj_class,
-                        another_obj_class_attr_obj_name) != self._obj).all()
-
         return other_objs
 
     def other_objs_with_relationship_obj(self):
+        relationship_info = BaseInspectAccess(
+            model_name=self._obj.__class__.__name__,
+            another_model_name=self.another_obj_class_name). \
+            backrefs_and_type_of_model_to_model()
 
-        _obj_other_objs = (getattr(
-            self._obj, self.relationship_name[self.another_obj_class_name]))
+        _obj_other_objs = getattr(
+            self._obj, relationship_info['model_attr_another_model'])
 
-        # if is_iter
-        if hasattr(_obj_other_objs, '__iter__'):
-            other_objs = _obj_other_objs.all()
-        else:
+        # if many to one
+        if relationship_info['model_to_another_model_type'] == 'ManyToOne':
             other_objs = [_obj_other_objs]
+        else:
+            other_objs = _obj_other_objs.all()
 
         return other_objs
 

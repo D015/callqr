@@ -894,7 +894,7 @@ def create_relationship_emp_to_grp_cln_plcs(
 
     result = BaseCompanyAccess(
         _obj=group_client_places, another_obj=employee). \
-        create_relationship_in_company_obj_1_to_obj_2()
+        create_relationship_in_company_obj_to_another_obj()
 
     flash(result[1])
     if next_page:
@@ -922,7 +922,7 @@ def remove_relationship_emp_to_grp_cln_plcs(
 
     result = BaseCompanyAccess(
         _obj=group_client_places, another_obj=employee). \
-        remove_relationship_obj_1_to_obj_2()
+        remove_relationship_obj_to_another_obj()
 
     flash(result[1])
     if next_page:
@@ -950,7 +950,7 @@ def create_relationship_emp_to_cln_plc(client_place_slug_to_id,
 
     result = BaseCompanyAccess(
         _obj=client_place, another_obj=employee). \
-        create_relationship_in_company_obj_1_to_obj_2()
+        create_relationship_in_company_obj_to_another_obj()
 
     flash(result[1])
     if next_page:
@@ -979,7 +979,7 @@ def remove_relationship_emp_to_cln_plc(
 
     result = BaseCompanyAccess(
         _obj=client_place, another_obj=employee). \
-        remove_relationship_obj_1_to_obj_2()
+        remove_relationship_obj_to_another_obj()
 
     flash(result[1])
     if next_page:

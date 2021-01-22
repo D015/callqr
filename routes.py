@@ -28,7 +28,7 @@ from db_access import \
     ClientPlaceAccess, \
     ClientAccess, \
     role_validation_object_return_transform_slug_to_id, BaseAccess, \
-    BaseCompanyAccess
+    BaseCompanyAccess, BaseInspectAccess
 from email_my import send_call_qr_email
 
 from forms import ClientPlaceForm, \
@@ -1069,27 +1069,11 @@ def test():
 
 
     # ____________________
-    model1_name = 'ClientPlace'
-    model2_name = 'GroupClientPlaces' 
-    model2_mapper = inspect(globals()[model2_name]).attrs
 
-    for model2_mapper_k, model2_mapper_v in model2_mapper.items():
+    res = BaseInspectAccess(model_name='User',
+        another_model_name='Admin').backrefs_and_type_of_model_to_model()
+    print(res)
 
-        if type(model2_mapper_v).__dict__['strategy_wildcard_key'] \
-                is 'relationship':
-
-            model2_mapper_v_dict = model2_mapper_v.__dict__ if '__dict__' in dir(model2_mapper_v) else None
-            # if # todo END !!!!!!!!!!!!!!!!!!!!!
-            print('entity', ' ----- ', str(model2_mapper_v_dict['entity']))
-            print('back_populates', ' ----- ', str(model2_mapper_v_dict['back_populates']))
-            print('_dependency_processor', ' ----- ', str(model2_mapper_v_dict['_dependency_processor']))
-            print('--------------------------')
-
-            # if model2_mapper_v_dict:
-            #     for k_i, v_i in model2_mapper_v_dict.items():
-            #
-            #         print(k_i, ' - - - ', v_i)
-            #     print('--------------------------')
 
 
 

@@ -76,6 +76,13 @@ class BaseInspectAccess:
         self.model_name = model_name
 
     def backrefs_and_type_of_model_to_model(self):
+        """ returns dictionary with keys:
+        model_attr_another_model,
+        another_model_attr_model,
+        model_to_another_model_type.
+        model_to_another_model_type is given in the format
+        OneToMany, ManyToOne, ManyToMany"""
+
         relationship_model_to_another_model = {}
 
         model_mapper = inspect(globals()[self.model_name]).attrs

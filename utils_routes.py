@@ -87,8 +87,8 @@ def client_places_for_employee(company_id, employee=None):
 def another_objs_for_obj(company_id, obj=None, another_obj_class_name=None):
     # - for object doesn't exist
     other_objs_in_company = BaseCompanyAccess(
-        company_id=company_id).objs_of_class_name_by_company_id() \
-        if obj is None else []
+        company_id=company_id, _obj_class_name=another_obj_class_name).\
+        objs_of_class_name_by_company_id() if obj is None else []
 
     # - for obj exists
     other_objs_with_relationship_to_obj = []

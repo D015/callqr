@@ -371,6 +371,8 @@ def employee(employee_slug_to_id, **kwargs):
     company_id = kwargs['company_id']
 
     employee = kwargs['employee']
+    print(employee)
+    print(employee.slug)
 
     company = CompanyAccess(id=company_id).object_by_id()
 
@@ -618,6 +620,7 @@ def company(company_slug_to_id, **kwargs):
 
     return render_template(
         'company.html', company=kwargs['company'], employees=employees,
+        the_employee_slug=employee_of_current_user.slug,
         groups_client_places_for_admin=gcp['other_objs_in_company'],
         groups_client_places_with_this_employee=gcp[
             'other_objs_with_relationship_to_obj'],
@@ -707,17 +710,34 @@ def create_group_client_places_view(company_slug_to_id, **kwargs):
 @login_required
 @role_validation_object_return_transform_slug_to_id(role_id=800)
 def group_client_places(group_client_places_slug_to_id, **kwargs):
+    company_id = kwargs['company_id']
+
     group_client_places = kwargs['group_client_places']
 
-    client_places = group_client_places.client_places
-
-    employees = group_client_places.employees
+    # Client places
+    cp = another_objs_for_obj(company_id, obj=group_client_places,
+                              another_obj_class_name='ClientPlace')
+    # Employees
+    employees = another_objs_for_obj(company_id, obj=group_client_places,
+                                     another_obj_class_name='Employee')
 
     return render_template('group_client_places.html',
-                           client_places=client_places, employees=employees,
                            group_client_places=group_client_places,
+                           group_client_places_slug=group_client_places.slug,
                            group_client_places_id= \
-                               group_client_places_slug_to_id)
+                               group_client_places_slug_to_id,
+                           client_places_with_this_gcp=cp[
+                               'other_objs_with_relationship_to_obj'],
+                           client_places_without=cp[
+                               'other_objs_without_relationship_to_obj'],
+                           client_places_for_company=cp[
+                               'other_objs_in_company'],
+                           employees_with_this_gcp=employees[
+                               'other_objs_with_relationship_to_obj'],
+                           employees_without=employees[
+                               'other_objs_without_relationship_to_obj'],
+                           employees_for_company=employees[
+                               'other_objs_in_company'])
 
 
 # Group Client places editor view
@@ -815,16 +835,33 @@ def create_client_place_view(company_slug_to_id, **kwargs):
 @login_required
 @role_validation_object_return_transform_slug_to_id(role_id=900)
 def client_place(client_place_slug_to_id, **kwargs):
+    company_id = kwargs['company_id']
+
     client_place = kwargs['client_place']
 
-    group_client_places = client_place.groups_client_places
+    gcp = another_objs_for_obj(company_id, obj=client_place,
+                               another_obj_class_name='GroupClientPlaces')
+    print(gcp)
 
-    employees = client_place.employees
+    employees = another_objs_for_obj(company_id, obj=client_place,
+                                     another_obj_class_name='Employee')
 
     return render_template('client_place.html',
-                           client_place=client_place, employees=employees,
-                           client_place_id=client_place.id,
-                           group_client_places=group_client_places)
+                           client_place=client_place,
+                           client_place_slug=client_place.slug,
+                           client_place_id=client_place_slug_to_id,
+                           groups_client_places_with_this_cp=gcp[
+                               'other_objs_with_relationship_to_obj'],
+                           groups_client_places_without=gcp[
+                               'other_objs_without_relationship_to_obj'],
+                           groups_client_places_for_company=gcp[
+                               'other_objs_in_company'],
+                           employees_with_this_cp=employees[
+                               'other_objs_with_relationship_to_obj'],
+                           employees_without=employees[
+                               'other_objs_without_relationship_to_obj'],
+                           employees_for_company=employees[
+                               'other_objs_in_company'])
 
 
 # todo cancel
@@ -879,7 +916,6 @@ def remove_client_place(client_place_slug_to_id, **kwargs):
 
 
 # TODO check compliance conditions
-# Create relationship employee to group client places
 @app.route(
     '/create_relationship_emp_to_grp_cln_plcs/<group_client_places_slug_to_id>',
     endpoint='create_relationship_emp_to_grp_cln_plcs',
@@ -890,7 +926,9 @@ def create_relationship_emp_to_grp_cln_plcs(
         group_client_places_slug_to_id, **kwargs):
     next_page = request.args.get('next')
 
-    employee = employee_or_current_employee(kwargs['company_id'])
+    employee_slug = request.args.get('employee_slug_to_id')
+
+    employee = EmployeeAccess(slug=employee_slug).object_by_slug()
 
     group_client_places = kwargs['group_client_places']
 
@@ -918,7 +956,11 @@ def remove_relationship_emp_to_grp_cln_plcs(
         group_client_places_slug_to_id, **kwargs):
     next_page = request.args.get('next')
 
-    employee = employee_or_current_employee(kwargs['company_id'])
+    employee_slug = request.args.get('employee_slug_to_id')
+    print(employee_slug)
+
+    employee = EmployeeAccess(slug=employee_slug).object_by_slug()
+    print(employee)
 
     group_client_places = kwargs['group_client_places']
 
@@ -936,7 +978,6 @@ def remove_relationship_emp_to_grp_cln_plcs(
 
 
 # TODO check compliance conditions
-# Create relationship employee to client lace
 @app.route('/create_relationship_emp_to_cln_plc/<client_place_slug_to_id>',
            endpoint='create_relationship_emp_to_cln_plc',
            methods=['GET', 'POST'])
@@ -946,7 +987,9 @@ def create_relationship_emp_to_cln_plc(client_place_slug_to_id,
                                        **kwargs):
     next_page = request.args.get('next')
 
-    employee = employee_or_current_employee(kwargs['company_id'])
+    employee_slug = request.args.get('employee_slug_to_id')
+
+    employee = EmployeeAccess(slug=employee_slug).object_by_slug()
 
     client_place = kwargs['client_place']
 
@@ -964,7 +1007,6 @@ def create_relationship_emp_to_cln_plc(client_place_slug_to_id,
 
 
 # TODO check compliance conditions
-# Remove relationship employee to client place
 @app.route(
     '/remove_relationship_emp_to_cln_plc/<client_place_slug_to_id>',
     endpoint='remove_relationship_emp_to_cln_plc',
@@ -975,12 +1017,77 @@ def remove_relationship_emp_to_cln_plc(
         client_place_slug_to_id, **kwargs):
     next_page = request.args.get('next')
 
-    employee = employee_or_current_employee(kwargs['company_id'])
+    employee_slug = request.args.get('employee_slug_to_id')
+
+    employee = EmployeeAccess(slug=employee_slug).object_by_slug()
 
     client_place = kwargs['client_place']
 
     result = BaseCompanyAccess(
         _obj=client_place, another_obj=employee). \
+        remove_relationship_obj_to_another_obj()
+
+    flash(result[1])
+    if next_page:
+        return redirect(next_page)
+
+    return redirect(
+        url_for('client_place',
+                client_place_slug_to_id=client_place.slug))
+
+
+# TODO check compliance conditions
+@app.route('/create_relationship_gcp_to_cln_plc/<client_place_slug_to_id>',
+           endpoint='create_relationship_gcp_to_cln_plc',
+           methods=['GET', 'POST'])
+@login_required
+@role_validation_object_return_transform_slug_to_id(role_id=800)
+def create_relationship_gcp_to_cln_plc(client_place_slug_to_id,
+                                       **kwargs):
+    next_page = request.args.get('next')
+
+    group_client_places_slug = request.args.get(
+        'group_client_places_slug_to_id')
+
+    group_client_places = GroupClientPlacesAccess(
+        slug=group_client_places_slug).object_by_slug()
+
+    client_place = kwargs['client_place']
+
+    result = BaseCompanyAccess(
+        _obj=client_place, another_obj=group_client_places). \
+        create_relationship_in_company_obj_to_another_obj()
+
+    flash(result[1])
+    if next_page:
+        return redirect(next_page)
+
+    return redirect(
+        url_for('client_place',
+                client_place_slug_to_id=client_place.slug))
+
+
+# TODO check compliance conditions
+@app.route(
+    '/remove_relationship_gcp_to_cln_plc/<client_place_slug_to_id>',
+    endpoint='remove_relationship_gcp_to_cln_plc',
+    methods=['GET', 'POST'])
+@login_required
+@role_validation_object_return_transform_slug_to_id(role_id=800)
+def remove_relationship_gcp_to_cln_plc(
+        client_place_slug_to_id, **kwargs):
+    next_page = request.args.get('next')
+
+    group_client_places_slug = request.args.get(
+        'group_client_places_slug_to_id')
+
+    group_client_places = GroupClientPlacesAccess(
+        slug=group_client_places_slug).object_by_slug()
+
+    client_place = kwargs['client_place']
+
+    result = BaseCompanyAccess(
+        _obj=client_place, another_obj=group_client_places). \
         remove_relationship_obj_to_another_obj()
 
     flash(result[1])
@@ -1046,7 +1153,7 @@ def test():
     #     print(k,' - ', v)
     # _____________________________
     # gcp1 = BaseAccess(
-        # slug='ebd5349316574600b8963433679388dc').object_from_entire_db_by_slug()
+    # slug='ebd5349316574600b8963433679388dc').object_from_entire_db_by_slug()
     # print(gcp1)
     # gcp1_cp = gcp1.client_places
     # gcp1_e = gcp1.employees
@@ -1067,25 +1174,19 @@ def test():
     # print('_from_obj' in gcp1_e.__dict__)
     # print('')
     # for k, v in gcp1_e.__dict__.items():
-        # print(k,' - ', v)
-
+    # print(k,' - ', v)
 
     # ____________________
 
     res = BaseInspectAccess(model_name='User',
-        another_model_name='Admin').backrefs_and_type_of_model_to_model()
+                            another_model_name='Admin').backrefs_and_type_of_model_to_model()
     print(res)
 
-
-
-
-
-
-        # if hasattr(i, '__dict__'):
-        #     print(i.__dict__)
-        # print(type(i))
-        # print(dir(i))
-        # print(' ')
+    # if hasattr(i, '__dict__'):
+    #     print(i.__dict__)
+    # print(type(i))
+    # print(dir(i))
+    # print(' ')
     # print(dir(ClientPlace.groups_client_places.parent))
     # print(dir(ClientPlace.employees.parent))
 

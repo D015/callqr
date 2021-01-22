@@ -213,12 +213,14 @@ class BaseCompanyAccess(BaseAccess):
     #  to use another backrefs_and_type_of_model_to_model once
     def other_objs_without_relationship_obj(self):
         another_obj_class = globals()[self.another_obj_class_name]
+        print(another_obj_class)
+        print(self._obj)
 
         relationship_info = BaseInspectAccess(
             model_name=self._obj.__class__.__name__,
             another_model_name=self.another_obj_class_name).\
             backrefs_and_type_of_model_to_model()
-
+        print(relationship_info)
         another_obj_class_attr_obj_name = \
             relationship_info['another_model_attr_model']
 
@@ -228,6 +230,7 @@ class BaseCompanyAccess(BaseAccess):
                 another_obj_class.company_id == self._obj.company_id,
                 getattr(another_obj_class,
                         another_obj_class_attr_obj_name) != self._obj).all()
+            print(other_objs)
         else:
             other_objs = another_obj_class.query.filter(
                 another_obj_class.company_id == self._obj.company_id,

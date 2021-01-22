@@ -22,9 +22,42 @@
     <hr>
 
     <h3> Groups client places </h3>
-    {{ group_client_places.name }}
+    {% with obj_s_1_with_obj_2=groups_client_places_with_this_cp,
+            obj_s_1_without_obj_2=groups_client_places_without,
+            obj_s_1_for_another_obj=groups_client_places_for_company,
+            obj_1_route='group_client_places',
+            obj_1_description_attr_name='name',
+            obj_1_description_attr_name1_name=None,
+            obj_1_route_arg_1_key='group_client_places_slug_to_id',
+            obj_2_slug=client_place_slug,
+            obj_2_action_route_arg_2_key='client_place_slug_to_id',
+            remove_route='remove_relationship_gcp_to_cln_plc',
+            create_route='create_relationship_gcp_to_cln_plc',
+            obj_1_name='group client places',
+            add_anchor_action_links='' %}
+
+        {% include '_objs_1_with_relationship_to_obj_2.html' %}
+
+    {% endwith %}
 
     <h3> Employees </h3>
-    {% include '_info_employees.html' %}
+{#    {% include '_info_employees.html' %}#}
+    {% with obj_s_1_with_obj_2=employees_with_this_cp,
+            obj_s_1_without_obj_2=employees_without,
+            obj_s_1_for_another_obj=employees_for_company,
+            obj_1_route='employee',
+            obj_1_description_attr_name='first_name',
+            obj_1_description_attr_name1_name=None,
+            obj_1_route_arg_1_key='employee_slug_to_id',
+            obj_2_slug=client_place_slug,
+            obj_2_action_route_arg_2_key='client_place_slug_to_id',
+            remove_route='remove_relationship_emp_to_cln_plc',
+            create_route='create_relationship_emp_to_cln_plc',
+            obj_1_name='employee',
+            add_anchor_action_links='' %}
+
+        {% include '_objs_1_with_relationship_to_obj_2.html' %}
+
+    {% endwith %}
 
 {% endblock %}

@@ -233,3 +233,8 @@ class ClientPlace(db.Model, BaseModel):
 
     def __repr__(self):
         return '<client place {}>'.format(self.id)
+
+
+class Call(BaseModel, db.Model):
+    def __repr__(self):
+        return '<Call {}>'.format(self.id, self.corporation_id)

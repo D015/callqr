@@ -223,13 +223,26 @@ class BaseCompanyAccess(BaseAccess):
         another_obj_class_attr_obj_name = \
             relationship_info['another_model_attr_model']
 
-        if relationship_info['model_to_another_model_type'] == \
-                'OneToMany':
+        relationship_type = relationship_info['model_to_another_model_type']
+
+        if relationship_type == 'OneToMany':
             other_objs = another_obj_class.query.filter(
                 another_obj_class.company_id == self._obj.company_id,
                 getattr(another_obj_class,
                         another_obj_class_attr_obj_name) != self._obj).all()
-            print(other_objs)
+
+        # (SQLAlchemy==1.3.17)SAWarning: Got None for value of column
+        # client_place.group_client_places_id; this is unsupported for
+        # a relationship comparison and will not currently produce
+        # an IS comparison (but may in a future release)
+        elif relationship_type == 'ManyToOne' \
+                and getattr(self._obj,
+                            relationship_info[
+                                'model_attr_another_model']) is None:
+
+            other_objs = another_obj_class.query.filter(
+                another_obj_class.company_id == self._obj.company_id).all()
+
         else:
             other_objs = another_obj_class.query.filter(
                 another_obj_class.company_id == self._obj.company_id,

@@ -110,12 +110,12 @@ class BaseInspectAccess:
                     model_to_model_type = \
                         str(model_mapper_v_dict['_dependency_processor']). \
                             split('DP(')[0]
-
                     relationship_model_to_another_model = {
                         'another_model_attr_model': another_model_attr_model,
                         'model_attr_another_model': model_attr_another_model,
                         'model_to_another_model_type': model_to_model_type
                     }
+
 
         return relationship_model_to_another_model
 
@@ -199,7 +199,8 @@ class BaseCompanyAccess(BaseAccess):
 
         if is_relationship:
             if is_iter:
-                getattr(self._obj, _obj_attr_another_obj).remove(self.another_obj)
+                getattr(self._obj, _obj_attr_another_obj).\
+                    remove(self.another_obj)
             else:
                 setattr(self._obj, _obj_attr_another_obj, None)
 
@@ -213,14 +214,12 @@ class BaseCompanyAccess(BaseAccess):
     #  to use another backrefs_and_type_of_model_to_model once
     def other_objs_without_relationship_obj(self):
         another_obj_class = globals()[self.another_obj_class_name]
-        print(another_obj_class)
-        print(self._obj)
 
         relationship_info = BaseInspectAccess(
             model_name=self._obj.__class__.__name__,
             another_model_name=self.another_obj_class_name).\
             backrefs_and_type_of_model_to_model()
-        print(relationship_info)
+
         another_obj_class_attr_obj_name = \
             relationship_info['another_model_attr_model']
 
@@ -245,13 +244,14 @@ class BaseCompanyAccess(BaseAccess):
             model_name=self._obj.__class__.__name__,
             another_model_name=self.another_obj_class_name). \
             backrefs_and_type_of_model_to_model()
+        print(relationship_info)
 
         _obj_other_objs = getattr(
             self._obj, relationship_info['model_attr_another_model'])
 
         # if many to one
         if relationship_info['model_to_another_model_type'] == 'ManyToOne':
-            other_objs = [_obj_other_objs]
+            other_objs = [] if _obj_other_objs is None else [_obj_other_objs]
         else:
             other_objs = _obj_other_objs.all()
 

@@ -841,7 +841,6 @@ def client_place(client_place_slug_to_id, **kwargs):
 
     gcp = another_objs_for_obj(company_id, obj=client_place,
                                another_obj_class_name='GroupClientPlaces')
-    print(gcp)
 
     employees = another_objs_for_obj(company_id, obj=client_place,
                                      another_obj_class_name='Employee')
@@ -957,10 +956,8 @@ def remove_relationship_emp_to_grp_cln_plcs(
     next_page = request.args.get('next')
 
     employee_slug = request.args.get('employee_slug_to_id')
-    print(employee_slug)
 
     employee = EmployeeAccess(slug=employee_slug).object_by_slug()
-    print(employee)
 
     group_client_places = kwargs['group_client_places']
 
@@ -1178,8 +1175,8 @@ def test():
 
     # ____________________
 
-    res = BaseInspectAccess(model_name='User',
-                            another_model_name='Admin').backrefs_and_type_of_model_to_model()
+    res = BaseInspectAccess(model_name='ClientPlace',
+                            another_model_name='GroupClientPlaces').backrefs_and_type_of_model_to_model()
     print(res)
 
     # if hasattr(i, '__dict__'):

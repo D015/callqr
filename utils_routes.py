@@ -103,6 +103,8 @@ def another_objs_for_obj(company_id, obj=None, another_obj_class_name=None):
             _obj=obj, another_obj_class_name=another_obj_class_name). \
             other_objs_without_relationship_obj()
 
+
+
     other_objs = {
         'other_objs_in_company': other_objs_in_company,
         'other_objs_with_relationship_to_obj':

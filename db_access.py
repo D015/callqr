@@ -257,7 +257,6 @@ class BaseCompanyAccess(BaseAccess):
             model_name=self._obj.__class__.__name__,
             another_model_name=self.another_obj_class_name). \
             backrefs_and_type_of_model_to_model()
-        print(relationship_info)
 
         _obj_other_objs = getattr(
             self._obj, relationship_info['model_attr_another_model'])

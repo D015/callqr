@@ -371,8 +371,6 @@ def employee(employee_slug_to_id, **kwargs):
     company_id = kwargs['company_id']
 
     employee = kwargs['employee']
-    print(employee)
-    print(employee.slug)
 
     company = CompanyAccess(id=company_id).object_by_id()
 
@@ -1096,98 +1094,10 @@ def remove_relationship_gcp_to_cln_plc(
                 client_place_slug_to_id=client_place.slug))
 
 
-# # TODO check compliance conditions
-# # Create relationship employee to client lace
-# @app.route('/create_relationship_emp_to_cln_plc/<client_place_slug_to_id>',
-#            endpoint='create_relationship_emp_to_cln_plc',
-#            methods=['GET', 'POST'])
-# @login_required
-# @role_validation_object_return_transform_slug_to_id(role_id=800)
-# def create_relationship_emp_to_cln_plc(client_place_slug_to_id,
-#                                        **kwargs):
-#     next_page = request.args.get('next')
-#
-#     employee = employee_or_current_employee(kwargs['company_id'])
-#
-#     client_place = kwargs['client_place']
-#
-#     result = BaseCompanyAccess(
-#         _obj=client_place, another_obj=employee). \
-#         create_relationship_in_company_obj_1_to_obj_2()
-#
-#     flash(result[1])
-#     if next_page:
-#         return redirect(next_page)
-#
-#     return redirect(
-#         url_for('client_place',
-#                 client_place_slug_to_id=client_place.slug))
-
-
 @app.route('/test_', methods=['GET', 'POST'])
 # @login_required
 def test():
     print(' --- TEST --- ')
 
-    # cp1 = BaseAccess(
-    #     slug='940a298729414b40b80dcfb8f8298a7e').object_from_entire_db_by_slug()
-    # print(cp1)
-    # cp1_gcp = cp1.groups_client_places
-    # print('_from_obj' in cp1_gcp.__dict__)
-    # cp1_e = cp1.employees
-    # print(type(cp1_gcp))
-    # print(type(cp1_e))
-    #
-    # print(cp1_gcp.__dict__)
-    # print('')
-    # for i in cp1_gcp.__dict__:
-    #     print(i)
-    # print('______________')
-    # print(cp1_e.__dict__)
-    # print('')
-    #
-    # for k, v in cp1_e.__dict__.items():
-    #     print(k,' - ', v)
-    # _____________________________
-    # gcp1 = BaseAccess(
-    # slug='ebd5349316574600b8963433679388dc').object_from_entire_db_by_slug()
-    # print(gcp1)
-    # gcp1_cp = gcp1.client_places
-    # gcp1_e = gcp1.employees
-    # print(dir(cp1_gcp))
-    # print(dir(cp1_e))
-
-    # print(gcp1_cp.all())
-    # print(gcp1_cp.__dict__)
-    # print('_from_obj' in gcp1_cp.__dict__)
-    # print('')
-    # for k, v in gcp1_cp.__dict__.items():
-    #     print(k, ' - ', v)
-
-    # print('______________')
-
-    # print(gcp1_e.all())
-    # print(gcp1_e.__dict__)
-    # print('_from_obj' in gcp1_e.__dict__)
-    # print('')
-    # for k, v in gcp1_e.__dict__.items():
-    # print(k,' - ', v)
-
-    # ____________________
-
-    res = BaseInspectAccess(model_name='ClientPlace',
-                            another_model_name='GroupClientPlaces').backrefs_and_type_of_model_to_model()
-    print(res)
-
-    # if hasattr(i, '__dict__'):
-    #     print(i.__dict__)
-    # print(type(i))
-    # print(dir(i))
-    # print(' ')
-    # print(dir(ClientPlace.groups_client_places.parent))
-    # print(dir(ClientPlace.employees.parent))
-
-    # print(dir(cmp.relationships.employees.__dict__))
-    # print(dir(cmp.relationships.groups_client_places.__dict__))
 
     return render_template('test.html', test1='test1', test2='test2')

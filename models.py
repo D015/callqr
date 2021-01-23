@@ -235,6 +235,52 @@ class ClientPlace(db.Model, BaseModel):
         return '<client place {}>'.format(self.id)
 
 
-class Call(BaseModel, db.Model):
+class CallBase(BaseModel):
+    corporation_id = db.Column(db.Integer, db.ForeignKey('corporation.id'))
+    company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
+    group_client_places_id = db.Column(
+        db.Integer, db.ForeignKey('group_client_places.id'))
+    client_place_id = db.Column(db.Integer, db.ForeignKey('client_place.id'))
+
+
+
+
+class CallOut(CallBase, db.Model):
+    client_place_id = db.Column(db.Integer, db.ForeignKey('client_place.id'))
+    type_call_out_id = db.Column(db.Integer, db.ForeignKey('type_call_out.id'))
+
     def __repr__(self):
-        return '<Call {}>'.format(self.id, self.corporation_id)
+        return '<CallOut {}>'.format(self.id, self.corporation_id)
+
+
+class CallIn(CallBase, db.Model):
+    employee_id = db.Column(db.Integer, db.ForeignKey('client_place.id'))
+    type_call_in_id = db.Column(db.Integer, db.ForeignKey('type_call_in.id'))
+
+    def __repr__(self):
+        return '<CallIn {}>'.format(self.id, self.corporation_id)
+
+
+class TypeCallOut(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    active = db.Column(db.Boolean(), default=True)
+    archived = db.Column(db.Boolean(), default=False)
+
+    code = db.Column(db.Integer, index=True, nullable=False)
+    name = db.Column(db.String(120), index=True, nullable=False, unique=True)
+    about = db.Column(db.String(120), index=True, unique=True)
+
+    clients = db.relationship('Client', backref='type_call_out', lazy='dynamic')
+
+
+class TypeCallIn(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    active = db.Column(db.Boolean(), default=True)
+    archived = db.Column(db.Boolean(), default=False)
+
+    code = db.Column(db.Integer, index=True, nullable=False)
+    name = db.Column(db.String(120), index=True, nullable=False, unique=True)
+    about = db.Column(db.String(120), index=True, unique=True)
+
+    employees = db.relationship(
+        'Employee', backref='type_call_in', lazy='dynamic')

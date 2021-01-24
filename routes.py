@@ -368,6 +368,7 @@ def create_relationship_employee_to_user_view(employee_pending_slug):
 @role_validation_object_return_transform_slug_to_id(myself=True, id_diff=-100,
                                                     another_id_limit=700)
 def employee(employee_slug_to_id, **kwargs):
+    print(kwargs)
     company_id = kwargs['company_id']
 
     employee = kwargs['employee']
@@ -385,6 +386,7 @@ def employee(employee_slug_to_id, **kwargs):
     return render_template('employee.html', the_employee_id=employee_slug_to_id,
                            the_employee_slug=employee.slug,
                            the_employee=employee, company=company,
+                           valid_myself=kwargs['valid_myself'],
                            groups_client_places_for_admin=gcp[
                                'other_objs_in_company'],
                            groups_client_places_with_this_employee=gcp[

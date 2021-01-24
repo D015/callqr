@@ -125,6 +125,9 @@ class Employee(BaseModel, db.Model):
     last_name = db.Column(db.String(64))
     about = db.Column(db.String(140))
     email = db.Column(db.String(120), index=True)
+    use_email_for_call = db.Column(db.Boolean(), default=False)
+    telegram_chat_id = db.Column(db.String(64), index=True)
+    use_telegram_for_call = db.Column(db.Boolean(), default=False)
     phone = db.Column(db.Integer, index=True)
 
     role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
@@ -276,7 +279,7 @@ class CallOut(BaseModel, db.Model):
 class CallIn(BaseModel, db.Model):
     call_out_id = db.Column(db.Integer, db.ForeignKey('call_out.id'))
 
-    employee_id = db.Column(db.Integer, db.ForeignKey('client_place.id'))
+    employee_id = db.Column(db.Integer, db.ForeignKey('employee.id'))
     type_call_in_id = db.Column(db.Integer, db.ForeignKey('type_call_in.id'))
 
     def __repr__(self):
@@ -292,7 +295,8 @@ class TypeCallOut(db.Model):
     name = db.Column(db.String(120), index=True, nullable=False, unique=True)
     about = db.Column(db.String(120), index=True, unique=True)
 
-    clients = db.relationship('Client', backref='type_call_out', lazy='dynamic')
+    call_out = db.relationship(
+        'CallOut', backref='type_call_out', lazy='dynamic')
 
 
 class TypeCallIn(db.Model):
@@ -304,5 +308,4 @@ class TypeCallIn(db.Model):
     name = db.Column(db.String(120), index=True, nullable=False, unique=True)
     about = db.Column(db.String(120), index=True, unique=True)
 
-    employees = db.relationship(
-        'Employee', backref='type_call_in', lazy='dynamic')
+    call_in = db.relationship('CallIn', backref='type_call_in', lazy='dynamic')

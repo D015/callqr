@@ -72,6 +72,13 @@
     <h3> Email </h3>
     {% if the_employee.email %}<p>{{ the_employee.email }}</p>{% else %}<p> - </p>{% endif %}
 
+    <h3> Telegram </h3>
+
+    {% if the_employee.telegram_chat_id %} {{ the_employee.telegram_chat_id }}
+    {% elif valid_myself %} link
+{#        todo END !!!!!#}
+    {% else %}<p> - </p>{% endif %}
+
     <h3> Phone </h3>
     {% if the_employee.phone %}<p>{{ the_employee.phone }}</p>{% else %}<p> - </p>{% endif %}
 

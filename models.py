@@ -22,7 +22,6 @@ employees_to_groups_client_places = db.Table(
     db.Column('group_client_places_id', db.Integer, db.ForeignKey(
         'group_client_places.id')))
 
-
 employees_to_client_places = db.Table(
     'employees_to_client_places',
     db.Column('employee_id', db.Integer, db.ForeignKey('employee.id')),
@@ -141,6 +140,8 @@ class Employee(BaseModel, db.Model):
         'ClientPlace', secondary=employees_to_client_places,
         backref=db.backref('employees', lazy='dynamic'), lazy='dynamic')
 
+    call_in = db.relationship('CallIn', backref='employee', lazy='dynamic')
+
     def __repr__(self):
         return '<Employee {} {}>'.format(self.email, self.phone)
 
@@ -150,6 +151,9 @@ class Client(BaseModel, db.Model):
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     corporation_id = db.Column(db.Integer, db.ForeignKey('corporation.id'))
+
+    call_out = db.relationship('CallOut', backref='client', lazy='dynamic')
+
 
     def __repr__(self):
         return '<Client {} {}>'.format(self.id, self.corporation_id)
@@ -161,12 +165,17 @@ class Corporation(BaseModel, db.Model):
 
     admins = db.relationship(
         'Admin', cascade='all,delete', backref='corporation', lazy='dynamic')
+
     employees = db.relationship(
         'Employee', cascade='all,delete', backref='corporation', lazy='dynamic')
+
     clients = db.relationship(
         'Client', cascade='all,delete', backref='corporation', lazy='dynamic')
+
     companies = db.relationship(
         'Company', cascade='all,delete', backref='corporation', lazy='dynamic')
+
+    call_out = db.relationship('CallOut', backref='corporation', lazy='dynamic')
 
     def __repr__(self):
         return '<Corporation {} {}>'.format(self.id, self.name)
@@ -180,11 +189,16 @@ class Company(BaseModel, db.Model):
 
     employees = db.relationship(
         'Employee', backref='company', lazy='dynamic')
+
     client_places = db.relationship(
         'ClientPlace', cascade='all,delete', backref='company', lazy='dynamic')
+
     groups_client_places = db.relationship(
-        'GroupClientPlaces',  cascade='all,delete', backref='company',
+        'GroupClientPlaces', cascade='all,delete', backref='company',
         lazy='dynamic')
+
+    call_out = db.relationship('CallOut', backref='company', lazy='dynamic')
+
 
     def __repr__(self):
         return '<Company {}>'.format(self.name)
@@ -199,9 +213,13 @@ class GroupClientPlaces(db.Model, BaseModel):
     about = db.Column(db.String(140))
 
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
-
+    # todo replace groups with group
     client_places = db.relationship(
         'ClientPlace', backref='groups_client_places', lazy='dynamic')
+
+    call_out = db.relationship(
+        'CallOut', backref='group_client_places', lazy='dynamic')
+
 
     def __init__(self, *args, **kwargs):
         super(GroupClientPlaces, self).__init__(*args, **kwargs)
@@ -225,6 +243,10 @@ class ClientPlace(db.Model, BaseModel):
     group_client_places_id = db.Column(
         db.Integer, db.ForeignKey('group_client_places.id'))
 
+    call_out = db.relationship(
+        'CallOut', backref='client_place', lazy='dynamic')
+
+
     def __init__(self, *args, **kwargs):
         super(ClientPlace, self).__init__(*args, **kwargs)
         self.slug = uuid4().hex
@@ -235,25 +257,25 @@ class ClientPlace(db.Model, BaseModel):
         return '<client place {}>'.format(self.id)
 
 
-class CallBase(BaseModel):
+class CallOut(BaseModel, db.Model):
     corporation_id = db.Column(db.Integer, db.ForeignKey('corporation.id'))
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
     group_client_places_id = db.Column(
         db.Integer, db.ForeignKey('group_client_places.id'))
     client_place_id = db.Column(db.Integer, db.ForeignKey('client_place.id'))
-
-
-
-
-class CallOut(CallBase, db.Model):
-    client_place_id = db.Column(db.Integer, db.ForeignKey('client_place.id'))
+    client_id = db.Column(db.Integer, db.ForeignKey('client.id'))
     type_call_out_id = db.Column(db.Integer, db.ForeignKey('type_call_out.id'))
+
+    call_in = db.relationship(
+        'CallIn', backref='call_out', lazy='dynamic')
 
     def __repr__(self):
         return '<CallOut {}>'.format(self.id, self.corporation_id)
 
 
-class CallIn(CallBase, db.Model):
+class CallIn(BaseModel, db.Model):
+    call_out_id = db.Column(db.Integer, db.ForeignKey('call_out.id'))
+
     employee_id = db.Column(db.Integer, db.ForeignKey('client_place.id'))
     type_call_in_id = db.Column(db.Integer, db.ForeignKey('type_call_in.id'))
 

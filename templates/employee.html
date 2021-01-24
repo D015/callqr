@@ -74,9 +74,10 @@
 
     <h3> Telegram </h3>
 
-    {% if the_employee.telegram_chat_id %} {{ the_employee.telegram_chat_id }}
-    {% elif valid_myself %} link
-{#        todo END !!!!!#}
+    {% if the_employee.telegram_chat_id %}
+        {{ the_employee.telegram_chat_id }}
+    {% elif valid_myself %}
+        <a href="https://t.me/CallQRcom_bot?start={{ the_employee.slug }}">Registration</a>
     {% else %}<p> - </p>{% endif %}
 
     <h3> Phone </h3>

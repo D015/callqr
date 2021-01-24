@@ -375,12 +375,13 @@ class AdminAccess(BaseAccess):
 
 class EmployeeAccess(BaseAccess):
     def __init__(self, id=None, slug=None, _obj=None, first_name=None,
-                 last_name=None,
-                 role_id=None, email=None, phone=None, about=None,
+                 last_name=None, role_id=None,  about=None,
+                 email=None, phone=None, telegram_chat_id=None,
                  corporation_id=None, company_id=None,
                  group_client_places_slug=None, group_client_places_id=None,
                  client_place_slug=None, client_place_id=None):
         super().__init__(id, slug, _obj, model=Employee)
+        self.telegram_chat_id = telegram_chat_id
         self.first_name = first_name
         self.last_name = last_name
         self.role_id = role_id
@@ -481,6 +482,12 @@ class EmployeeAccess(BaseAccess):
     def client_places_with_relationship_the_employee(self):
         client_places = self._obj.client_places.all()
         return client_places
+
+    def add_telegram_chat_id(self):
+        employee = Employee.query.filter_by(slug=self.slug).first()
+        employee.telegram_chat_id = self.telegram_chat_id
+        add_commit(employee)
+        return True
 
 
 class ClientAccess(BaseAccess):

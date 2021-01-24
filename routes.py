@@ -373,6 +373,9 @@ def employee(employee_slug_to_id, **kwargs):
 
     employee = kwargs['employee']
 
+    valid_myself = kwargs.get('valid_myself')
+    print(valid_myself)
+
     company = CompanyAccess(id=company_id).object_by_id()
 
     # Groups client places
@@ -386,7 +389,7 @@ def employee(employee_slug_to_id, **kwargs):
     return render_template('employee.html', the_employee_id=employee_slug_to_id,
                            the_employee_slug=employee.slug,
                            the_employee=employee, company=company,
-                           valid_myself=kwargs['valid_myself'],
+                           valid_myself=valid_myself,
                            groups_client_places_for_admin=gcp[
                                'other_objs_in_company'],
                            groups_client_places_with_this_employee=gcp[
@@ -399,27 +402,6 @@ def employee(employee_slug_to_id, **kwargs):
                                'other_objs_without_relationship_to_obj'],
                            client_places_for_admin=cp[
                                'other_objs_in_company'])
-
-    # # Groups client places
-    # gcp = groups_client_places_for_employee(company_id, employee=employee)
-    #
-    # # Client places
-    # cp = client_places_for_employee(company_id, employee=employee)
-    #
-    # return render_template('employee.html', the_employee_id=employee_slug_to_id,
-    #                        the_employee_slug=employee.slug,
-    #                        the_employee=employee, company=company,
-    #                        groups_client_places_for_admin=gcp[
-    #                            'groups_client_places_for_admin'],
-    #                        groups_client_places_with_this_employee=
-    #                        gcp['groups_client_places_with_this_employee'],
-    #                        groups_client_places_without=gcp[
-    #                            'groups_client_places_without'],
-    #                        client_places_with_this_employee=cp[
-    #                            'client_places_with_this_employee'],
-    #                        client_places_without=cp['client_places_without'],
-    #                        client_places_for_admin=cp[
-    #                            'client_places_for_admin'])
 
 
 # todo cancel

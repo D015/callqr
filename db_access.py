@@ -710,6 +710,7 @@ def role_validation_object_return_transform_slug_to_id(myself=None,
                     cls = globals().get(cls_name_access)
                     # class-model object creation by class-access
                     obj = cls(slug=obj_slug).object_by_slug_or_404()
+                    print(1)
                     break
                 # if there is no object class name
                 # in the argument name
@@ -724,6 +725,7 @@ def role_validation_object_return_transform_slug_to_id(myself=None,
                 # if the name of the argument does not have 'slug'
                 else:
                     return render_template('404.html')
+                print(2)
 
             obj_id = obj.id
 
@@ -812,7 +814,10 @@ def role_validation_object_return_transform_slug_to_id(myself=None,
                 if employee:
                     current_user_role = employee.role_id
                 else:
+                    print(31)
+
                     return render_template('404.html')
+                print(3)
 
             # Checking the role of the current user
             # and choosing a path depending on the result of the check
@@ -833,6 +838,7 @@ def role_validation_object_return_transform_slug_to_id(myself=None,
                     kwargs.update({'valid_' + arg_decor_key: False})
 
             return render_template('404.html')
+        print(5)
 
         return check_role
 

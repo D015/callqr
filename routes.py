@@ -51,6 +51,8 @@ from app import app, db
 from models import User, Employee, GroupClientPlaces, ClientPlace
 
 # Last time visits for user
+from settings import TOKEN_Telegram
+from telegram.bot_webhook import bot
 from utils_routes import remove_object, groups_client_places_for_employee, \
     client_places_for_employee, employee_or_current_employee, \
     another_objs_for_obj
@@ -61,6 +63,31 @@ def before_request():
     if current_user.is_authenticated:
         current_user.last_seen = datetime.utcnow()
         db.session.commit()
+
+
+# @app.route('/', methods=['POST'])
+# def telegram_webhook_start():
+#     if request.method == "POST":
+#         # print(request.json['message']['chat']['id'])
+#         # print(request.json['message']['text'])
+#         the_id = request.json['message']['chat']['id']
+#         the_text = request.json['message']['text']
+#
+#         print(request.json)
+#         print('___________________________')
+#         for k, v in request.json.items():
+#
+#             print(k, ' --- ', v)
+#             if k == 'message':
+#                 print('_____________________________')
+#                 print('___________message__________________')
+#                 print('_____________________________')
+#                 for m_k, m_v in v.items():
+#                     print(m_k, ' --- ', m_v)
+#         bot.send_message(the_id, the_text)
+#         # SendMessage(the_id, the_text)
+#
+#     return {"ok": True}
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -107,13 +134,14 @@ def register():
     form = RegistrationForm()
 
     if form.validate_on_submit():
-        UserAccess(username=form.username.data.strip(),
-                   email=form.email.data,
-                   password=form.password.data).create_user()
-
-        flash('Congratulations, you are now a registered user!')
-        return redirect(url_for('login'))
-    flash('Something went wrong!')
+        user = UserAccess(username=form.username.data.strip(),
+                          email=form.email.data,
+                          password=form.password.data).create_user()
+        if user:
+            flash('Congratulations, you are now a registered user!')
+            return redirect(url_for('login'))
+        else:
+            flash('Something went wrong!')
     return render_template('register.html', title='Register', form=form)
 
 
@@ -586,6 +614,10 @@ def company(company_slug_to_id, **kwargs):
 
     employee_of_current_user = EmployeeAccess(
         company_id=company_id).employee_of_current_user_by_company_id()
+    if employee_of_current_user:
+        employee_of_current_user_slug = employee_of_current_user.slug
+    else:
+        employee_of_current_user_slug = None
 
     # Groups client places
     gcp = another_objs_for_obj(company_id, obj=employee_of_current_user,
@@ -602,7 +634,7 @@ def company(company_slug_to_id, **kwargs):
 
     return render_template(
         'company.html', company=kwargs['company'], employees=employees,
-        the_employee_slug=employee_of_current_user.slug,
+        the_employee_slug=employee_of_current_user_slug,
         groups_client_places_for_admin=gcp['other_objs_in_company'],
         groups_client_places_with_this_employee=gcp[
             'other_objs_with_relationship_to_obj'],
@@ -1082,6 +1114,5 @@ def remove_relationship_gcp_to_cln_plc(
 # @login_required
 def test():
     print(' --- TEST --- ')
-
 
     return render_template('test.html', test1='test1', test2='test2')

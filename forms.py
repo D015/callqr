@@ -36,10 +36,6 @@ class ActiveArchivedForm(object):
     active = BooleanField('Active')
     archived = BooleanField('Archived')
 
-    def validate_active(self, active):
-        if active.data == self.archived.data:
-            raise ValidationError('Please ... (')
-
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -120,7 +116,7 @@ class AdminForm(FlaskForm):
 
 
 class EditAdminForm(FlaskForm):
-    about = TextAreaField('About group',
+    about = TextAreaField('About admin',
                           validators=[Length(min=0, max=140)])
     phone = StringField('Enter phone number')
     email = StringField('Email', validators=[DataRequired(), Email()])
@@ -188,7 +184,7 @@ class EmployeeForm(FlaskForm):
 class EditEmployeeForm(ActiveArchivedForm, FlaskForm):
     first_name = StringField('First name', validators=[DataRequired()])
     last_name = StringField('Last name')
-    about = TextAreaField('About group',
+    about = TextAreaField('About employee',
                           validators=[Length(min=0, max=140)])
     phone = StringField('Phone number')
     email = StringField('Email', validators=[DataRequired(), Email()])

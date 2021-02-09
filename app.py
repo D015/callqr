@@ -13,15 +13,17 @@ import logging
 from logging.handlers import SMTPHandler, RotatingFileHandler
 import os
 
-# from flask_bootstrap import Bootstrap
-
 from flask_qrcode import QRcode
 
+# from flask_talisman import Talisman
+# from flask_sslify import SSLify
 
 
 
 app = Flask(__name__)
+# sslify = SSLify(app)
 app.config.from_object(Config)
+
 
 db = SQLAlchemy(app)
 

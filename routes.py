@@ -57,6 +57,8 @@ from utils_routes import remove_object, groups_client_places_for_employee, \
     client_places_for_employee, employee_or_current_employee, \
     another_objs_for_obj
 
+# from flask_talisman import ALLOW_FROM, talisman
+
 
 @app.before_request
 def before_request():

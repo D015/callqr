@@ -16,12 +16,12 @@ import os
 from flask_qrcode import QRcode
 
 # from flask_talisman import Talisman
-# from flask_sslify import SSLify
+from flask_sslify import SSLify
 
 
 
 app = Flask(__name__)
-# sslify = SSLify(app)
+sslify = SSLify(app)
 app.config.from_object(Config)
 
 

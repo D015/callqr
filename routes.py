@@ -1,61 +1,58 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 
-from aiogram.utils.deep_linking import get_start_link, decode_payload
-from flask import render_template, \
-    flash, \
-    redirect, \
-    url_for, \
-    request
+from flask import (render_template,
+                   flash,
+                   redirect,
+                   url_for,
+                   request)
 
-from flask_login import current_user, \
-    login_user, \
-    logout_user, login_required
-from flask_sqlalchemy import Model
-from sqlalchemy import or_, inspect
-from sqlalchemy.engine import Connectable
+from flask_login import (current_user,
+                         login_user,
+                         logout_user,
+                         login_required)
+from sqlalchemy import or_
 
 from werkzeug.urls import url_parse
 
-from db_access import \
-    UserAccess, \
-    AdminAccess, \
-    EmployeeAccess, \
-    RoleAccess, \
-    CorporationAccess, \
-    CompanyAccess, \
-    GroupClientPlacesAccess, \
-    ClientPlaceAccess, \
-    ClientAccess, \
-    role_validation_object_return_transform_slug_to_id, BaseAccess, \
-    BaseCompanyAccess, BaseInspectAccess
-from email_my import send_call_qr_email
+from db_access import (UserAccess,
+                       AdminAccess,
+                       EmployeeAccess,
+                       RoleAccess,
+                       CorporationAccess,
+                       CompanyAccess,
+                       GroupClientPlacesAccess,
+                       ClientPlaceAccess,
+                       ClientAccess,
+                       role_validation_object_return_transform_slug_to_id,
+                       BaseCompanyAccess)
 
-from forms import ClientPlaceForm, \
-    RegistrationForm, \
-    LoginForm, \
-    CompanyForm, \
-    EditUserForm, \
-    EditCompanyForm, \
-    EditClientPlaceForm, \
-    GroupClientPlacesForm, \
-    ChoiceClientPlaceForm, \
-    EditGroupClientPlacesForm, \
-    EmployeeForm, \
-    CorporationForm, \
-    AdminForm, EditCorporationForm, EditAdminForm, EditEmployeeForm, \
-    RemoveObjectForm
+from forms import (ClientPlaceForm,
+                   RegistrationForm,
+                   LoginForm,
+                   CompanyForm,
+                   EditUserForm,
+                   EditCompanyForm,
+                   EditClientPlaceForm,
+                   GroupClientPlacesForm,
+                   EditGroupClientPlacesForm,
+                   EmployeeForm,
+                   CorporationForm,
+                   AdminForm,
+                   EditCorporationForm,
+                   EditAdminForm,
+                   EditEmployeeForm)
 
 from app import app, db
 
-from models import User, Employee, GroupClientPlaces, ClientPlace
+from models import User
 
 # Last time visits for user
 from settings import TOKEN_Telegram
 from telegram.bot_webhook import bot
-from utils_routes import remove_object, groups_client_places_for_employee, \
-    client_places_for_employee, employee_or_current_employee, \
-    another_objs_for_obj
+from utils_routes import (remove_object,
+                          another_objs_for_obj)
+
 
 # from flask_talisman import ALLOW_FROM, talisman
 
@@ -67,36 +64,33 @@ def before_request():
         db.session.commit()
 
 
-# @app.route('/', methods=['POST'])
-# def telegram_webhook_start():
-#     if request.method == "POST":
-#         # print(request.json['message']['chat']['id'])
-#         # print(request.json['message']['text'])
-#         the_id = request.json['message']['chat']['id']
-#         the_text = request.json['message']['text']
-#
-#         print(request.json)
-#         print('___________________________')
-#         for k, v in request.json.items():
-#
-#             print(k, ' --- ', v)
-#             if k == 'message':
-#                 print('_____________________________')
-#                 print('___________message__________________')
-#                 print('_____________________________')
-#                 for m_k, m_v in v.items():
-#                     print(m_k, ' --- ', m_v)
-#         bot.send_message(the_id, the_text)
-#         # SendMessage(the_id, the_text)
-#
-#     return {"ok": True}
-
-
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/index', methods=['GET', 'POST'])
-# @login_required
 def index():
     return render_template('index.html', title='Home')
+
+
+@app.route('/telegram_webhook_start', methods=['POST'])
+def telegram_webhook_start():
+    if request.method == "POST":
+        # print(request.json['message']['chat']['id'])
+        # print(request.json['message']['text'])
+        the_id = request.json['message']['chat']['id']
+        the_text = request.json['message']['text']
+
+        print(request.json)
+        print('___________________________')
+        for k, v in request.json.items():
+
+            print(k, ' --- ', v)
+            if k == 'message':
+                print('_____________________________')
+                print('___________message__________________')
+                print('_____________________________')
+                for m_k, m_v in v.items():
+                    print(m_k, ' --- ', m_v)
+        bot.send_message(the_id, the_text)
+    return {"ok": True}
 
 
 # Login view function logic

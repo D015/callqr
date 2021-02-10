@@ -392,13 +392,11 @@ def create_relationship_employee_to_user_view(employee_pending_slug):
 @role_validation_object_return_transform_slug_to_id(myself=True, id_diff=-100,
                                                     another_id_limit=700)
 def employee(employee_slug_to_id, **kwargs):
-    print(kwargs)
     company_id = kwargs['company_id']
 
     employee = kwargs['employee']
 
     valid_myself = kwargs.get('valid_myself')
-    print(valid_myself)
 
     company = CompanyAccess(id=company_id).object_by_id()
 
@@ -1109,6 +1107,9 @@ def remove_relationship_gcp_to_cln_plc(
 @app.route('/test_', methods=['GET', 'POST'])
 # @login_required
 def test():
-    print(' --- TEST --- ')
+    print(' --- START TEST --- ')
+
+
+    print(' --- END TEST --- ')
 
     return render_template('test.html', test1='test1', test2='test2')

@@ -218,7 +218,7 @@ class GroupClientPlaces(db.Model, BaseModel):
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
     # todo replace groups with group
     client_places = db.relationship(
-        'ClientPlace', backref='groups_client_places', lazy='dynamic')
+        'ClientPlace', backref='group_client_places', lazy='dynamic')
 
     call_out = db.relationship(
         'CallOut', backref='group_client_places', lazy='dynamic')

@@ -11,8 +11,8 @@ from settings import TOKEN_Telegram
 API_TOKEN = TOKEN_Telegram
 
 # webhook settings
-WEBHOOK_HOST = 'https://f334acd5ea6b.ngrok.io'
-WEBHOOK_PATH = '' #/path/to/api'
+WEBHOOK_HOST = 'https://6e4549e9c102.ngrok.io'
+WEBHOOK_PATH = '/telegram_webhook' #/path/to/api'
 WEBHOOK_URL = f"{WEBHOOK_HOST}{WEBHOOK_PATH}"
 
 # webserver settings

@@ -49,7 +49,7 @@ from models import User
 
 # Last time visits for user
 from settings import TOKEN_Telegram
-from telegram.bot_webhook import bot
+from telegram_bot import send_message
 from utils_routes import (remove_object,
                           another_objs_for_obj)
 
@@ -70,11 +70,17 @@ def index():
     return render_template('index.html', title='Home')
 
 
-@app.route('/telegram_webhook_start', methods=['POST'])
+@app.route('/telegram_webhook', methods=['POST'])
 def telegram_webhook_start():
     if request.method == "POST":
-        # print(request.json['message']['chat']['id'])
-        # print(request.json['message']['text'])
+        if '/start ' in request.json['message']['text']:
+            text_slug = request.json['message']['text'].replace('/start ', '')
+            employee = EmployeeAccess(slug=text_slug).object_by_slug()
+            if employee:
+                chat_id = request.json['message']['chat']['id']
+                EmployeeAccess(
+                    _obj=employee).edit_model_object(telegram_chat_id=chat_id)
+
         the_id = request.json['message']['chat']['id']
         the_text = request.json['message']['text']
 
@@ -89,7 +95,7 @@ def telegram_webhook_start():
                 print('_____________________________')
                 for m_k, m_v in v.items():
                     print(m_k, ' --- ', m_v)
-        bot.send_message(the_id, the_text)
+        send_message(the_id, the_text)
     return {"ok": True}
 
 

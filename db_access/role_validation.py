@@ -3,25 +3,11 @@ from flask_login import current_user
 
 from models import (Admin,
                     Client,
-                    ClientPlace,
-                    Company,
-                    Corporation,
-                    Employee,
-                    GroupClientPlaces)
-from utils_add import sort_dict_value
+                    Employee)
+from utils.utils_add import sort_dict_value
 
-from .admin import AdminAccess
 from .base import BaseAccess
-from .base_company import BaseCompanyAccess
-from .base_inspect import BaseInspectAccess
-from .client import ClientAccess
-from .client_place import ClientPlaceAccess
 from .company import CompanyAccess
-from .corporation import CorporationAccess
-from .employee import EmployeeAccess
-from .group_client_places import GroupClientPlacesAccess
-from .role import RoleAccess
-from .user import UserAccess
 
 
 def role_validation_object_return_transform_slug_to_id(myself=None,

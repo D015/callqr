@@ -6,7 +6,7 @@ from aiogram.dispatcher import Dispatcher
 from aiogram.dispatcher.webhook import SendMessage
 from aiogram.utils.executor import start_webhook
 
-from settings import TOKEN_Telegram
+from config.settings import TOKEN_Telegram
 
 API_TOKEN = TOKEN_Telegram
 

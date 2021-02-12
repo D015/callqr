@@ -2,15 +2,7 @@ from flask import render_template
 
 from db_access.base import BaseAccess
 from db_access.base_inspect import BaseInspectAccess
-from utils_add import add_commit
-
-from models import (Admin,
-                    Client,
-                    ClientPlace,
-                    Company,
-                    Corporation,
-                    Employee,
-                    GroupClientPlaces)
+from utils.utils_add import add_commit
 
 
 class BaseCompanyAccess(BaseAccess):

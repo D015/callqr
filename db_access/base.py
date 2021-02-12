@@ -1,5 +1,5 @@
 from app import db
-from utils_add import add_commit
+from utils.utils_add import add_commit
 
 
 class BaseAccess:

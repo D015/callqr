@@ -3,7 +3,7 @@ from flask_login import current_user
 from app import db
 from db_access.base import BaseAccess
 from models import Admin
-from utils_add import add_commit
+from utils.utils_add import add_commit
 
 
 class AdminAccess(BaseAccess):

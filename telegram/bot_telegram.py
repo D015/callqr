@@ -1,9 +1,8 @@
 from aiogram import Bot, types
 from aiogram.dispatcher import Dispatcher
-from aiogram.dispatcher.webhook import SendMessage
 from aiogram.utils import executor
 
-from settings import TOKEN_Telegram
+from config.settings import TOKEN_Telegram
 
 bot = Bot(token=TOKEN_Telegram)
 dp = Dispatcher(bot)

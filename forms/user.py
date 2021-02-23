@@ -15,7 +15,7 @@ from db_access import UserAccess
 
 
 class LoginForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired()])
+    username_or_email = StringField('Username or email', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
     remember_me = BooleanField('Remember Me')
     submit = SubmitField('Sign In')
@@ -53,7 +53,7 @@ class EditUserForm(FlaskForm):
         self.user = user
 
     def validate_username(self, username):
-        if username.data.lower() != self.user.username.lower():
+        if username.data.lower() != self.user.username_or_email.lower():
             user = UserAccess(username=self.username.data.strip()). \
                 users_by_username()
             if user is not None:

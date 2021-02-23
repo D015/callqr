@@ -37,9 +37,10 @@ def login():
         return redirect(url_for('index'))
     form = LoginForm()
     if form.validate_on_submit():
-        # todo change query by UserAccess
-        user = User.query.filter(or_(User.username == form.username.data,
-                                     User.email == form.username.data)).first()
+        user = UserAccess(username=form.username_or_email.data,
+                          email=form.username_or_email.data). \
+            user_by_username_or_email()
+
         if user is None or not user.check_password(form.password.data):
             flash('Invalid username or password')
             return redirect(url_for('login'))
@@ -104,7 +105,7 @@ def edit_user():
         flash('Your changes have been saved.')
         return redirect(url_for('profile'))
     elif request.method == 'GET':
-        form.username.data = user.username
+        form.username.data = user.username_or_email
         form.email.data = user.email
         form.about.data = user.about
     return render_template('edit_user.html', title='Edit User',

@@ -1,4 +1,5 @@
 from flask_login import current_user
+from sqlalchemy import or_
 
 from db_access.base import BaseAccess
 from models import User
@@ -35,3 +36,8 @@ class UserAccess(BaseAccess):
     def users_by_username(self):
         users = User.query.filter(User.username.ilike(self.username)).first()
         return users
+
+    def user_by_username_or_email(self):
+        user = User.query.filter(or_(User.username == self.username,
+                                     User.email == self.email)).first()
+        return user

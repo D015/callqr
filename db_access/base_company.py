@@ -4,6 +4,14 @@ from db_access.base import BaseAccess
 from db_access.base_inspect import BaseInspectAccess
 from utils.utils_add import add_commit
 
+from models import (Admin,
+                    Client,
+                    ClientPlace,
+                    Company,
+                    Corporation,
+                    Employee,
+                    GroupClientPlaces)
+
 
 class BaseCompanyAccess(BaseAccess):
     def __init__(self, company_id=None, _obj=None, another_obj=None,

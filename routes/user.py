@@ -11,8 +11,6 @@ from flask_login import (current_user,
                          logout_user,
                          login_required)
 
-from sqlalchemy import or_
-
 from werkzeug.urls import url_parse
 
 from app import app
@@ -25,8 +23,6 @@ from db_access import (UserAccess,
 from forms import (LoginForm,
                    RegistrationForm,
                    EditUserForm)
-
-from models import User
 
 from utils.utils_routes import remove_object
 

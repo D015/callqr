@@ -1,38 +1,37 @@
 from app import db
-from db_access import ClientPlaceAccess
-from models import Employee
+from models import CallOut, CallIn
+from utils.utils_add import add_commit
 
 
 class CallAccess(object):
-    def __init__(self, client_place_slug, type_call_out):
-        self.type_call_out = type_call_out
-        self.client_place_slug = client_place_slug
+    def __init__(self, type_call_out_id=None, type_call_in_id=None,
+                 destination=None, client_id=None, client_place_id=None,
+                 group_client_places_id=None, company_id=None,
+                 corporation_id=None, employee_id=None):
+        self.type_call_out_id = type_call_out_id
+        self.type_call_in_id = type_call_in_id
+        self.destination = destination
+        self.client_id = client_id
+        self.client_place_id = client_place_id
+        self.group_client_places_id = group_client_places_id
+        self.company_id = company_id
+        self.corporation_id = corporation_id
+        self.employee_id = employee_id
 
-    def selection_of_employee_contacts_to_call_from_client_place(self):
-        client_place = \
-            ClientPlaceAccess(slug=self.client_place_slug).object_by_slug()
-        cln_plc_employees = client_place.employees. \
-            filter_by(archived=False, active=True,
-                      use_email_for_call=True).all()
+    def create_call_of_employees_from_client_place(self):
+        call_out = CallOut(corporation_id=self.corporation_id,
+                           company_id=self.company_id,
+                           group_client_places_id=self.group_client_places_id,
+                           client_place_id=self.client_place_id,
+                           client_id=self.client_id,
+                           type_call_out_id=self.type_call_out_id)
+        add_commit(call_out)
+        call_in = CallIn(call_out_id=call_out.id,
+                         employee_id=self.employee_id,
+                         destination=self.destination,
+                         type_call_in_id=self.type_call_in_id)
+        add_commit(call_in)
 
-        grp_cln_plcs_employees = client_place.group_client_places.employees. \
-            filter_by(archived=False, active=True,
-                      use_email_for_call=True).all() \
-            if client_place.group_client_places else None
-        employees = set(cln_plc_employees + grp_cln_plcs_employees)
 
-        emails = []
-        telegrams = []
-        for employee in employees:
-            if employee.use_email_for_call:
-                emails.append(employee.email)
-            if employee.use_telegram_for_call:
-                telegrams.append(employee.use_telegram_for_call)
 
-        employee_contacts = {'emails': emails, 'telegrams': telegrams}
-        return employee_contacts
-
-    def call_of_employees_from_client_place(self):
-        employee_contacts = \
-            self.selection_of_employee_contacts_to_call_from_client_place()
 

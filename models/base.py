@@ -3,9 +3,6 @@ from uuid import uuid4
 
 from flask_login import current_user
 
-import pyqrcode
-import os.path
-
 from app import db
 
 

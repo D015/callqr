@@ -1,7 +1,10 @@
 from flask import request, redirect, url_for, render_template, flash
 
+from bot.email_bot import send_call_qr_email
+from bot.telegram_bot import send_message_telegram
 from db_access import BaseAccess, GroupClientPlacesAccess, EmployeeAccess, \
     ClientPlaceAccess, BaseCompanyAccess
+from db_access.call import CallAccess
 from forms import RemoveObjectForm
 
 
@@ -87,14 +90,13 @@ def client_places_for_employee(company_id, employee=None):
 def another_objs_for_obj(company_id, obj=None, another_obj_class_name=None):
     # - for object doesn't exist
     other_objs_in_company = BaseCompanyAccess(
-        company_id=company_id, _obj_class_name=another_obj_class_name).\
+        company_id=company_id, _obj_class_name=another_obj_class_name). \
         objs_of_class_name_by_company_id() if obj is None else []
 
     # - for obj exists
     other_objs_with_relationship_to_obj = []
     other_objs_without_relationship_to_obj = []
     if obj:
-
         other_objs_with_relationship_to_obj = BaseCompanyAccess(
             _obj=obj, another_obj_class_name=another_obj_class_name). \
             other_objs_with_relationship_obj()
@@ -102,8 +104,6 @@ def another_objs_for_obj(company_id, obj=None, another_obj_class_name=None):
         other_objs_without_relationship_to_obj = BaseCompanyAccess(
             _obj=obj, another_obj_class_name=another_obj_class_name). \
             other_objs_without_relationship_obj()
-
-
 
     other_objs = {
         'other_objs_in_company': other_objs_in_company,
@@ -123,3 +123,65 @@ def employee_or_current_employee(company_id):
         employee = EmployeeAccess(company_id=company_id). \
             employee_of_current_user_by_company_id()
     return employee
+
+
+def call_of_employees_from_client_place(client_id,
+                                        client_place_slug_link,
+                                        client_place_name,
+                                        type_call_out_id):
+    call_text = f'Call {client_place_name}'
+
+    cln_plc_empls_contacts = ClientPlaceAccess(slug_link=client_place_slug_link). \
+        selection_of_employee_contacts_to_call_from_client_place()
+
+    call_email_success = None
+    if cln_plc_empls_contacts['employees_emails']:
+        for employee_email in cln_plc_empls_contacts['employees_emails']:
+            send_call_qr_email(employee_email[1], call_text)
+
+            CallAccess(type_call_out_id=type_call_out_id,
+                       type_call_in_id=10,
+                       destination=employee_email[1],
+                       client_id=client_id,
+                       client_place_id= \
+                           cln_plc_empls_contacts['client_place'].id,
+                       group_client_places_id= \
+                           cln_plc_empls_contacts['client_place']. \
+                       group_client_places_id,
+                       company_id= \
+                           cln_plc_empls_contacts['client_place'].company_id,
+                       corporation_id= \
+                           cln_plc_empls_contacts['client_place']. \
+                       corporation_id,
+                       employee_id=employee_email[0]). \
+                create_call_of_employees_from_client_place()
+
+        call_email_success = True
+
+    call_telegram_success = None
+    if cln_plc_empls_contacts['employees_telegrams']:
+        for employee_telegram in cln_plc_empls_contacts['employees_telegrams']:
+            send_message_telegram(employee_telegram[1], call_text)
+
+            CallAccess(type_call_out_id=type_call_out_id,
+                       type_call_in_id=20,
+                       destination=employee_telegram[1],
+                       client_id=client_id,
+                       client_place_id= \
+                           cln_plc_empls_contacts['client_place'].id,
+                       group_client_places_id= \
+                           cln_plc_empls_contacts['client_place']. \
+                       group_client_places_id,
+                       company_id= \
+                           cln_plc_empls_contacts['client_place'].company_id,
+                       corporation_id= \
+                           cln_plc_empls_contacts['client_place']. \
+                       corporation_id,
+                       employee_id=employee_email[0]). \
+                create_call_of_employees_from_client_place()
+
+        call_telegram_success = True
+
+    if call_email_success or call_telegram_success:
+        return True
+    return False

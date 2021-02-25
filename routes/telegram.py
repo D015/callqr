@@ -3,7 +3,7 @@ from flask import request
 
 from app import app
 
-from bot.telegram_bot import send_message
+from bot.telegram_bot import send_message_telegram
 
 from db_access import EmployeeAccess
 
@@ -33,5 +33,5 @@ def telegram_webhook():
                 print('_____________________________')
                 for m_k, m_v in v.items():
                     print(m_k, ' --- ', m_v)
-        send_message(the_id, the_text)
+        send_message_telegram(the_id, the_text)
     return {"ok": True}

@@ -28,13 +28,10 @@ def send_password_reset_email(user):
                                          user=user, token=token))
 
 
-def send_call_qr_email(name_place, users_emails):
-    print(app.config['ADMINS'][0])
-    send_email('Call client_place N {}'.format(name_place),
+def send_call_qr_email(email, name_place):
+    message_text = f'Call {name_place}'
+    send_email(message_text,
                sender=app.config['ADMINS'][0],
-               recipients=users_emails,
-               text_body='text body',
-               html_body='<h1>HTML body</h1>')
-
-# l1 =  ['7281015@gmail.com', '7281015@mail.ru']
-# print(send_call_qr_email('123', l1))
+               recipients=[email],
+               text_body=message_text,
+               html_body=f'<h1>{message_text}</h1>')

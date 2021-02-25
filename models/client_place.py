@@ -5,10 +5,11 @@ from app import db
 from models.base import BaseModel
 
 
-# !!!The order of inheritance from classes is important for the ability to
-# override the method __init__!!! db.Model, BaseModel
+# todo !!!The order of inheritance from classes is important for the ability to
+#  override the method __init__!!! db.Model, BaseModel
 class ClientPlace(db.Model, BaseModel):
     slug_link = db.Column(db.String(128), index=True, unique=True)
+    slug_link_cd = db.Column(db.Integer)
 
     name = db.Column(db.String(64))
 
@@ -18,7 +19,6 @@ class ClientPlace(db.Model, BaseModel):
 
     call_out = db.relationship(
         'CallOut', backref='client_place', lazy='dynamic')
-
 
     def __init__(self, *args, **kwargs):
         super(ClientPlace, self).__init__(*args, **kwargs)

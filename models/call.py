@@ -22,6 +22,7 @@ class CallIn(BaseModel, db.Model):
     call_out_id = db.Column(db.Integer, db.ForeignKey('call_out.id'))
 
     employee_id = db.Column(db.Integer, db.ForeignKey('employee.id'))
+    destination = db.Column(db.String(128))
     type_call_in_id = db.Column(db.Integer, db.ForeignKey('type_call_in.id'))
 
     def __repr__(self):

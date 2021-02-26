@@ -59,9 +59,11 @@ class ClientPlaceAccess(BaseAccess):
                 client_place.group_client_places.employees. \
                     filter_by(archived=False, active=True,
                               use_email_for_call=True).all()
+            employees = set(cln_plc_employees + grp_cln_plcs_employees)
+
         else:
-            grp_cln_plcs_employees = None
-        employees = set(cln_plc_employees + grp_cln_plcs_employees)
+            employees = set(cln_plc_employees)
+
 
         employees_emails = []
         employees_telegrams = []

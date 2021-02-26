@@ -25,10 +25,10 @@ class User(UserMixin, db.Model, BaseModel):
     about = db.Column(db.String(140))
 
     admins = db.relationship('Admin', backref='user',
-                             order_by="asc(Admin.role_id)",
+                             order_by='asc(Admin.role_id)',
                              lazy='dynamic')
     employees = db.relationship('Employee', backref='user',
-                                order_by="asc(Employee.role_id)",
+                                order_by='asc(Employee.role_id)',
                                 lazy='dynamic')
     clients = db.relationship('Client', backref='user', lazy='dynamic')
 

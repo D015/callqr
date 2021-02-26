@@ -153,7 +153,9 @@ def edit_employee(employee_slug_to_id, **kwargs):
                 phone=None if form.phone.data.strip() == '' \
                     else form.phone.data.strip(),
                 email=form.email.data.strip(),
-                role_id=form.role.data.strip())
+                role_id=form.role.data.strip(),
+                active=form.active.data,
+                archived=form.archived.data)
 
             flash('Your changes have been saved.')
             return redirect(url_for('employee',
@@ -164,6 +166,8 @@ def edit_employee(employee_slug_to_id, **kwargs):
         form.about.data = employee.about
         form.phone.data = employee.phone
         form.email.data = employee.email
+        form.active.data = employee.active
+        form.archived.data = employee.archived
     return render_template('edit_employee.html',
                            title='Edit employee {}'.format(employee.id),
                            form=form, valid_myself=kwargs.get('valid_myself'))

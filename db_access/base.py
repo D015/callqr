@@ -24,7 +24,7 @@ class BaseAccess:
 
     def edit_model_object(self, **kwargs):
         for key, value in kwargs.items():
-            if value:
+            if value != '' or value is not None:
                 setattr(self._obj, key, value)
             else:
                 setattr(self._obj, key, None)

@@ -133,7 +133,7 @@ def call_of_employees_from_client_place(client_id=None,
         selection_of_employee_contacts_to_call_from_client_place()
     print(cln_plc_empls_contacts)
 
-    client_place_name = f'Call {cln_plc_empls_contacts["client_place"].name}'
+    client_place_name = cln_plc_empls_contacts["client_place"].name
 
     call_email_success = None
     if cln_plc_empls_contacts['employees_emails']:

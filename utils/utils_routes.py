@@ -125,19 +125,20 @@ def employee_or_current_employee(company_id):
     return employee
 
 
-def call_of_employees_from_client_place(client_id,
-                                        client_place_slug_link,
-                                        client_place_name,
-                                        type_call_out_id):
-    call_text = f'Call {client_place_name}'
+def call_of_employees_from_client_place(client_id=None,
+                                        client_place_slug_link=None,
+                                        type_call_out_id=None):
 
     cln_plc_empls_contacts = ClientPlaceAccess(slug_link=client_place_slug_link). \
         selection_of_employee_contacts_to_call_from_client_place()
+    print(cln_plc_empls_contacts)
+
+    client_place_name = f'Call {cln_plc_empls_contacts["client_place"].name}'
 
     call_email_success = None
     if cln_plc_empls_contacts['employees_emails']:
         for employee_email in cln_plc_empls_contacts['employees_emails']:
-            send_call_qr_email(employee_email[1], call_text)
+            send_call_qr_email(employee_email[1], client_place_name)
 
             CallAccess(type_call_out_id=type_call_out_id,
                        type_call_in_id=10,
@@ -152,7 +153,7 @@ def call_of_employees_from_client_place(client_id,
                            cln_plc_empls_contacts['client_place'].company_id,
                        corporation_id= \
                            cln_plc_empls_contacts['client_place']. \
-                       corporation_id,
+                       company.corporation_id,
                        employee_id=employee_email[0]). \
                 create_call_of_employees_from_client_place()
 
@@ -161,7 +162,7 @@ def call_of_employees_from_client_place(client_id,
     call_telegram_success = None
     if cln_plc_empls_contacts['employees_telegrams']:
         for employee_telegram in cln_plc_empls_contacts['employees_telegrams']:
-            send_message_telegram(employee_telegram[1], call_text)
+            send_message_telegram(employee_telegram[1], client_place_name)
 
             CallAccess(type_call_out_id=type_call_out_id,
                        type_call_in_id=20,

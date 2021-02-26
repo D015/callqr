@@ -3,7 +3,7 @@
 {% block content %}
     <table>
         <tr valign="top">
-            <td><img src="{{ qrcode("https://callqr.com/client_place/8566245791ba41518f676eb7ebe8d9ac", box_size=2) }}" /></td>
+            <td><img src="{{ qrcode(client_place_call_qr, box_size=5) }}" /></td>
             <td>
                 <h1>Client place: {{ client_place.name }}</h1>
                 {% if client_place.about %}<p>{{ client_place.about }}</p>{% endif %}

@@ -76,7 +76,11 @@ def client_place(client_place_slug_to_id, **kwargs):
     employees = another_objs_for_obj(company_id, obj=client_place,
                                      another_obj_class_name='Employee')
 
+    client_place_call_qr = \
+        f'http://www.callqr.com/call_qr/{client_place.slug_link}'
+
     return render_template('client_place.html',
+                           client_place_call_qr=client_place_call_qr,
                            client_place=client_place,
                            client_place_slug=client_place.slug,
                            client_place_id=client_place_slug_to_id,

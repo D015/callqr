@@ -7,6 +7,7 @@ from .admin import (create_admin_view,
                     edit_admin,
                     remove_admin)
 
+from .call import call_qr
 from .client_place import (create_client_place_view,
                            client_place,
                            edit_client_place,

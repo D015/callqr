@@ -41,9 +41,14 @@ class ClientPlaceAccess(BaseAccess):
             company_id=self.company_id).order_by(ClientPlace.name.asc()).all()
         return client_places
 
+    def client_places_by_slug_link(self):
+        client_places = \
+            ClientPlace.query.filter_by(slug_link=self.slug_link).first()
+        return client_places
+
     def selection_of_employee_contacts_to_call_from_client_place(self):
-        client_place = \
-            ClientPlaceAccess(slug_link=self.slug_link).object_by_slug()
+        client_place = ClientPlaceAccess(slug_link=self.slug_link). \
+                client_places_by_slug_link()
 
         cln_plc_employees = client_place.employees. \
             filter_by(archived=False, active=True,
